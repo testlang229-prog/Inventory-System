@@ -4,6 +4,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  getMonthlyStatusHeader,
+  normalizeHeader,
+} = require('../utils/monthColumns');
 
 // Path to JSON database file
 const dbPath = path.join(__dirname, 'inventory.json');
@@ -30,6 +34,12 @@ function loadData() {
  */
 function saveData(data) {
   try {
+    if (Array.isArray(data.assets)) {
+      data.assets = data.assets.map(sanitizeAsset);
+    }
+    if (Array.isArray(data.headers)) {
+      data.headers = data.headers.filter(header => !isInternalField(header));
+    }
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
   } catch (error) {
     console.error('Error saving database:', error.message);
@@ -53,14 +63,43 @@ function initializeDatabase() {
 /**
  * Get all assets from database
  */
+function sanitizeAsset(asset) {
+  if (!asset || typeof asset !== 'object') return asset;
+  return Object.fromEntries(
+    Object.entries(asset).filter(([key]) => !isInternalField(key))
+  );
+}
+
+function normalizeFieldName(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function isInternalField(value) {
+  return normalizeFieldName(value) === 'scanningmonth';
+}
+
 function getAllAssets() {
   const data = loadData();
-  return data.assets.sort((a, b) => b.id - a.id);
+  return data.assets
+    .sort((a, b) => b.id - a.id)
+    .map(sanitizeAsset);
 }
 
 function getHeaders() {
   const data = loadData();
-  return Array.isArray(data.headers) ? data.headers : [];
+  const headers = Array.isArray(data.headers) ? data.headers : [];
+  const visibleHeaders = headers.filter(header => !isInternalField(header));
+  const monthlyStatusHeader = getMonthlyStatusHeader();
+
+  if (!visibleHeaders.some(header => normalizeHeader(header) === normalizeHeader(monthlyStatusHeader))) {
+    const remarksIndex = visibleHeaders.findIndex(header => normalizeHeader(header) === 'remarks');
+    const insertIndex = remarksIndex >= 0 ? remarksIndex : visibleHeaders.length;
+    visibleHeaders.splice(insertIndex, 0, monthlyStatusHeader);
+  }
+
+  return visibleHeaders;
 }
 
 function updateHeaders(newHeaders) {
@@ -69,21 +108,13 @@ function updateHeaders(newHeaders) {
 
   newHeaders.forEach(header => {
     const normalized = String(header).trim();
-    if (normalized && !headers.includes(normalized)) {
+    if (normalized && !isInternalField(normalized) && !headers.includes(normalized)) {
       headers.push(normalized);
     }
   });
 
   data.headers = headers;
   saveData(data);
-}
-
-function normalizeHeader(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/\([^)]*\)/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
 }
 
 function syncFieldToOriginalColumns(asset, fieldName, value) {
@@ -103,7 +134,8 @@ function syncFieldToOriginalColumns(asset, fieldName, value) {
  */
 function getAssetById(id) {
   const data = loadData();
-  return data.assets.find(asset => asset.id === id);
+  const asset = data.assets.find(asset => asset.id === id);
+  return sanitizeAsset(asset);
 }
 
 /**
@@ -111,9 +143,10 @@ function getAssetById(id) {
  */
 function getAssetByAssetOrSerial(asset, serialNumber) {
   const data = loadData();
-  return data.assets.find(
+  const found = data.assets.find(
     a => a.asset === asset || a.serialNumber === serialNumber
   );
+  return sanitizeAsset(found);
 }
 
 /**
@@ -128,11 +161,13 @@ function upsertAsset(assetData) {
   );
 
   const normalizedStatus = assetData.status || 'UNACCOUNTED';
+  const monthlyStatusHeader = getMonthlyStatusHeader();
   const baseAsset = {
     ...assetData,
     status: normalizedStatus,
     remarks: assetData.remarks || assetData.REMARKS || assetData.Remarks || assetData.remark || assetData.comments || assetData.note || assetData.notes || '',
   };
+  baseAsset[monthlyStatusHeader] = assetData[monthlyStatusHeader] || 'NOT FOUND';
   syncFieldToOriginalColumns(baseAsset, 'status', normalizedStatus);
   syncFieldToOriginalColumns(baseAsset, 'remarks', baseAsset.remarks);
 
@@ -189,6 +224,19 @@ function updateAssetStatus(assetId, status, remarks) {
 }
 
 /**
+ * Update monthly status for an asset
+ */
+function updateMonthlyStatus(assetId, monthlyStatus) {
+  const data = loadData();
+  const assetIndex = data.assets.findIndex(a => a.id === assetId);
+
+  if (assetIndex !== -1) {
+    data.assets[assetIndex][getMonthlyStatusHeader()] = monthlyStatus;
+    saveData(data);
+  }
+}
+
+/**
  * Delete all assets (useful for testing or resetting)
  */
 function deleteAllAssets() {
@@ -228,6 +276,7 @@ module.exports = {
   getAssetByAssetOrSerial,
   upsertAsset,
   updateAssetStatus,
+  updateMonthlyStatus,
   deleteAllAssets,
   getAssetStatistics,
 };
