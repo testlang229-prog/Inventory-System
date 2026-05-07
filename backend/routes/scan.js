@@ -5,6 +5,7 @@ const express = require('express');
 const {
   getAssetByAssetOrSerial,
   updateAssetStatus,
+  updateMonthlyStatus,
   getAssetById,
 } = require('../db/database');
 
@@ -50,6 +51,7 @@ router.post('/', (req, res) => {
     if (asset.status === 'ACCOUNTED') {
       // Still mark remarks as FOUND so every successful scan records the match.
       updateAssetStatus(asset.id, 'ACCOUNTED', 'FOUND');
+      updateMonthlyStatus(asset.id, 'FOUND');
       const updatedAsset = getAssetById(asset.id);
 
       return res.json({
@@ -62,6 +64,9 @@ router.post('/', (req, res) => {
 
     // Update the asset status to ACCOUNTED and remarks to FOUND
     updateAssetStatus(asset.id, 'ACCOUNTED', 'FOUND');
+
+    // Set monthly status to FOUND
+    updateMonthlyStatus(asset.id, 'FOUND');
 
     // Fetch the updated asset
     const updatedAsset = getAssetById(asset.id);

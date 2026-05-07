@@ -4,6 +4,7 @@
 const express = require('express');
 const { getAllAssets, getHeaders } = require('../db/database');
 const { generateExcelFile } = require('../utils/excelGenerator');
+const { getReportFilename } = require('../utils/monthColumns');
 
 const router = express.Router();
 
@@ -23,8 +24,7 @@ router.get('/', async (req, res) => {
     const excelBuffer = await generateExcelFile(assets, headers);
 
     // Set response headers to trigger download
-    const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const filename = `inventory-${timestamp}.xlsx`;
+    const filename = getReportFilename();
 
     res.setHeader(
       'Content-Type',
@@ -34,6 +34,7 @@ router.get('/', async (req, res) => {
       'Content-Disposition',
       `attachment; filename="${filename}"`
     );
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
 
     // Send the Excel file
     res.send(excelBuffer);
