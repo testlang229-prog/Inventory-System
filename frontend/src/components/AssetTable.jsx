@@ -17,6 +17,9 @@ export default function AssetTable({
   const [sortBy, setSortBy] = useState('asset');
   const [sortOrder, setSortOrder] = useState('asc');
 
+  const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  const currentMonth = monthNames[new Date().getMonth()];
+
   const defaultColumns = [
     { key: 'asset', label: 'Asset #' },
     { key: 'assetDescription', label: 'Description' },
@@ -24,11 +27,53 @@ export default function AssetTable({
     { key: 'costCenter', label: 'Cost Center' },
     { key: 'correctRoom', label: 'Room' },
     { key: 'status', label: 'Status' },
+    { key: `${currentMonth} STATUS`, label: `${currentMonth} STATUS` },
     { key: 'remarks', label: 'Remarks' },
   ];
 
+  const normalizeLabel = (label) =>
+    String(label || '')
+      .toLowerCase()
+      .replace(/\([^)]*\)/g, '')
+      .replace(/[^a-z0-9 ]+/g, ' ')
+      .trim();
+
+  const isInternalField = (label) =>
+    normalizeLabel(label).replace(/\s+/g, '') === 'scanningmonth';
+
+  const getDisplayLabel = (header) => {
+    return normalizeLabel(header) === 'no change with change'
+      ? String(header).replace(/\s*\(\d+\)\s*$/, '')
+      : header;
+  };
+
+  const isRemarksHeader = (label) => {
+    const normalized = normalizeLabel(label);
+    return normalized === 'remarks' || normalized.endsWith(' remarks');
+  };
+
+  const getAssetValue = (asset, header) => {
+    if (isRemarksHeader(header)) {
+      return asset.remarks || asset.REMARKS || asset.Remarks || asset.remark || asset.notes || asset.note || asset.comments || asset.comment || '';
+    }
+
+    if (asset[header] !== undefined) {
+      return asset[header];
+    }
+
+    const normalizedHeader = normalizeLabel(header);
+    const matchingKey = Object.keys(asset).find(key => {
+      const normalizedKey = normalizeLabel(key);
+      return normalizedKey === normalizedHeader;
+    });
+
+    return matchingKey ? asset[matchingKey] : '';
+  };
+
   const tableColumns = headers && headers.length > 0
-    ? headers.map(header => ({ key: header, label: header }))
+    ? headers
+        .filter(header => !isInternalField(header))
+        .map(header => ({ key: header, label: getDisplayLabel(header) }))
     : defaultColumns;
 
   const normalizeHeader = (header) =>
@@ -54,7 +99,8 @@ export default function AssetTable({
     if (searchTerm) {
       const searchValue = searchTerm.toLowerCase();
       filtered = filtered.filter(asset =>
-        Object.values(asset).some(value =>
+        Object.entries(asset).some(([key, value]) =>
+          !isInternalField(key) &&
           String(value || '').toLowerCase().includes(searchValue)
         )
       );
@@ -74,9 +120,9 @@ export default function AssetTable({
     }
 
     filtered.sort((a, b) => {
-      let aValue = a[sortBy] ?? a[normalizeHeader(sortBy)] ?? '';
-      let bValue = b[sortBy] ?? b[normalizeHeader(sortBy)] ?? '';
-      const isRemarksColumn = normalizeHeader(sortBy) === 'remarks';
+      let aValue = getAssetValue(a, sortBy);
+      let bValue = getAssetValue(b, sortBy);
+      const isRemarksColumn = isRemarksHeader(sortBy);
 
       if (isRemarksColumn) {
         const aRank = getRemarksRank(aValue);
@@ -242,7 +288,7 @@ export default function AssetTable({
                     }`}
                   >
                     {tableColumns.map(column => {
-                      const cellValue = asset[column.key] ?? asset[normalizeHeader(column.key)] ?? '';
+                      const cellValue = getAssetValue(asset, column.key);
                       const isStatusColumn = normalizeHeader(column.key) === 'status';
 
                       return (
