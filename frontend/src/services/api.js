@@ -100,9 +100,11 @@ export async function downloadExcel() {
     });
 
     // Create temporary link and download
+    const disposition = response.headers['content-disposition'];
+    const filenameMatch = disposition?.match(/filename="?([^"]+)"?/i);
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    link.download = `inventory-${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.download = filenameMatch?.[1] || 'AssetInventoryReport.xlsx';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
