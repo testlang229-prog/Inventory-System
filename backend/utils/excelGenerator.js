@@ -4,6 +4,8 @@
 const ExcelJS = require('exceljs');
 const {
   getMonthlyStatusHeader,
+  getMonthlyRemarksHeader,
+  isCurrentMonthRemarksHeader,
   normalizeHeader,
 } = require('./monthColumns');
 
@@ -12,6 +14,16 @@ function isInternalField(value) {
 }
 
 function getDisplayHeader(header) {
+  const normalizedHeader = normalizeHeader(header);
+
+  if (
+    normalizedHeader === 'remarks' ||
+    normalizedHeader.endsWith(' remarks') ||
+    isCurrentMonthRemarksHeader(header)
+  ) {
+    return getMonthlyRemarksHeader();
+  }
+
   return normalizeHeader(header) === 'no change with change'
     ? String(header).replace(/\s*\(\d+\)\s*$/, '')
     : header;
@@ -19,7 +31,14 @@ function getDisplayHeader(header) {
 
 function getAssetValue(asset, header) {
   const normalizedHeader = normalizeHeader(header);
-  if (normalizedHeader === 'remarks' || normalizedHeader.endsWith(' remarks')) {
+  if (
+    normalizedHeader === 'remarks' ||
+    normalizedHeader.endsWith(' remarks') ||
+    isCurrentMonthRemarksHeader(header)
+  ) {
+    if (asset[header] !== undefined) {
+      return asset[header];
+    }
     return asset.remarks || asset.REMARKS || asset.Remarks || asset.remark || asset.notes || asset.note || asset.comments || asset.comment || '';
   }
 
@@ -64,11 +83,30 @@ async function generateExcelFile(assets, headers = []) {
 
     headers = headers.filter(header => !isInternalField(header));
     const monthlyStatusHeader = getMonthlyStatusHeader();
+    const currentMonthRemarksNormalized = normalizeHeader(getMonthlyRemarksHeader());
+    const hasCurrentMonthRemarks = headers.some(
+      header => normalizeHeader(header) === currentMonthRemarksNormalized
+    );
 
     if (!headers.some(header => normalizeHeader(header) === normalizeHeader(monthlyStatusHeader))) {
       const remarksIndex = headers.findIndex(header => normalizeHeader(header) === 'remarks');
       const insertIndex = remarksIndex >= 0 ? remarksIndex : headers.length;
       headers.splice(insertIndex, 0, monthlyStatusHeader);
+    }
+
+    if (hasCurrentMonthRemarks) {
+      const seen = new Set();
+      headers = headers.filter(header => {
+        const normalized = normalizeHeader(header);
+        if (normalized === 'remarks') {
+          return false;
+        }
+        if (seen.has(normalized)) {
+          return false;
+        }
+        seen.add(normalized);
+        return true;
+      });
     }
 
     const normalizedToHeader = headers.reduce((map, header) => {

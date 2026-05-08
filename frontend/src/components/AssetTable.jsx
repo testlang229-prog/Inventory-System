@@ -19,6 +19,7 @@ export default function AssetTable({
 
   const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
   const currentMonth = monthNames[new Date().getMonth()];
+  const displayMonth = `${currentMonth[0]}${currentMonth.slice(1).toLowerCase()}`;
 
   const defaultColumns = [
     { key: 'asset', label: 'Asset #' },
@@ -28,7 +29,7 @@ export default function AssetTable({
     { key: 'correctRoom', label: 'Room' },
     { key: 'status', label: 'Status' },
     { key: `${currentMonth} STATUS`, label: `${currentMonth} STATUS` },
-    { key: 'remarks', label: 'Remarks' },
+    { key: 'remarks', label: `${displayMonth} Remarks` },
   ];
 
   const normalizeLabel = (label) =>
@@ -41,38 +42,52 @@ export default function AssetTable({
   const isInternalField = (label) =>
     normalizeLabel(label).replace(/\s+/g, '') === 'scanningmonth';
 
+  const isCurrentMonthYearHeader = (label) => {
+    const normalized = normalizeLabel(label);
+    const currentMonthHeader = `${currentMonth.toLowerCase()} ${new Date().getFullYear()}`;
+    return normalized === currentMonthHeader || normalized === currentMonthHeader.replace(/ /g, '');
+  };
+
+  const isRemarksHeader = (label) => {
+    const normalized = normalizeLabel(label);
+    return (
+      normalized === 'remarks' ||
+      normalized.endsWith(' remarks') ||
+      isCurrentMonthYearHeader(label)
+    );
+  };
+
   const getDisplayLabel = (header) => {
+    if (isRemarksHeader(header)) {
+      return `${displayMonth} Remarks`;
+    }
+
     return normalizeLabel(header) === 'no change with change'
       ? String(header).replace(/\s*\(\d+\)\s*$/, '')
       : header;
   };
 
-  const isRemarksHeader = (label) => {
-    const normalized = normalizeLabel(label);
-    return normalized === 'remarks' || normalized.endsWith(' remarks');
-  };
+  const currentMonthHeaderNormalized = `${currentMonth.toLowerCase()} ${new Date().getFullYear()}`;
+  const hasCurrentMonthRemarks = headers.some(header => {
+    const normalized = normalizeLabel(header);
+    return normalized === currentMonthHeaderNormalized || normalized === currentMonthHeaderNormalized.replace(/ /g, '');
+  });
 
-  const getAssetValue = (asset, header) => {
-    if (isRemarksHeader(header)) {
-      return asset.remarks || asset.REMARKS || asset.Remarks || asset.remark || asset.notes || asset.note || asset.comments || asset.comment || '';
-    }
-
-    if (asset[header] !== undefined) {
-      return asset[header];
-    }
-
-    const normalizedHeader = normalizeLabel(header);
-    const matchingKey = Object.keys(asset).find(key => {
-      const normalizedKey = normalizeLabel(key);
-      return normalizedKey === normalizedHeader;
-    });
-
-    return matchingKey ? asset[matchingKey] : '';
-  };
+  const currentMonthDisplayRemarks = `${displayMonth} Remarks`;
+  const isCurrentMonthDisplayRemarksHeader = (label) =>
+    normalizeLabel(label) === normalizeLabel(currentMonthDisplayRemarks);
 
   const tableColumns = headers && headers.length > 0
     ? headers
         .filter(header => !isInternalField(header))
+        .filter(header => {
+          if (!hasCurrentMonthRemarks) return true;
+          const normalized = normalizeLabel(header);
+          return (
+            normalized !== 'remarks' &&
+            !isCurrentMonthDisplayRemarksHeader(header)
+          );
+        })
         .map(header => ({ key: header, label: getDisplayLabel(header) }))
     : defaultColumns;
 
@@ -88,6 +103,27 @@ export default function AssetTable({
     if (normalized === 'not found' || normalized === 'notfound') return 1;
     if (normalized === '') return 3;
     return 2;
+  };
+
+  const getAssetValue = (asset, fieldName) => {
+    if (!asset || typeof asset !== 'object') return '';
+    
+    // Try direct key match first
+    if (asset.hasOwnProperty(fieldName)) {
+      return asset[fieldName];
+    }
+
+    // Try normalized match
+    const normalizedField = normalizeHeader(fieldName);
+    const matchingKey = Object.keys(asset).find(
+      key => normalizeHeader(key) === normalizedField
+    );
+
+    if (matchingKey) {
+      return asset[matchingKey];
+    }
+
+    return '';
   };
 
   /**

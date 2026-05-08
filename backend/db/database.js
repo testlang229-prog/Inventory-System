@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const {
   getMonthlyStatusHeader,
+  getCurrentMonthRemarksHeader,
   normalizeHeader,
 } = require('../utils/monthColumns');
 
@@ -38,7 +39,17 @@ function saveData(data) {
       data.assets = data.assets.map(sanitizeAsset);
     }
     if (Array.isArray(data.headers)) {
-      data.headers = data.headers.filter(header => !isInternalField(header));
+      const normalizedHeaders = new Set();
+      data.headers = data.headers
+        .filter(header => !isInternalField(header))
+        .filter(header => {
+          const normalized = normalizeHeader(header);
+          if (normalizedHeaders.has(normalized)) {
+            return false;
+          }
+          normalizedHeaders.add(normalized);
+          return true;
+        });
     }
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
   } catch (error) {
@@ -90,13 +101,32 @@ function getAllAssets() {
 function getHeaders() {
   const data = loadData();
   const headers = Array.isArray(data.headers) ? data.headers : [];
-  const visibleHeaders = headers.filter(header => !isInternalField(header));
+  let visibleHeaders = headers.filter(header => !isInternalField(header));
   const monthlyStatusHeader = getMonthlyStatusHeader();
+  const currentMonthRemarksNormalized = getCurrentMonthRemarksHeader();
+  const hasCurrentMonthRemarks = visibleHeaders.some(
+    header => normalizeHeader(header) === currentMonthRemarksNormalized
+  );
 
   if (!visibleHeaders.some(header => normalizeHeader(header) === normalizeHeader(monthlyStatusHeader))) {
     const remarksIndex = visibleHeaders.findIndex(header => normalizeHeader(header) === 'remarks');
     const insertIndex = remarksIndex >= 0 ? remarksIndex : visibleHeaders.length;
     visibleHeaders.splice(insertIndex, 0, monthlyStatusHeader);
+  }
+
+  if (hasCurrentMonthRemarks) {
+    const seen = new Set();
+    visibleHeaders = visibleHeaders.filter(header => {
+      const normalized = normalizeHeader(header);
+      if (normalized === 'remarks') {
+        return false;
+      }
+      if (seen.has(normalized)) {
+        return false;
+      }
+      seen.add(normalized);
+      return true;
+    });
   }
 
   return visibleHeaders;
@@ -105,11 +135,14 @@ function getHeaders() {
 function updateHeaders(newHeaders) {
   const data = loadData();
   const headers = Array.isArray(data.headers) ? [...data.headers] : [];
+  const normalizedHeaders = new Set(headers.map(header => normalizeHeader(header)));
 
   newHeaders.forEach(header => {
-    const normalized = String(header).trim();
-    if (normalized && !isInternalField(normalized) && !headers.includes(normalized)) {
-      headers.push(normalized);
+    const trimmed = String(header).trim();
+    const normalized = normalizeHeader(trimmed);
+    if (trimmed && !isInternalField(trimmed) && !normalizedHeaders.has(normalized)) {
+      headers.push(trimmed);
+      normalizedHeaders.add(normalized);
     }
   });
 

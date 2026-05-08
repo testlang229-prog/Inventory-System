@@ -2,6 +2,7 @@
 // Parses uploaded Excel files and validates data
 
 const XLSX = require('xlsx');
+const { isCurrentMonthRemarksHeader, getMonthlyRemarksHeader, isMonthlyStatusHeader, getMonthlyStatusHeader } = require('./monthColumns');
 
 /**
  * Parse Excel file and extract asset data
@@ -35,6 +36,16 @@ function parseExcelFile(filePath) {
 
     const headers = buildHeaders(rows[headerRowIndex]);
 
+    const normalizedHeadersData = headers.map(({ name, index }) => {
+      let normalizedName = name;
+      if (isCurrentMonthRemarksHeader(name)) {
+        normalizedName = getMonthlyRemarksHeader();
+      } else if (isMonthlyStatusHeader(name)) {
+        normalizedName = getMonthlyStatusHeader();
+      }
+      return { originalName: name, normalizedName, index };
+    });
+
     const assets = rows
       .slice(headerRowIndex + 1)
       .map(row => {
@@ -44,8 +55,8 @@ function parseExcelFile(filePath) {
         };
 
         const rowObject = {};
-        headers.forEach(({ name, index }) => {
-          rowObject[name] = cleanValue(row[index]);
+        normalizedHeadersData.forEach(({ normalizedName, index }) => {
+          rowObject[normalizedName] = cleanValue(row[index]);
         });
 
         return {
@@ -80,7 +91,7 @@ function parseExcelFile(filePath) {
 
     return {
       assets,
-      headers: headers.map(header => header.name),
+      headers: normalizedHeadersData.map(({ normalizedName }) => normalizedName),
     };
   } catch (error) {
     throw new Error(`Excel parsing failed: ${error.message}`);
@@ -218,6 +229,11 @@ function mapHeaderRow(row) {
   row.forEach((header, columnIndex) => {
     const normalizedHeader = normalizeHeader(header);
     if (!normalizedHeader) return;
+
+    if (columnMap.remarks === undefined && isCurrentMonthRemarksHeader(header)) {
+      columnMap.remarks = columnIndex;
+      return;
+    }
 
     Object.entries(FIELD_ALIASES).forEach(([fieldName, aliases]) => {
       if (columnMap[fieldName] !== undefined) return;
