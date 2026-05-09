@@ -40,9 +40,11 @@ router.post('/', (req, res) => {
     );
 
     if (!asset) {
-      return res.status(404).json({
-        success: false,
-        message: `Asset not found for: ${normalizedScannedValue}`,
+      return res.json({
+        success: true,
+        message: 'New asset scanned',
+        scannedValue: normalizedScannedValue,
+        action: 'NEW_ASSET',
       });
     }
 

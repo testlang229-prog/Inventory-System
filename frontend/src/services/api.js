@@ -66,6 +66,20 @@ export async function clearAssets() {
 }
 
 /**
+ * Add a newly scanned asset to the inventory
+ * @param {Object} assetDetails - New asset details entered by the user
+ * @returns {Promise<Object>} - Created asset response
+ */
+export async function addAsset(assetDetails) {
+  try {
+    const response = await apiClient.post('/assets', assetDetails);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to add asset' };
+  }
+}
+
+/**
  * Send scanned QR code data to backend
  * @param {string} scannedValue - The value from scanned QR code
  * @returns {Promise<Object>} - Updated asset information
