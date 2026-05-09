@@ -1,3 +1,6 @@
+// backend/utils/monthColumns.js
+// Shared helpers for month-based inventory status columns.
+
 const MONTH_NAMES = [
   'JANUARY',
   'FEBRUARY',

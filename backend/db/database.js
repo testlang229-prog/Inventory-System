@@ -7,6 +7,7 @@ const path = require('path');
 const {
   getMonthlyStatusHeader,
   getCurrentMonthRemarksHeader,
+  MONTH_NAMES,
   normalizeHeader,
 } = require('../utils/monthColumns');
 
@@ -162,6 +163,26 @@ function syncFieldToOriginalColumns(asset, fieldName, value) {
   asset[fieldName] = value;
 }
 
+function getMonthStatusIndex(header) {
+  const normalizedHeader = normalizeHeader(header);
+  return MONTH_NAMES.findIndex(
+    month => normalizedHeader === `${month.toLowerCase()} status`
+  );
+}
+
+function clearEarlierNotFoundStatuses(asset, date = new Date()) {
+  const currentMonthIndex = date.getMonth();
+
+  Object.keys(asset).forEach(key => {
+    const monthIndex = getMonthStatusIndex(key);
+    const value = String(asset[key] || '').trim().toUpperCase();
+
+    if (monthIndex >= 0 && monthIndex < currentMonthIndex && value === 'NOT FOUND') {
+      asset[key] = '';
+    }
+  });
+}
+
 /**
  * Get asset by ID
  */
@@ -176,9 +197,25 @@ function getAssetById(id) {
  */
 function getAssetByAssetOrSerial(asset, serialNumber) {
   const data = loadData();
-  const found = data.assets.find(
-    a => a.asset === asset || a.serialNumber === serialNumber
-  );
+  const normalizedAsset = String(asset || '').trim().toLowerCase();
+  const normalizedSerialNumber = String(serialNumber || '').trim().toLowerCase();
+  
+  const found = data.assets.find(a => {
+    const existingAssetNum = String(a.asset || '').trim().toLowerCase();
+    const existingSerialNum = String(a.serialNumber || '').trim().toLowerCase();
+
+    // Match if asset numbers are the same
+    if (normalizedAsset && existingAssetNum === normalizedAsset) {
+      return true;
+    }
+
+    // Match if serial numbers are the same
+    if (normalizedSerialNumber && existingSerialNum === normalizedSerialNumber) {
+      return true;
+    }
+
+    return false;
+  });
   return sanitizeAsset(found);
 }
 
@@ -188,10 +225,33 @@ function getAssetByAssetOrSerial(asset, serialNumber) {
 function upsertAsset(assetData) {
   const data = loadData();
   
-  // Check if asset exists by asset number or serial number
-  const existingIndex = data.assets.findIndex(
-    a => a.asset === assetData.asset || a.serialNumber === assetData.serialNumber
-  );
+  // Normalize asset identifiers for matching
+  const normalizedAssetNumber = String(assetData.asset || '').trim();
+  const normalizedSerialNumber = String(assetData.serialNumber || '').trim();
+
+  // Validate that we have at least an asset number
+  if (!normalizedAssetNumber) {
+    throw new Error('Asset number is required for upsert operation');
+  }
+
+  // Check if asset exists by asset number or serial number (both must match exactly)
+  const existingIndex = data.assets.findIndex(a => {
+    const existingAssetNum = String(a.asset || '').trim();
+    const existingSerialNum = String(a.serialNumber || '').trim();
+
+    // Match if asset numbers are the same (case-insensitive comparison for robustness)
+    if (existingAssetNum.toLowerCase() === normalizedAssetNumber.toLowerCase()) {
+      return true;
+    }
+
+    // Match if both have serial numbers and they're the same
+    if (normalizedSerialNumber && existingSerialNum && 
+        existingSerialNum.toLowerCase() === normalizedSerialNumber.toLowerCase()) {
+      return true;
+    }
+
+    return false;
+  });
 
   const normalizedStatus = assetData.status || 'UNACCOUNTED';
   const monthlyStatusHeader = getMonthlyStatusHeader();
@@ -200,25 +260,26 @@ function upsertAsset(assetData) {
     status: normalizedStatus,
     remarks: assetData.remarks || assetData.REMARKS || assetData.Remarks || assetData.remark || assetData.comments || assetData.note || assetData.notes || '',
   };
-  baseAsset[monthlyStatusHeader] = assetData[monthlyStatusHeader] || 'NOT FOUND';
+  baseAsset[monthlyStatusHeader] = assetData[monthlyStatusHeader] || '';
   syncFieldToOriginalColumns(baseAsset, 'status', normalizedStatus);
   syncFieldToOriginalColumns(baseAsset, 'remarks', baseAsset.remarks);
 
   if (existingIndex !== -1) {
+    // Asset exists - update it
     const existing = data.assets[existingIndex];
 
     if (existing.status === 'ACCOUNTED') {
       data.assets[existingIndex] = {
         ...existing,
         ...baseAsset,
-        asset: existing.asset,
+        asset: existing.asset, // Preserve original asset number
         updatedAt: new Date().toISOString(),
       };
     } else {
       data.assets[existingIndex] = {
         ...existing,
         ...baseAsset,
-        asset: assetData.asset,
+        asset: normalizedAssetNumber, // Update to new asset number if provided
         status: normalizedStatus,
         updatedAt: new Date().toISOString(),
       };
@@ -227,6 +288,9 @@ function upsertAsset(assetData) {
     saveData(data);
     return existing.id;
   } else {
+    // Asset doesn't exist - create new one
+    clearEarlierNotFoundStatuses(baseAsset);
+
     const newAsset = {
       id: data.nextId,
       ...baseAsset,
@@ -251,6 +315,9 @@ function updateAssetStatus(assetId, status, remarks) {
   if (assetIndex !== -1) {
     syncFieldToOriginalColumns(data.assets[assetIndex], 'status', status);
     syncFieldToOriginalColumns(data.assets[assetIndex], 'remarks', remarks);
+    if (String(status || '').toUpperCase() === 'ACCOUNTED') {
+      data.assets[assetIndex][getMonthlyStatusHeader()] = 'FOUND';
+    }
     data.assets[assetIndex].updatedAt = new Date().toISOString();
     saveData(data);
   }

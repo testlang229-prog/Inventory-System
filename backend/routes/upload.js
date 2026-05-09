@@ -23,6 +23,16 @@ const upload = require('../middleware/uploadConfig');
 
 const router = express.Router();
 
+function cleanupUploadedFile(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return;
+
+  try {
+    fs.unlinkSync(filePath);
+  } catch (error) {
+    console.warn('Could not remove uploaded temp file:', error.message);
+  }
+}
+
 /**
  * POST /api/upload
  * Upload and process an Excel file
@@ -91,7 +101,7 @@ router.post('/', (req, res) => {
       const isNew = !existingAssetNumbers.includes(asset.asset);
       upsertAsset({
         ...asset,
-        [monthlyStatusHeader]: asset[monthlyStatusHeader] || 'NOT FOUND',
+        [monthlyStatusHeader]: asset[monthlyStatusHeader] || '',
       });
       
       if (isNew) {
@@ -101,8 +111,8 @@ router.post('/', (req, res) => {
       }
     });
 
-    // Clean up the uploaded file
-    fs.unlinkSync(filePath);
+    // Clean up the uploaded file. Cleanup should not turn a successful import into a failed request.
+    cleanupUploadedFile(filePath);
 
     // Return success response
     res.json({
@@ -113,10 +123,7 @@ router.post('/', (req, res) => {
       totalAssets: getAllAssets().length,
     });
   } catch (error) {
-    // Delete the file if it exists
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
+    cleanupUploadedFile(req.file?.path);
 
     console.error('Upload error:', error);
     res.status(400).json({
