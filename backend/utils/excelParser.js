@@ -2,6 +2,7 @@
 // Parses uploaded Excel files and validates data
 
 const XLSX = require('xlsx');
+const { isCurrentMonthRemarksHeader, getMonthlyRemarksHeader, isMonthlyStatusHeader, getMonthlyStatusHeader } = require('./monthColumns');
 
 /**
  * Parse Excel file and extract asset data
@@ -35,6 +36,16 @@ function parseExcelFile(filePath) {
 
     const headers = buildHeaders(rows[headerRowIndex]);
 
+    const normalizedHeadersData = headers.map(({ name, index }) => {
+      let normalizedName = name;
+      if (isCurrentMonthRemarksHeader(name)) {
+        normalizedName = getMonthlyRemarksHeader();
+      } else if (isMonthlyStatusHeader(name)) {
+        normalizedName = getMonthlyStatusHeader();
+      }
+      return { originalName: name, normalizedName, index };
+    });
+
     const assets = rows
       .slice(headerRowIndex + 1)
       .map(row => {
@@ -44,8 +55,8 @@ function parseExcelFile(filePath) {
         };
 
         const rowObject = {};
-        headers.forEach(({ name, index }) => {
-          rowObject[name] = cleanValue(row[index]);
+        normalizedHeadersData.forEach(({ normalizedName, index }) => {
+          rowObject[normalizedName] = cleanValue(row[index]);
         });
 
         return {
@@ -54,8 +65,23 @@ function parseExcelFile(filePath) {
           subnumber: cleanValue(getColumnValue('subnumber')),
           assetDescription: cleanValue(getColumnValue('assetDescription')),
           costCenter: cleanValue(getColumnValue('costCenter')),
+          costCenterChange: cleanValue(getColumnValue('nochange/withchange')),
+          correctCostCenter: cleanValue(getColumnValue('correctCostCenter')),
           serialNumber: cleanValue(getColumnValue('serialNumber')),
+          serialNumberChange: cleanValue(getColumnValue('nochange/withchange')),
+          correctserialnumber: cleanValue(getColumnValue('correctserialnumber')),
           respCostCenter: cleanValue(getColumnValue('respCostCenter')),
+          respCostCenterChange: cleanValue(getColumnValue('nochange/withchange')),
+          correctRespCostCenter: cleanValue(getColumnValue('correctrespCostCenter')),
+          personalNumber: cleanValue(getColumnValue('personalNumber')),
+          assignee: cleanValue(getColumnValue('assignee')),
+          assigneeChange: cleanValue(getColumnValue('nochange/withchange')),
+          correctAssignee: cleanValue(getColumnValue('correctAssignee')),
+          plant: cleanValue(getColumnValue('plant')),
+          plantChange: cleanValue(getColumnValue('nochange/withchange')),
+          correctPlantCode: cleanValue(getColumnValue('correctPlantCode')),
+          room: cleanValue(getColumnValue('room')),
+          roomChange: cleanValue(getColumnValue('nochange/withchange')),
           correctRoom: cleanValue(getColumnValue('correctRoom')),
           status: cleanValue(getColumnValue('status')) || 'UNACCOUNTED',
           remarks: cleanValue(getColumnValue('remarks')),
@@ -65,7 +91,7 @@ function parseExcelFile(filePath) {
 
     return {
       assets,
-      headers: headers.map(header => header.name),
+      headers: normalizedHeadersData.map(({ normalizedName }) => normalizedName),
     };
   } catch (error) {
     throw new Error(`Excel parsing failed: ${error.message}`);
@@ -203,6 +229,11 @@ function mapHeaderRow(row) {
   row.forEach((header, columnIndex) => {
     const normalizedHeader = normalizeHeader(header);
     if (!normalizedHeader) return;
+
+    if (columnMap.remarks === undefined && isCurrentMonthRemarksHeader(header)) {
+      columnMap.remarks = columnIndex;
+      return;
+    }
 
     Object.entries(FIELD_ALIASES).forEach(([fieldName, aliases]) => {
       if (columnMap[fieldName] !== undefined) return;

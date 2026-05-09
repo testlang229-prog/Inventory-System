@@ -107,7 +107,7 @@ app.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════════╗
 ║  Asset Inventory System - Backend Running  ║
-║  Server: http://localhost:${PORT}                     ║
+║  Server: http://localhost:${PORT}          ║
 ║  Status: Ready to accept requests          ║
 ╚════════════════════════════════════════════╝
   `);

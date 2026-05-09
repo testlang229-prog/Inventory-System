@@ -2,21 +2,50 @@
 // Generates Excel files for download with all current data
 
 const ExcelJS = require('exceljs');
+const {
+  getMonthlyStatusHeader,
+  getMonthlyRemarksHeader,
+  isCurrentMonthRemarksHeader,
+  normalizeHeader,
+} = require('./monthColumns');
 
-function normalizeHeader(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/\([^)]*\)/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
+function isInternalField(value) {
+  return normalizeHeader(value).replace(/\s+/g, '') === 'scanningmonth';
+}
+
+function getDisplayHeader(header) {
+  const normalizedHeader = normalizeHeader(header);
+
+  if (
+    normalizedHeader === 'remarks' ||
+    normalizedHeader.endsWith(' remarks') ||
+    isCurrentMonthRemarksHeader(header)
+  ) {
+    return getMonthlyRemarksHeader();
+  }
+
+  return normalizeHeader(header) === 'no change with change'
+    ? String(header).replace(/\s*\(\d+\)\s*$/, '')
+    : header;
 }
 
 function getAssetValue(asset, header) {
+  const normalizedHeader = normalizeHeader(header);
+  if (
+    normalizedHeader === 'remarks' ||
+    normalizedHeader.endsWith(' remarks') ||
+    isCurrentMonthRemarksHeader(header)
+  ) {
+    if (asset[header] !== undefined) {
+      return asset[header];
+    }
+    return asset.remarks || asset.REMARKS || asset.Remarks || asset.remark || asset.notes || asset.note || asset.comments || asset.comment || '';
+  }
+
   if (asset[header] !== undefined) {
     return asset[header];
   }
 
-  const normalizedHeader = normalizeHeader(header);
   const matchingKey = Object.keys(asset).find(
     key => normalizeHeader(key) === normalizedHeader
   );
@@ -34,7 +63,7 @@ function deriveHeadersFromAssets(assets) {
 
   assets.forEach(asset => {
     Object.keys(asset).forEach(key => {
-      if (!excludedKeys.has(key)) {
+      if (!excludedKeys.has(key) && !isInternalField(key)) {
         headerSet.add(key);
       }
     });
@@ -52,15 +81,43 @@ async function generateExcelFile(assets, headers = []) {
       headers = deriveHeadersFromAssets(assets);
     }
 
+    headers = headers.filter(header => !isInternalField(header));
+    const monthlyStatusHeader = getMonthlyStatusHeader();
+    const currentMonthRemarksNormalized = normalizeHeader(getMonthlyRemarksHeader());
+    const hasCurrentMonthRemarks = headers.some(
+      header => normalizeHeader(header) === currentMonthRemarksNormalized
+    );
+
+    if (!headers.some(header => normalizeHeader(header) === normalizeHeader(monthlyStatusHeader))) {
+      const remarksIndex = headers.findIndex(header => normalizeHeader(header) === 'remarks');
+      const insertIndex = remarksIndex >= 0 ? remarksIndex : headers.length;
+      headers.splice(insertIndex, 0, monthlyStatusHeader);
+    }
+
+    if (hasCurrentMonthRemarks) {
+      const seen = new Set();
+      headers = headers.filter(header => {
+        const normalized = normalizeHeader(header);
+        if (normalized === 'remarks') {
+          return false;
+        }
+        if (seen.has(normalized)) {
+          return false;
+        }
+        seen.add(normalized);
+        return true;
+      });
+    }
+
     const normalizedToHeader = headers.reduce((map, header) => {
       map[normalizeHeader(header)] = header;
       return map;
     }, {});
 
     worksheet.columns = headers.map(header => ({
-      header,
+      header: getDisplayHeader(header),
       key: header,
-      width: Math.max(15, String(header).length + 5),
+      width: Math.max(15, String(getDisplayHeader(header)).length + 5),
     }));
 
     worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };

@@ -95,7 +95,7 @@ function isInternalField(value) {
 function getAllAssets() {
   const data = loadData();
   return data.assets
-    .sort((a, b) => a.id - b.id)
+    .sort((a, b) => b.id - a.id)
     .map(sanitizeAsset);
 }
 

@@ -15,6 +15,27 @@ const MONTH_NAMES = [
   'NOVEMBER',
   'DECEMBER',
 ];
+const YEAR = new Date().getFullYear();
+
+function getUploadMonth(date = new Date()) {
+  return MONTH_NAMES[date.getMonth()];
+}
+
+function getMonthlyStatusHeader(date = new Date()) {
+  return `${getUploadMonth(date)} STATUS`;
+}
+
+function getMonthlyRemarksHeader(date = new Date()) {
+  return `${getUploadMonth(date)} ${date.getFullYear()}`;
+}
+
+function getCurrentMonthRemarksHeader(date = new Date()) {
+  return normalizeHeader(getMonthlyRemarksHeader(date));
+}
+
+function getReportFilename(date = new Date()) {
+  return `${getUploadMonth(date)}_AssetInventoryReport.xlsx`;
+}
 
 function normalizeHeader(value) {
   return String(value || '')
@@ -24,25 +45,36 @@ function normalizeHeader(value) {
     .trim();
 }
 
-function getMonthlyStatusHeader(date = new Date()) {
-  return `${MONTH_NAMES[date.getMonth()]} STATUS`;
+function isMonthlyStatusHeader(value) {
+  const normalized = normalizeHeader(value);
+  return MONTH_NAMES.some(month => normalized === `${month.toLowerCase()} status`);
 }
 
-function getCurrentMonthRemarksHeader(date = new Date()) {
-  return normalizeHeader(`${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`);
+function isMonthlyRemarksHeader(value) {
+  const normalized = normalizeHeader(value);
+  return MONTH_NAMES.some(month => {
+    const monthLower = month.toLowerCase();
+    return (
+      normalized === `${monthLower} ${YEAR}` ||
+      normalized === `${monthLower}${YEAR}` ||
+      new RegExp(`^${monthLower}\\s*\\d{4}$`).test(normalized)
+    );
+  });
 }
 
-function isMonthlyStatusHeader(header) {
-  const normalizedHeader = normalizeHeader(header);
-  return MONTH_NAMES.some(
-    month => normalizedHeader === `${month.toLowerCase()} status`
-  );
+function isCurrentMonthRemarksHeader(value, date = new Date()) {
+  return normalizeHeader(value) === getCurrentMonthRemarksHeader(date);
 }
 
 module.exports = {
   MONTH_NAMES,
-  normalizeHeader,
+  getUploadMonth,
   getMonthlyStatusHeader,
+  getMonthlyRemarksHeader,
   getCurrentMonthRemarksHeader,
+  getReportFilename,
+  normalizeHeader,
   isMonthlyStatusHeader,
+  isMonthlyRemarksHeader,
+  isCurrentMonthRemarksHeader,
 };
