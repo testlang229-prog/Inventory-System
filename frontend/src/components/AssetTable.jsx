@@ -28,8 +28,8 @@ export default function AssetTable({
     { key: 'costCenter', label: 'Cost Center' },
     { key: 'correctRoom', label: 'Room' },
     { key: 'status', label: 'Status' },
-    { key: `${currentMonth} STATUS`, label: `${currentMonth} STATUS` },
     { key: 'remarks', label: `${displayMonth} Remarks` },
+    { key: `${currentMonth} STATUS`, label: `${currentMonth} STATUS` },
   ];
 
   const normalizeLabel = (label) =>

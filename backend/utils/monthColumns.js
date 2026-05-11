@@ -34,7 +34,7 @@ function getCurrentMonthRemarksHeader(date = new Date()) {
 }
 
 function getReportFilename(date = new Date()) {
-  return `${getUploadMonth(date)}_AssetInventoryReport.xlsx`;
+  return `${getUploadMonth(date)} ${date.getFullYear()}_AssetInventoryReport.xlsx`;
 }
 
 function normalizeHeader(value) {
