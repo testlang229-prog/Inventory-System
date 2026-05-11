@@ -6,6 +6,9 @@ import UploadForm from './components/UploadForm';
 import AssetTable from './components/AssetTable';
 import QRScanner from './components/QRScanner';
 import ScannedAssetDetails from './components/ScannedAssetDetails';
+import Login from './components/Login';
+import AdminLogin from './components/AdminLogin';
+import UserManagement from './components/UserManagement';
 import { fetchAssets, downloadExcel, clearAssets, addAsset } from './services/api';
 
 const fallbackAssetHeaders = [
@@ -100,6 +103,9 @@ export default function App() {
   const [showNewAssetModal, setShowNewAssetModal] = useState(false);
   const [scannedAssets, setScannedAssets] = useState([]);
   const [notification, setNotification] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginView, setLoginView] = useState('user');
+  const [currentUser, setCurrentUser] = useState({ employeeId: '', department: '', role: 'user' });
 
   /**
    * Fetch assets from backend when component mounts
@@ -119,6 +125,17 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [notification]);
+
+  /**
+   * Check login status on mount
+   */
+  useEffect(() => {
+    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const userData = localStorage.getItem('currentUser');
+    const user = userData ? JSON.parse(userData) : { employeeId: '', department: '', role: 'user' };
+    setIsLoggedIn(loggedIn);
+    setCurrentUser(user);
+  }, []);
 
   /**
    * Fetch assets from backend
@@ -336,6 +353,43 @@ export default function App() {
     setNotification({ message, type });
   };
 
+  /**
+   * Handle user login
+   */
+  const handleLogin = (user) => {
+    const userData = { ...user, role: 'user' };
+    setIsLoggedIn(true);
+    setCurrentUser(userData);
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('currentUser', JSON.stringify(userData));
+  };
+
+  /**
+   * Handle admin login
+   */
+  const handleAdminLogin = (adminUser) => {
+    const userData = { ...adminUser, role: 'admin' };
+    setIsLoggedIn(true);
+    setCurrentUser(userData);
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('currentUser', JSON.stringify(userData));
+  };
+
+  /**
+   * Handle logout
+   */
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setLoginView('user');
+    setCurrentUser({ employeeId: '', department: '', role: 'user' });
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUser');
+    // Clear any sensitive data if needed
+    setAssets([]);
+    setHeaders([]);
+    setScannedAssets([]);
+  };
+
   const newAssetColumns = getNewAssetColumns(headers);
   const isGeneratedNewAssetField = (header) => {
     const normalizedHeader = normalizeHeader(header);
@@ -348,6 +402,16 @@ export default function App() {
     return ['asset', 'asset no', 'asset number', 'asset description', 'description'].includes(normalizedHeader);
   };
 
+  if (!isLoggedIn) {
+    return loginView === 'admin' ? (
+      <AdminLogin onLogin={handleAdminLogin} onBack={() => setLoginView('user')} />
+    ) : (
+      <Login onLogin={handleLogin} onShowAdmin={() => setLoginView('admin')} />
+    );
+  }
+
+  const isAdmin = currentUser.role === 'admin';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
@@ -356,18 +420,35 @@ export default function App() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-800">
-                🏢 Asset Inventory System
+                {isAdmin ? '🔒 Admin Dashboard' : '🏢 Asset Inventory System'}
               </h1>
               <p className="text-gray-600 text-sm mt-1">
                 GMADC - OJT Project
               </p>
+              {isAdmin ? (
+                <p className="text-gray-500 text-sm mt-1">
+                  Admin: {currentUser.username}
+                </p>
+              ) : currentUser.employeeId ? (
+                <p className="text-gray-500 text-sm mt-1">
+                  Employee ID: {currentUser.employeeId} | Department: {currentUser.department}
+                </p>
+              ) : null}
             </div>
-            <button
-              onClick={loadAssets}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-            >
-              🔄 Refresh
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={loadAssets}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+              >
+                🔄 Refresh
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              >
+                🚪 Logout
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -390,46 +471,76 @@ export default function App() {
         )}
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Upload and Scanner */}
-          <div className="lg:col-span-1">
-            <UploadForm
-              onUploadSuccess={handleUploadSuccess}
-              onUploadError={handleUploadError}
-            />
-
-            <ScannedAssetDetails
-              scannedAssets={scannedAssets}
-              headers={headers}
-            />
-
-            <QRScanner
-              onScanSuccess={handleScanSuccess}
-              onScanError={handleScanError}
-            />
-          </div>
-
-          {/* Right Column: Asset Table */}
-          <div className="lg:col-span-2">
-            {isLoading ? (
-              <div className="bg-white rounded-lg shadow-md p-12 text-center">
-                <div className="inline-block">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                </div>
-                <p className="text-gray-600 mt-4">Loading assets...</p>
+        {isAdmin ? (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <UploadForm
+                  onUploadSuccess={handleUploadSuccess}
+                  onUploadError={handleUploadError}
+                />
               </div>
-            ) : (
-              <AssetTable
-                assets={assets}
-                headers={headers}
-                onDownload={handleDownload}
-                isDownloading={isDownloading}
-                onClearAssets={handleClearAssets}
-                isClearing={isClearing}
-              />
-            )}
+
+              <div>
+                {isLoading ? (
+                  <div className="bg-white rounded-lg shadow-md p-12 text-center">
+                    <div className="inline-block">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
+                    <p className="text-gray-600 mt-4">Loading assets...</p>
+                  </div>
+                ) : (
+                  <AssetTable
+                    assets={assets}
+                    headers={headers}
+                    onDownload={handleDownload}
+                    isDownloading={isDownloading}
+                    onClearAssets={handleClearAssets}
+                    isClearing={isClearing}
+                  />
+                )}
+              </div>
+            </div>
+
+            <div>
+              <UserManagement />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1">
+              <ScannedAssetDetails
+                scannedAssets={scannedAssets}
+                headers={headers}
+              />
+
+              <QRScanner
+                onScanSuccess={handleScanSuccess}
+                onScanError={handleScanError}
+              />
+            </div>
+
+            <div className="lg:col-span-2">
+              {isLoading ? (
+                <div className="bg-white rounded-lg shadow-md p-12 text-center">
+                  <div className="inline-block">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  </div>
+                  <p className="text-gray-600 mt-4">Loading assets...</p>
+                </div>
+              ) : (
+                <AssetTable
+                  assets={assets}
+                  headers={headers}
+                  onDownload={handleDownload}
+                  isDownloading={isDownloading}
+                  onClearAssets={handleClearAssets}
+                  isClearing={isClearing}
+                />
+              )}
+            </div>
+          </div>
+        )}
       </main>
 
       {showNewAssetConfirm && (
