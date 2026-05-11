@@ -17,6 +17,14 @@ export default function AssetTable({
   const [sortBy, setSortBy] = useState('asset');
   const [sortOrder, setSortOrder] = useState('asc');
 
+<<<<<<< Updated upstream
+=======
+  const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
+  const currentMonth = monthNames[new Date().getMonth()];
+  const currentYear = new Date().getFullYear();
+  const currentRemarksLabel = `${currentMonth} ${currentYear} REMARKS`;
+
+>>>>>>> Stashed changes
   const defaultColumns = [
     { key: 'asset', label: 'Asset #' },
     { key: 'assetDescription', label: 'Description' },
@@ -24,12 +32,90 @@ export default function AssetTable({
     { key: 'costCenter', label: 'Cost Center' },
     { key: 'correctRoom', label: 'Room' },
     { key: 'status', label: 'Status' },
+<<<<<<< Updated upstream
     { key: 'remarks', label: 'Remarks' },
   ];
 
   const tableColumns = headers && headers.length > 0
     ? headers.map(header => ({ key: header, label: header }))
     : defaultColumns;
+=======
+    { key: `${currentMonth} STATUS`, label: `${currentMonth} STATUS` },
+    { key: 'remarks', label: `${displayMonth} Remarks` },
+    { key: 'remarks', label: currentRemarksLabel },
+  ];
+
+  const normalizeLabel = (label) =>
+    String(label || '')
+      .toLowerCase()
+      .replace(/\([^)]*\)/g, '')
+      .replace(/[^a-z0-9 ]+/g, ' ')
+      .trim();
+
+  const isMonthlyRemarksHeader = (label) => {
+    const normalized = normalizeLabel(label);
+    return /^(january|february|march|april|may|june|july|august|september|october|november|december)\s*\d{4}\s*remarks$/.test(normalized);
+  };
+
+  const isRemarksHeader = (label) => {
+    const normalized = normalizeLabel(label);
+    return normalized === 'remarks' || (normalized.endsWith(' remarks') && !isMonthlyRemarksHeader(label));
+  };
+
+  const getAssetValue = (asset, header) => {
+    if (isMonthlyRemarksHeader(header)) {
+      if (asset[header] !== undefined) {
+        return asset[header];
+      }
+      const normalizedHeader = normalizeLabel(header);
+      const matchingKey = Object.keys(asset).find(key => normalizeLabel(key) === normalizedHeader);
+      return matchingKey ? asset[matchingKey] : '';
+    }
+
+    if (isRemarksHeader(header)) {
+      return asset.remarks || asset.REMARKS || asset.Remarks || asset.remark || asset.notes || asset.note || asset.comments || asset.comment || '';
+    }
+
+    if (asset[header] !== undefined) {
+      return asset[header];
+    }
+
+    const normalizedHeader = normalizeLabel(header);
+    const matchingKey = Object.keys(asset).find(key => {
+      const normalizedKey = normalizeLabel(key);
+      return normalizedKey === normalizedHeader;
+    });
+
+    return matchingKey ? asset[matchingKey] : '';
+  };
+
+  const tableColumns = headers && headers.length > 0
+  ? [...headers]
+      .filter(header => normalizeLabel(header) !== 'remarks')
+      .sort((a, b) => {
+        const aNorm = normalizeLabel(a);
+        const bNorm = normalizeLabel(b);
+
+        const monthRegex =
+          /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4}/;
+
+        const aMatch = aNorm.match(monthRegex);
+        const bMatch = bNorm.match(monthRegex);
+
+        // same month group
+        if (aMatch && bMatch && aMatch[0] === bMatch[0]) {
+          if (aNorm.endsWith(' status')) return -1;
+          if (aNorm.endsWith(' remarks')) return 1;
+        }
+
+        return 0;
+      })
+      .map(header => ({
+        key: header,
+        label: header
+      }))
+  : defaultColumns;
+>>>>>>> Stashed changes
 
   const normalizeHeader = (header) =>
     String(header || '')
