@@ -49,25 +49,12 @@ router.post('/', (req, res) => {
       });
     }
 
-    // Check if asset is already ACCOUNTED
-    if (asset.status === 'ACCOUNTED') {
-      // Still mark remarks as FOUND so every successful scan records the match.
-      updateAssetStatus(asset.id, 'ACCOUNTED', 'FOUND');
-      updateMonthlyStatus(asset.id, 'FOUND');
-      const updatedAsset = getAssetById(asset.id);
-
-      return res.json({
-        success: true,
-        message: 'Asset already accounted',
-        asset: updatedAsset,
-        action: 'ALREADY_ACCOUNTED',
-      });
+    // Update the asset status to ACCOUNTED if needed
+    if (asset.status !== 'ACCOUNTED') {
+      updateAssetStatus(asset.id, 'ACCOUNTED', asset.remarks || '');
     }
 
-    // Update the asset status to ACCOUNTED and remarks to FOUND
-    updateAssetStatus(asset.id, 'ACCOUNTED', 'FOUND');
-
-    // Set monthly status to FOUND
+    // Always set current month status to FOUND and preserve separate monthly remarks
     updateMonthlyStatus(asset.id, 'FOUND');
 
     // Fetch the updated asset
