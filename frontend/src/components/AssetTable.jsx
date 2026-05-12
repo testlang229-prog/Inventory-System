@@ -88,34 +88,101 @@ export default function AssetTable({
 
     return matchingKey ? asset[matchingKey] : '';
   };
+const tableColumns = headers && headers.length > 0
+  ? (() => {
+      let processedHeaders = [...headers].filter(
+        header => !isInternalField(header)
+      );
 
-  const tableColumns = headers && headers.length > 0
-  ? [...headers]
-      .filter(header => normalizeLabel(header) !== 'remarks')
-      .sort((a, b) => {
+      const monthRegex =
+        /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4}/i;
+
+      // AUTO ADD missing STATUS/REMARKS pair
+      processedHeaders.forEach(header => {
+        const normalized = normalizeLabel(header);
+
+        const match = normalized.match(monthRegex);
+
+        if (match) {
+          const monthYear = match[0];
+
+          const statusHeader =
+            `${monthYear.toUpperCase()} STATUS`;
+
+          const remarksHeader =
+            `${monthYear.toUpperCase()} REMARKS`;
+
+          const hasStatus = processedHeaders.some(
+            h => normalizeLabel(h) === normalizeLabel(statusHeader)
+          );
+
+          const hasRemarks = processedHeaders.some(
+            h => normalizeLabel(h) === normalizeLabel(remarksHeader)
+          );
+
+          if (!hasStatus) {
+            processedHeaders.push(statusHeader);
+          }
+
+          if (!hasRemarks) {
+            processedHeaders.push(remarksHeader);
+          }
+        }
+      });
+
+      // REMOVE DUPLICATES
+      processedHeaders = [...new Set(processedHeaders)];
+
+      // SORT MONTH COLUMNS
+      processedHeaders.sort((a, b) => {
         const aNorm = normalizeLabel(a);
         const bNorm = normalizeLabel(b);
-
-        const monthRegex =
-          /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4}/;
 
         const aMatch = aNorm.match(monthRegex);
         const bMatch = bNorm.match(monthRegex);
 
-        // same month group
-        if (aMatch && bMatch && aMatch[0] === bMatch[0]) {
-          if (aNorm.endsWith(' status')) return -1;
-          if (aNorm.endsWith(' remarks')) return 1;
+        if (aMatch && bMatch) {
+          const monthOrder = [
+            'january', 'february', 'march', 'april',
+            'may', 'june', 'july', 'august',
+            'september', 'october', 'november', 'december'
+          ];
+
+          const [aMonth, aYear] = aMatch[0].split(' ');
+          const [bMonth, bYear] = bMatch[0].split(' ');
+
+          if (aYear !== bYear) {
+            return parseInt(aYear) - parseInt(bYear);
+          }
+
+          const monthCompare =
+            monthOrder.indexOf(aMonth) -
+            monthOrder.indexOf(bMonth);
+
+          if (monthCompare !== 0) {
+            return monthCompare;
+          }
+
+          const aIsStatus = aNorm.endsWith(' status');
+          const aIsRemarks = aNorm.endsWith(' remarks');
+
+          const bIsStatus = bNorm.endsWith(' status');
+          const bIsRemarks = bNorm.endsWith(' remarks');
+
+          if (aIsStatus && bIsRemarks) return -1;
+          if (aIsRemarks && bIsStatus) return 1;
         }
 
         return 0;
-      })
-      .map(header => ({
+      });
+
+      return processedHeaders.map(header => ({
         key: header,
-        label: header
-      }))
+        label: header,
+      }));
+    })()
   : defaultColumns;
->>>>>>> Stashed changes
+  
 
   const normalizeHeader = (header) =>
     String(header || '')
@@ -148,13 +215,40 @@ export default function AssetTable({
 
     if (filterStatus !== 'ALL') {
       if (filterStatus === 'FOUND' || filterStatus === 'NOT_FOUND') {
-        filtered = filtered.filter(asset => {
-          const remark = String(asset.remarks || asset.REMARKS || asset.Remarks || asset.comments || asset.note || '').toLowerCase().trim();
-          return filterStatus === 'FOUND'
-            ? remark === 'found'
-            : remark === 'not found' || remark === 'notfound';
-        });
-      } else {
+  filtered = filtered.filter(asset => {
+
+    // check ALL monthly STATUS columns
+    const monthlyStatuses = Object.keys(asset)
+      .filter(key => {
+  const normalized = normalizeLabel(key);
+
+  return (
+    normalized.endsWith(' status') &&
+    normalized !== 'status' &&
+    normalized !== 'status accounted unaccounted reconciling'
+  );
+})
+      .map(key =>
+        String(asset[key] || '')
+          .toLowerCase()
+          .trim()
+      );
+
+    const hasFound = monthlyStatuses.some(
+      value => value === 'found'
+    );
+
+    const hasNotFound = monthlyStatuses.some(
+      value =>
+        value === 'not found' ||
+        value === 'notfound'
+    );
+
+    return filterStatus === 'FOUND'
+      ? hasFound
+      : hasNotFound;
+  });
+} else {
         filtered = filtered.filter(asset => String(asset.status || '').toUpperCase() === filterStatus);
       }
     }
