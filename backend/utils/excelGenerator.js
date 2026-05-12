@@ -121,6 +121,35 @@ if (!remarksExists) {
   headers.push(monthlyRemarksHeader);
 }
 
+// FORCE STATUS before REMARKS for every month
+headers = headers.sort((a, b) => {
+  const aNorm = normalizeHeader(a);
+  const bNorm = normalizeHeader(b);
+
+  const aIsStatus = aNorm.endsWith(' status');
+  const aIsRemarks = aNorm.endsWith(' remarks');
+
+  const bIsStatus = bNorm.endsWith(' status');
+  const bIsRemarks = bNorm.endsWith(' remarks');
+
+  // extract month-year part
+  const aBase = aNorm
+    .replace(/ status$/, '')
+    .replace(/ remarks$/, '');
+
+  const bBase = bNorm
+    .replace(/ status$/, '')
+    .replace(/ remarks$/, '');
+
+  // same month group
+  if (aBase === bBase) {
+    if (aIsStatus && bIsRemarks) return -1;
+    if (aIsRemarks && bIsStatus) return 1;
+  }
+
+  return 0;
+});
+
     const normalizedToHeader = headers.reduce((map, header) => {
       map[normalizeHeader(header)] = header;
       return map;
