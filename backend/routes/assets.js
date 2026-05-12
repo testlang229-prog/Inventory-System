@@ -14,6 +14,7 @@ const {
 } = require('../db/database');
 const {
   getMonthlyStatusHeader,
+  getMonthlyRemarksHeader,
   isMonthlyStatusHeader,
   normalizeHeader,
 } = require('../utils/monthColumns');
@@ -58,6 +59,7 @@ router.post('/', (req, res) => {
       ? req.body.fields
       : req.body;
     const monthlyStatusHeader = getMonthlyStatusHeader();
+    const monthlyRemarksHeader = getMonthlyRemarksHeader();
     const defaultHeaders = [
       'Asset',
       'Subnumber',
@@ -68,7 +70,7 @@ router.post('/', (req, res) => {
       'CORRECT ROOM',
       'STATUS (ACCOUNTED / UNACCOUNTED / RECONCILING)',
       monthlyStatusHeader,
-      'REMARKS',
+      monthlyRemarksHeader,
     ];
     const headers = Object.keys(submittedFields).length > 0
       ? Object.keys(submittedFields)
@@ -123,7 +125,7 @@ router.post('/', (req, res) => {
     const fields = { ...submittedFields };
     const statusHeader = headers.find(header => normalizeHeader(header) === 'status') ||
       'STATUS (ACCOUNTED / UNACCOUNTED / RECONCILING)';
-    const remarksHeader = headers.find(header => normalizeHeader(header) === 'remarks') ||
+    const remarksHeader = headers.find(header => normalizeHeader(header) === 'remarks' || isMonthlyRemarksHeader(header)) ||
       'REMARKS';
 
     fields[statusHeader] = 'ACCOUNTED';

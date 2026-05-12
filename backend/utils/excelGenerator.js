@@ -5,8 +5,10 @@ const ExcelJS = require('exceljs');
 const {
   getMonthlyStatusHeader,
   getMonthlyRemarksHeader,
+  isMonthlyRemarksHeader,
   isCurrentMonthRemarksHeader,
   normalizeHeader,
+  normalizeHeaderWithoutYear,
 } = require('./monthColumns');
 
 function isInternalField(value) {
@@ -14,16 +16,6 @@ function isInternalField(value) {
 }
 
 function getDisplayHeader(header) {
-  const normalizedHeader = normalizeHeader(header);
-
-  if (
-    normalizedHeader === 'remarks' ||
-    normalizedHeader.endsWith(' remarks') ||
-    isCurrentMonthRemarksHeader(header)
-  ) {
-    return getMonthlyRemarksHeader();
-  }
-
   return normalizeHeader(header) === 'no change with change'
     ? String(header).replace(/\s*\(\d+\)\s*$/, '')
     : header;
@@ -31,9 +23,21 @@ function getDisplayHeader(header) {
 
 function getAssetValue(asset, header) {
   const normalizedHeader = normalizeHeader(header);
+  if (isMonthlyRemarksHeader(header)) {
+  if (asset[header] !== undefined) {
+    return asset[header];
+  }
+
+  const matchingKey = Object.keys(asset).find(
+    key => normalizeHeader(key) === normalizedHeader
+  );
+
+  return matchingKey ? asset[matchingKey] : '';
+}
+
   if (
     normalizedHeader === 'remarks' ||
-    normalizedHeader.endsWith(' remarks') ||
+    (!isMonthlyRemarksHeader(header) && normalizedHeader.endsWith(' remarks')) ||
     isCurrentMonthRemarksHeader(header)
   ) {
     if (asset[header] !== undefined) {
@@ -82,32 +86,40 @@ async function generateExcelFile(assets, headers = []) {
     }
 
     headers = headers.filter(header => !isInternalField(header));
-    const monthlyStatusHeader = getMonthlyStatusHeader();
-    const currentMonthRemarksNormalized = normalizeHeader(getMonthlyRemarksHeader());
-    const hasCurrentMonthRemarks = headers.some(
-      header => normalizeHeader(header) === currentMonthRemarksNormalized
-    );
 
-    if (!headers.some(header => normalizeHeader(header) === normalizeHeader(monthlyStatusHeader))) {
-      const remarksIndex = headers.findIndex(header => normalizeHeader(header) === 'remarks');
-      const insertIndex = remarksIndex >= 0 ? remarksIndex : headers.length;
-      headers.splice(insertIndex, 0, monthlyStatusHeader);
-    }
+const monthlyStatusHeader = getMonthlyStatusHeader();
+const monthlyRemarksHeader = getMonthlyRemarksHeader();
 
-    if (hasCurrentMonthRemarks) {
-      const seen = new Set();
-      headers = headers.filter(header => {
-        const normalized = normalizeHeader(header);
-        if (normalized === 'remarks') {
-          return false;
-        }
-        if (seen.has(normalized)) {
-          return false;
-        }
-        seen.add(normalized);
-        return true;
-      });
-    }
+// convert generic remarks into monthly remarks FIRST
+headers = headers.map(header =>
+  normalizeHeader(header) === 'remarks'
+    ? monthlyRemarksHeader
+    : header
+);
+
+// remove duplicates
+headers = [...new Set(headers)];
+
+const statusExists = headers.some(
+  header =>
+    normalizeHeader(header) ===
+    normalizeHeader(monthlyStatusHeader)
+);
+
+const remarksExists = headers.some(
+  header =>
+    normalizeHeader(header) ===
+    normalizeHeader(monthlyRemarksHeader)
+);
+
+// append missing current month columns
+if (!statusExists) {
+  headers.push(monthlyStatusHeader);
+}
+
+if (!remarksExists) {
+  headers.push(monthlyRemarksHeader);
+}
 
     const normalizedToHeader = headers.reduce((map, header) => {
       map[normalizeHeader(header)] = header;

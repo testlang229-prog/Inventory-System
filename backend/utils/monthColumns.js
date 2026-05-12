@@ -15,18 +15,19 @@ const MONTH_NAMES = [
   'NOVEMBER',
   'DECEMBER',
 ];
+const MONTH_DISPLAY_NAMES = MONTH_NAMES.map(name => name.charAt(0) + name.slice(1).toLowerCase());
 const YEAR = new Date().getFullYear();
 
 function getUploadMonth(date = new Date()) {
-  return MONTH_NAMES[date.getMonth()];
+  return MONTH_DISPLAY_NAMES[date.getMonth()];
 }
 
 function getMonthlyStatusHeader(date = new Date()) {
-  return `${getUploadMonth(date)} STATUS`;
+  return `${getUploadMonth(date)} ${date.getFullYear()} STATUS`;
 }
 
 function getMonthlyRemarksHeader(date = new Date()) {
-  return `${getUploadMonth(date)} ${date.getFullYear()}`;
+  return `${getUploadMonth(date)} ${date.getFullYear()} REMARKS`;
 }
 
 function getCurrentMonthRemarksHeader(date = new Date()) {
@@ -45,9 +46,18 @@ function normalizeHeader(value) {
     .trim();
 }
 
+function normalizeHeaderWithoutYear(value) {
+  return normalizeHeader(value)
+    .replace(/\b\d{4}\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function isMonthlyStatusHeader(value) {
   const normalized = normalizeHeader(value);
-  return MONTH_NAMES.some(month => normalized === `${month.toLowerCase()} status`);
+  return MONTH_NAMES.some(month =>
+    new RegExp(`^${month.toLowerCase()}(\\s*\\d{4})?\\s*status$`).test(normalized)
+  );
 }
 
 function isMonthlyRemarksHeader(value) {
@@ -55,9 +65,10 @@ function isMonthlyRemarksHeader(value) {
   return MONTH_NAMES.some(month => {
     const monthLower = month.toLowerCase();
     return (
-      normalized === `${monthLower} ${YEAR}` ||
-      normalized === `${monthLower}${YEAR}` ||
-      new RegExp(`^${monthLower}\\s*\\d{4}$`).test(normalized)
+      normalized === `${monthLower} ${YEAR} remarks` ||
+      normalized === `${monthLower}${YEAR} remarks` ||
+      normalized === `${monthLower} remarks` ||
+      new RegExp(`^${monthLower}\\s*\\d{4}\\s*remarks$`).test(normalized)
     );
   });
 }
@@ -74,6 +85,7 @@ module.exports = {
   getCurrentMonthRemarksHeader,
   getReportFilename,
   normalizeHeader,
+  normalizeHeaderWithoutYear,
   isMonthlyStatusHeader,
   isMonthlyRemarksHeader,
   isCurrentMonthRemarksHeader,

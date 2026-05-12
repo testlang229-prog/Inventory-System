@@ -36,15 +36,11 @@ function parseExcelFile(filePath) {
 
     const headers = buildHeaders(rows[headerRowIndex]);
 
-    const normalizedHeadersData = headers.map(({ name, index }) => {
-      let normalizedName = name;
-      if (isCurrentMonthRemarksHeader(name)) {
-        normalizedName = getMonthlyRemarksHeader();
-      } else if (isMonthlyStatusHeader(name)) {
-        normalizedName = getMonthlyStatusHeader();
-      }
-      return { originalName: name, normalizedName, index };
-    });
+    const normalizedHeadersData = headers.map(({ name, index }) => ({
+      originalName: name,
+      normalizedName: name,
+      index,
+    }));
 
     const assets = rows
       .slice(headerRowIndex + 1)
@@ -91,7 +87,57 @@ function parseExcelFile(filePath) {
 
     return {
       assets,
-      headers: normalizedHeadersData.map(({ normalizedName }) => normalizedName),
+    headers: (() => {
+  const parsedHeaders = normalizedHeadersData.map(({ normalizedName }) => {
+    const normalized = normalizeHeader(normalizedName);
+
+    if (normalized === 'remarks') {
+      return getMonthlyRemarksHeader();
+    }
+
+    return normalizedName;
+  });
+
+  const nonMonthHeaders = [];
+  const monthGroups = {};
+
+  parsedHeaders.forEach(header => {
+    const normalized = normalizeHeader(header);
+
+    const monthMatch = normalized.match(
+      /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4}/
+    );
+
+    if (!monthMatch) {
+      nonMonthHeaders.push(header);
+      return;
+    }
+
+    const monthKey = monthMatch[0];
+
+    if (!monthGroups[monthKey]) {
+      monthGroups[monthKey] = {};
+    }
+
+    if (normalized.endsWith(' status')) {
+      monthGroups[monthKey].status = header;
+    }
+
+    if (normalized.endsWith(' remarks')) {
+      monthGroups[monthKey].remarks = header;
+    }
+  });
+
+  const orderedMonthHeaders = Object.values(monthGroups).flatMap(group => [
+    group.status,
+    group.remarks,
+  ].filter(Boolean));
+
+  return [
+    ...nonMonthHeaders,
+    ...orderedMonthHeaders,
+  ];
+})(),
     };
   } catch (error) {
     throw new Error(`Excel parsing failed: ${error.message}`);
@@ -237,11 +283,6 @@ function mapHeaderRow(row) {
   row.forEach((header, columnIndex) => {
     const normalizedHeader = normalizeHeader(header);
     if (!normalizedHeader) return;
-
-    if (columnMap.remarks === undefined && isCurrentMonthRemarksHeader(header)) {
-      columnMap.remarks = columnIndex;
-      return;
-    }
 
     Object.entries(FIELD_ALIASES).forEach(([fieldName, aliases]) => {
       if (columnMap[fieldName] !== undefined) return;
