@@ -356,13 +356,18 @@ export default function App() {
   /**
    * Handle user login
    */
-  const handleLogin = (user) => {
-    const userData = { ...user, role: 'user' };
-    setIsLoggedIn(true);
-    setCurrentUser(userData);
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('currentUser', JSON.stringify(userData));
-  };
+const handleLogin = async (user) => {
+  const userData = { ...user, role: 'user' };
+
+  setIsLoggedIn(true);
+  setCurrentUser(userData);
+
+  localStorage.setItem('isLoggedIn', 'true');
+  localStorage.setItem('currentUser', JSON.stringify(userData));
+
+  // reload latest assets after login
+  await loadAssets();
+};
 
   /**
    * Handle admin login
