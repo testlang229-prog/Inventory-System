@@ -142,4 +142,52 @@ router.delete('/:employeeId', (req, res) => {
   }
 });
 
+// POST /api/users/login - Validate user login
+router.post('/login', (req, res) => {
+  try {
+    const { employeeId, department } = req.body;
+
+    if (!employeeId || !department) {
+      return res.status(400).json({
+        success: false,
+        message: 'Employee ID and Department are required'
+      });
+    }
+
+    const users = readUsers();
+
+    const matchedUser = users.find(user =>
+      String(user.employeeId).trim() === String(employeeId).trim() &&
+      String(user.department).trim().toLowerCase() ===
+      String(department).trim().toLowerCase()
+    );
+
+    if (!matchedUser) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized user'
+      });
+    }
+
+    // update last login
+    matchedUser.lastLogin = new Date().toISOString();
+    writeUsers(users);
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      user: {
+        employeeId: matchedUser.employeeId,
+        department: matchedUser.department
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Login failed'
+    });
+  }
+});
+
 module.exports = router;
