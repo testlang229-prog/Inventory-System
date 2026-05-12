@@ -5,6 +5,7 @@ const express = require('express');
 const {
   getAssetByAssetOrSerial,
   updateAssetStatus,
+  updateMonthlyStatus,
   getAssetById,
 } = require('../db/database');
 
@@ -40,28 +41,21 @@ router.post('/', (req, res) => {
     );
 
     if (!asset) {
-      return res.status(404).json({
-        success: false,
-        message: `Asset not found for: ${normalizedScannedValue}`,
-      });
-    }
-
-    // Check if asset is already ACCOUNTED
-    if (asset.status === 'ACCOUNTED') {
-      // Still mark remarks as FOUND so every successful scan records the match.
-      updateAssetStatus(asset.id, 'ACCOUNTED', 'FOUND');
-      const updatedAsset = getAssetById(asset.id);
-
       return res.json({
         success: true,
-        message: 'Asset already accounted',
-        asset: updatedAsset,
-        action: 'ALREADY_ACCOUNTED',
+        message: 'New asset scanned',
+        scannedValue: normalizedScannedValue,
+        action: 'NEW_ASSET',
       });
     }
 
-    // Update the asset status to ACCOUNTED and remarks to FOUND
-    updateAssetStatus(asset.id, 'ACCOUNTED', 'FOUND');
+    // Update the asset status to ACCOUNTED if needed
+    if (asset.status !== 'ACCOUNTED') {
+      updateAssetStatus(asset.id, 'ACCOUNTED', asset.remarks || '');
+    }
+
+    // Always set current month status to FOUND and preserve separate monthly remarks
+    updateMonthlyStatus(asset.id, 'FOUND');
 
     // Fetch the updated asset
     const updatedAsset = getAssetById(asset.id);

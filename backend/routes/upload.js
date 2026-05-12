@@ -13,11 +13,25 @@ const {
   parseExcelFile,
   validateAssets,
 } = require('../utils/excelParser');
+const {
+  getMonthlyStatusHeader,
+  normalizeHeader,
+} = require('../utils/monthColumns');
 
 // Import multer configuration
 const upload = require('../middleware/uploadConfig');
 
 const router = express.Router();
+
+function cleanupUploadedFile(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) return;
+
+  try {
+    fs.unlinkSync(filePath);
+  } catch (error) {
+    console.warn('Could not remove uploaded temp file:', error.message);
+  }
+}
 
 /**
  * POST /api/upload
@@ -49,14 +63,29 @@ router.post('/', (req, res) => {
     const filePath = req.file.path;
 
     // Parse the Excel file and preserve all headers
-    const { assets: parsedAssets, headers } = parseExcelFile(filePath);
+    const { assets: parsedAssets, headers: parsedHeaders } = parseExcelFile(filePath);
 
     // Validate the parsed data
     validateAssets(parsedAssets);
 
+    const isInternalField = (header) =>
+      normalizeHeader(header).replace(/\s+/g, '') === 'scanningmonth';
+
+    const monthlyStatusHeader = getMonthlyStatusHeader();
+    const headers = [...parsedHeaders];
+
+    if (!headers.some(header => normalizeHeader(header) === normalizeHeader(monthlyStatusHeader))) {
+      const remarksIndex = headers.findIndex(header => normalizeHeader(header) === 'remarks');
+      const insertIndex = remarksIndex >= 0 ? remarksIndex : headers.length;
+      headers.splice(insertIndex, 0, monthlyStatusHeader);
+    }
+
+    // Filter out internal fields like scanningMonth
+    const filteredHeaders = headers.filter(header => !isInternalField(header));
+
     // Store all parsed header columns in the database metadata
-    if (Array.isArray(headers) && headers.length > 0) {
-      updateHeaders(headers);
+    if (Array.isArray(filteredHeaders) && filteredHeaders.length > 0) {
+      updateHeaders(filteredHeaders);
     }
 
     // Track statistics
@@ -70,7 +99,10 @@ router.post('/', (req, res) => {
     // Upsert each asset into the database
     parsedAssets.forEach(asset => {
       const isNew = !existingAssetNumbers.includes(asset.asset);
-      upsertAsset(asset);
+      upsertAsset({
+        ...asset,
+        [monthlyStatusHeader]: asset[monthlyStatusHeader] || '',
+      });
       
       if (isNew) {
         assetsAdded++;
@@ -79,8 +111,8 @@ router.post('/', (req, res) => {
       }
     });
 
-    // Clean up the uploaded file
-    fs.unlinkSync(filePath);
+    // Clean up the uploaded file. Cleanup should not turn a successful import into a failed request.
+    cleanupUploadedFile(filePath);
 
     // Return success response
     res.json({
@@ -91,10 +123,7 @@ router.post('/', (req, res) => {
       totalAssets: getAllAssets().length,
     });
   } catch (error) {
-    // Delete the file if it exists
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
+    cleanupUploadedFile(req.file?.path);
 
     console.error('Upload error:', error);
     res.status(400).json({

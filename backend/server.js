@@ -14,10 +14,11 @@ const uploadRoute = require('./routes/upload');
 const scanRoute = require('./routes/scan');
 const downloadRoute = require('./routes/download');
 const assetsRoute = require('./routes/assets');
+const usersRoute = require('./routes/users');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 2026;
 
 // ============================================
 // MIDDLEWARE
@@ -65,6 +66,9 @@ app.use('/api/download', downloadRoute);
 // GET /api/assets - Fetch all assets
 app.use('/api/assets', assetsRoute);
 
+// GET/POST/PUT/DELETE /api/users - Manage users
+app.use('/api/users', usersRoute);
+
 // ============================================
 // HEALTH CHECK ENDPOINT
 // ============================================
@@ -107,7 +111,7 @@ app.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════════╗
 ║  Asset Inventory System - Backend Running  ║
-║  Server: http://localhost:${PORT}                     ║
+║  Server: http://localhost:${PORT}          ║
 ║  Status: Ready to accept requests          ║
 ╚════════════════════════════════════════════╝
   `);
@@ -115,6 +119,6 @@ app.listen(PORT, () => {
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('\n✅ Server shutting down gracefully');
+  console.log('\n✅ Asset Inventory Server shutting down gracefully');
   process.exit(0);
 });

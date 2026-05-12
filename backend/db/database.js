@@ -4,6 +4,12 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  getMonthlyStatusHeader,
+  getCurrentMonthRemarksHeader,
+  MONTH_NAMES,
+  normalizeHeader,
+} = require('../utils/monthColumns');
 
 // Path to JSON database file
 const dbPath = path.join(__dirname, 'inventory.json');
@@ -30,6 +36,22 @@ function loadData() {
  */
 function saveData(data) {
   try {
+    if (Array.isArray(data.assets)) {
+      data.assets = data.assets.map(sanitizeAsset);
+    }
+    if (Array.isArray(data.headers)) {
+      const normalizedHeaders = new Set();
+      data.headers = data.headers
+        .filter(header => !isInternalField(header))
+        .filter(header => {
+          const normalized = normalizeHeader(header);
+          if (normalizedHeaders.has(normalized)) {
+            return false;
+          }
+          normalizedHeaders.add(normalized);
+          return true;
+        });
+    }
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
   } catch (error) {
     console.error('Error saving database:', error.message);
@@ -53,37 +75,80 @@ function initializeDatabase() {
 /**
  * Get all assets from database
  */
+function sanitizeAsset(asset) {
+  if (!asset || typeof asset !== 'object') return asset;
+  return Object.fromEntries(
+    Object.entries(asset).filter(([key]) => !isInternalField(key))
+  );
+}
+
+function normalizeFieldName(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function isInternalField(value) {
+  return normalizeFieldName(value) === 'scanningmonth';
+}
+
 function getAllAssets() {
   const data = loadData();
-  return data.assets.sort((a, b) => b.id - a.id);
+  return data.assets
+    .sort((a, b) => b.id - a.id)
+    .map(sanitizeAsset);
 }
 
 function getHeaders() {
   const data = loadData();
-  return Array.isArray(data.headers) ? data.headers : [];
+  const headers = Array.isArray(data.headers) ? data.headers : [];
+  let visibleHeaders = headers.filter(header => !isInternalField(header));
+  const monthlyStatusHeader = getMonthlyStatusHeader();
+  const currentMonthRemarksNormalized = getCurrentMonthRemarksHeader();
+  const hasCurrentMonthRemarks = visibleHeaders.some(
+    header => normalizeHeader(header) === currentMonthRemarksNormalized
+  );
+
+  if (!visibleHeaders.some(header => normalizeHeader(header) === normalizeHeader(monthlyStatusHeader))) {
+    const remarksIndex = visibleHeaders.findIndex(header => normalizeHeader(header) === 'remarks');
+    const insertIndex = remarksIndex >= 0 ? remarksIndex : visibleHeaders.length;
+    visibleHeaders.splice(insertIndex, 0, monthlyStatusHeader);
+  }
+
+  if (hasCurrentMonthRemarks) {
+    const seen = new Set();
+    visibleHeaders = visibleHeaders.filter(header => {
+      const normalized = normalizeHeader(header);
+      if (normalized === 'remarks') {
+        return false;
+      }
+      if (seen.has(normalized)) {
+        return false;
+      }
+      seen.add(normalized);
+      return true;
+    });
+  }
+
+  return visibleHeaders;
 }
 
 function updateHeaders(newHeaders) {
   const data = loadData();
   const headers = Array.isArray(data.headers) ? [...data.headers] : [];
+  const normalizedHeaders = new Set(headers.map(header => normalizeHeader(header)));
 
   newHeaders.forEach(header => {
-    const normalized = String(header).trim();
-    if (normalized && !headers.includes(normalized)) {
-      headers.push(normalized);
+    const trimmed = String(header).trim();
+    const normalized = normalizeHeader(trimmed);
+    if (trimmed && !isInternalField(trimmed) && !normalizedHeaders.has(normalized)) {
+      headers.push(trimmed);
+      normalizedHeaders.add(normalized);
     }
   });
 
   data.headers = headers;
   saveData(data);
-}
-
-function normalizeHeader(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/\([^)]*\)/g, '')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
 }
 
 function syncFieldToOriginalColumns(asset, fieldName, value) {
@@ -98,12 +163,33 @@ function syncFieldToOriginalColumns(asset, fieldName, value) {
   asset[fieldName] = value;
 }
 
+function getMonthStatusIndex(header) {
+  const normalizedHeader = normalizeHeader(header);
+  return MONTH_NAMES.findIndex(
+    month => normalizedHeader === `${month.toLowerCase()} status`
+  );
+}
+
+function clearEarlierNotFoundStatuses(asset, date = new Date()) {
+  const currentMonthIndex = date.getMonth();
+
+  Object.keys(asset).forEach(key => {
+    const monthIndex = getMonthStatusIndex(key);
+    const value = String(asset[key] || '').trim().toUpperCase();
+
+    if (monthIndex >= 0 && monthIndex < currentMonthIndex && value === 'NOT FOUND') {
+      asset[key] = '';
+    }
+  });
+}
+
 /**
  * Get asset by ID
  */
 function getAssetById(id) {
   const data = loadData();
-  return data.assets.find(asset => asset.id === id);
+  const asset = data.assets.find(asset => asset.id === id);
+  return sanitizeAsset(asset);
 }
 
 /**
@@ -111,9 +197,26 @@ function getAssetById(id) {
  */
 function getAssetByAssetOrSerial(asset, serialNumber) {
   const data = loadData();
-  return data.assets.find(
-    a => a.asset === asset || a.serialNumber === serialNumber
-  );
+  const normalizedAsset = String(asset || '').trim().toLowerCase();
+  const normalizedSerialNumber = String(serialNumber || '').trim().toLowerCase();
+  
+  const found = data.assets.find(a => {
+    const existingAssetNum = String(a.asset || '').trim().toLowerCase();
+    const existingSerialNum = String(a.serialNumber || '').trim().toLowerCase();
+
+    // Match if asset numbers are the same
+    if (normalizedAsset && existingAssetNum === normalizedAsset) {
+      return true;
+    }
+
+    // Match if serial numbers are the same
+    if (normalizedSerialNumber && existingSerialNum === normalizedSerialNumber) {
+      return true;
+    }
+
+    return false;
+  });
+  return sanitizeAsset(found);
 }
 
 /**
@@ -122,35 +225,61 @@ function getAssetByAssetOrSerial(asset, serialNumber) {
 function upsertAsset(assetData) {
   const data = loadData();
   
-  // Check if asset exists by asset number or serial number
-  const existingIndex = data.assets.findIndex(
-    a => a.asset === assetData.asset || a.serialNumber === assetData.serialNumber
-  );
+  // Normalize asset identifiers for matching
+  const normalizedAssetNumber = String(assetData.asset || '').trim();
+  const normalizedSerialNumber = String(assetData.serialNumber || '').trim();
+
+  // Validate that we have at least an asset number
+  if (!normalizedAssetNumber) {
+    throw new Error('Asset number is required for upsert operation');
+  }
+
+  // Check if asset exists by asset number or serial number (both must match exactly)
+  const existingIndex = data.assets.findIndex(a => {
+    const existingAssetNum = String(a.asset || '').trim();
+    const existingSerialNum = String(a.serialNumber || '').trim();
+
+    // Match if asset numbers are the same (case-insensitive comparison for robustness)
+    if (existingAssetNum.toLowerCase() === normalizedAssetNumber.toLowerCase()) {
+      return true;
+    }
+
+    // Match if both have serial numbers and they're the same
+    if (normalizedSerialNumber && existingSerialNum && 
+        existingSerialNum.toLowerCase() === normalizedSerialNumber.toLowerCase()) {
+      return true;
+    }
+
+    return false;
+  });
 
   const normalizedStatus = assetData.status || 'UNACCOUNTED';
+  const monthlyStatusHeader = getMonthlyStatusHeader();
   const baseAsset = {
     ...assetData,
     status: normalizedStatus,
     remarks: assetData.remarks || assetData.REMARKS || assetData.Remarks || assetData.remark || assetData.comments || assetData.note || assetData.notes || '',
   };
+  baseAsset[monthlyStatusHeader] = assetData[monthlyStatusHeader] || '';
   syncFieldToOriginalColumns(baseAsset, 'status', normalizedStatus);
   syncFieldToOriginalColumns(baseAsset, 'remarks', baseAsset.remarks);
 
   if (existingIndex !== -1) {
+    // Asset exists - update it
     const existing = data.assets[existingIndex];
 
     if (existing.status === 'ACCOUNTED') {
       data.assets[existingIndex] = {
         ...existing,
         ...baseAsset,
-        asset: existing.asset,
+        asset: existing.asset, // Preserve original asset number
         updatedAt: new Date().toISOString(),
       };
     } else {
       data.assets[existingIndex] = {
         ...existing,
         ...baseAsset,
-        asset: assetData.asset,
+        asset: normalizedAssetNumber, // Update to new asset number if provided
         status: normalizedStatus,
         updatedAt: new Date().toISOString(),
       };
@@ -159,6 +288,9 @@ function upsertAsset(assetData) {
     saveData(data);
     return existing.id;
   } else {
+    // Asset doesn't exist - create new one
+    clearEarlierNotFoundStatuses(baseAsset);
+
     const newAsset = {
       id: data.nextId,
       ...baseAsset,
@@ -183,7 +315,23 @@ function updateAssetStatus(assetId, status, remarks) {
   if (assetIndex !== -1) {
     syncFieldToOriginalColumns(data.assets[assetIndex], 'status', status);
     syncFieldToOriginalColumns(data.assets[assetIndex], 'remarks', remarks);
+    if (String(status || '').toUpperCase() === 'ACCOUNTED') {
+      data.assets[assetIndex][getMonthlyStatusHeader()] = 'FOUND';
+    }
     data.assets[assetIndex].updatedAt = new Date().toISOString();
+    saveData(data);
+  }
+}
+
+/**
+ * Update monthly status for an asset
+ */
+function updateMonthlyStatus(assetId, monthlyStatus) {
+  const data = loadData();
+  const assetIndex = data.assets.findIndex(a => a.id === assetId);
+
+  if (assetIndex !== -1) {
+    data.assets[assetIndex][getMonthlyStatusHeader()] = monthlyStatus;
     saveData(data);
   }
 }
@@ -228,6 +376,7 @@ module.exports = {
   getAssetByAssetOrSerial,
   upsertAsset,
   updateAssetStatus,
+  updateMonthlyStatus,
   deleteAllAssets,
   getAssetStatistics,
 };

@@ -4,7 +4,7 @@
 import axios from 'axios';
 
 // Base URL for backend API
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:2026/api';
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -66,6 +66,20 @@ export async function clearAssets() {
 }
 
 /**
+ * Add a newly scanned asset to the inventory
+ * @param {Object} assetDetails - New asset details entered by the user
+ * @returns {Promise<Object>} - Created asset response
+ */
+export async function addAsset(assetDetails) {
+  try {
+    const response = await apiClient.post('/assets', assetDetails);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to add asset' };
+  }
+}
+
+/**
  * Send scanned QR code data to backend
  * @param {string} scannedValue - The value from scanned QR code
  * @returns {Promise<Object>} - Updated asset information
@@ -100,9 +114,11 @@ export async function downloadExcel() {
     });
 
     // Create temporary link and download
+    const disposition = response.headers['content-disposition'];
+    const filenameMatch = disposition?.match(/filename="?([^"]+)"?/i);
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    link.download = `inventory-${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.download = filenameMatch?.[1] || 'AssetInventoryReport.xlsx';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

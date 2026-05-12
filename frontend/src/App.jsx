@@ -675,7 +675,7 @@ const handleLogin = async (user) => {
       <footer className="bg-gray-800 text-white mt-12 py-6">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm">
           <p>
-            Asset Inventory System v1.0 | Backend: http://localhost:5000
+            Asset Inventory System
           </p>
           <p className="text-gray-400 mt-2">
             © 2026 GMADC OJT Project

@@ -17,14 +17,11 @@ export default function AssetTable({
   const [sortBy, setSortBy] = useState('asset');
   const [sortOrder, setSortOrder] = useState('asc');
 
-<<<<<<< Updated upstream
-=======
   const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
   const currentMonth = monthNames[new Date().getMonth()];
   const currentYear = new Date().getFullYear();
   const currentRemarksLabel = `${currentMonth} ${currentYear} REMARKS`;
 
->>>>>>> Stashed changes
   const defaultColumns = [
     { key: 'asset', label: 'Asset #' },
     { key: 'assetDescription', label: 'Description' },
@@ -32,16 +29,7 @@ export default function AssetTable({
     { key: 'costCenter', label: 'Cost Center' },
     { key: 'correctRoom', label: 'Room' },
     { key: 'status', label: 'Status' },
-<<<<<<< Updated upstream
-    { key: 'remarks', label: 'Remarks' },
-  ];
-
-  const tableColumns = headers && headers.length > 0
-    ? headers.map(header => ({ key: header, label: header }))
-    : defaultColumns;
-=======
     { key: `${currentMonth} STATUS`, label: `${currentMonth} STATUS` },
-    { key: 'remarks', label: `${displayMonth} Remarks` },
     { key: 'remarks', label: currentRemarksLabel },
   ];
 
@@ -51,6 +39,9 @@ export default function AssetTable({
       .replace(/\([^)]*\)/g, '')
       .replace(/[^a-z0-9 ]+/g, ' ')
       .trim();
+
+  const isInternalField = (label) =>
+    normalizeLabel(label).replace(/\s+/g, '') === 'scanningmonth';
 
   const isMonthlyRemarksHeader = (label) => {
     const normalized = normalizeLabel(label);
@@ -198,6 +189,8 @@ const tableColumns = headers && headers.length > 0
     return 2;
   };
 
+  
+
   /**
    * Filter and sort assets based on search, status filter, and sort options
    */
@@ -207,7 +200,8 @@ const tableColumns = headers && headers.length > 0
     if (searchTerm) {
       const searchValue = searchTerm.toLowerCase();
       filtered = filtered.filter(asset =>
-        Object.values(asset).some(value =>
+        Object.entries(asset).some(([key, value]) =>
+          !isInternalField(key) &&
           String(value || '').toLowerCase().includes(searchValue)
         )
       );
@@ -254,9 +248,9 @@ const tableColumns = headers && headers.length > 0
     }
 
     filtered.sort((a, b) => {
-      let aValue = a[sortBy] ?? a[normalizeHeader(sortBy)] ?? '';
-      let bValue = b[sortBy] ?? b[normalizeHeader(sortBy)] ?? '';
-      const isRemarksColumn = normalizeHeader(sortBy) === 'remarks';
+      let aValue = getAssetValue(a, sortBy);
+      let bValue = getAssetValue(b, sortBy);
+      const isRemarksColumn = isRemarksHeader(sortBy);
 
       if (isRemarksColumn) {
         const aRank = getRemarksRank(aValue);
@@ -390,6 +384,9 @@ const tableColumns = headers && headers.length > 0
           <table className="w-full text-sm">
             <thead className="bg-gray-100 border-b-2 border-gray-300">
               <tr>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700 w-12">
+                  
+                </th>
                 {tableColumns.map(col => (
                   <th
                     key={col.key}
@@ -408,7 +405,7 @@ const tableColumns = headers && headers.length > 0
             </thead>
 
             <tbody>
-              {filteredAssets.map((asset) => {
+              {filteredAssets.map((asset, index) => {
                 const statusValue = asset.status || asset['STATUS'] || asset['Status'] || '';
                 return (
                   <tr
@@ -421,8 +418,11 @@ const tableColumns = headers && headers.length > 0
                         : 'bg-red-50'
                     }`}
                   >
+                    <td className="px-4 py-3 text-gray-600 font-semibold w-12">
+                      {index + 1}
+                    </td>
                     {tableColumns.map(column => {
-                      const cellValue = asset[column.key] ?? asset[normalizeHeader(column.key)] ?? '';
+                      const cellValue = getAssetValue(asset, column.key);
                       const isStatusColumn = normalizeHeader(column.key) === 'status';
 
                       return (
