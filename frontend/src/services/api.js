@@ -128,4 +128,20 @@ export async function downloadExcel() {
   }
 }
 
+/**
+ * Validate user login
+ */
+export async function loginUser(credentials) {
+  try {
+    const response = await apiClient.post('/users/login', credentials);
+    return response.data;
+  } catch (error) {
+    throw {
+  message:
+    error.response?.data?.message ||
+    '❌ Access denied. Your Employee ID and Department are not registered by the administrator.'
+};
+  }
+}
+
 export default apiClient;

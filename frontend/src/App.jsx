@@ -9,7 +9,13 @@ import ScannedAssetDetails from './components/ScannedAssetDetails';
 import Login from './components/Login';
 import AdminLogin from './components/AdminLogin';
 import UserManagement from './components/UserManagement';
-import { fetchAssets, downloadExcel, clearAssets, addAsset } from './services/api';
+import {
+  fetchAssets,
+  downloadExcel,
+  clearAssets,
+  addAsset,
+  loginUser
+} from './services/api';
 
 const fallbackAssetHeaders = [
   'Asset',
@@ -357,16 +363,34 @@ export default function App() {
    * Handle user login
    */
 const handleLogin = async (user) => {
-  const userData = { ...user, role: 'user' };
+  try {
+    const result = await loginUser(user);
 
-  setIsLoggedIn(true);
-  setCurrentUser(userData);
+    if (!result.success) {
+      showNotification('❌ Unauthorized user', 'error');
+      return;
+    }
 
-  localStorage.setItem('isLoggedIn', 'true');
-  localStorage.setItem('currentUser', JSON.stringify(userData));
+    const userData = {
+      ...result.user,
+      role: 'user'
+    };
 
-  // reload latest assets after login
-  await loadAssets();
+    setIsLoggedIn(true);
+    setCurrentUser(userData);
+
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('currentUser', JSON.stringify(userData));
+
+    await loadAssets();
+
+    showNotification('✅ Login successful', 'success');
+
+  } catch (error) {
+  alert(
+    '❌ Access denied.\n\nYour Employee ID and Department are not registered by the administrator.'
+  );
+}
 };
 
   /**
