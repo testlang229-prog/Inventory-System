@@ -152,6 +152,9 @@ function buildHeaders(headerRow) {
       const baseName = cleanValue(header);
       if (!baseName) return null;
 
+      const normalized = normalizeHeader(baseName).replace(/\s+/g, '');
+      if (normalized === 'iteration' || normalized === 'numberofassets' || normalized === '') return null;
+
       const existingCount = usedHeaders.get(baseName) || 0;
       usedHeaders.set(baseName, existingCount + 1);
 
@@ -164,6 +167,11 @@ function buildHeaders(headerRow) {
 }
 
 const FIELD_ALIASES = {
+  iteration: [
+    'iteration',
+    'number of assets',
+    '',
+  ],
   asset: [
     'asset',
     'asset no',
@@ -278,6 +286,7 @@ function mapHeaderRow(row) {
 
     Object.entries(FIELD_ALIASES).forEach(([fieldName, aliases]) => {
       if (columnMap[fieldName] !== undefined) return;
+      if (fieldName === 'iteration') return;
 
       if (aliases.some(alias => normalizeHeader(alias) === normalizedHeader)) {
         columnMap[fieldName] = columnIndex;

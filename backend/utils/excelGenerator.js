@@ -155,11 +155,18 @@ headers = headers.sort((a, b) => {
       return map;
     }, {});
 
-    worksheet.columns = headers.map(header => ({
-      header: getDisplayHeader(header),
-      key: header,
-      width: Math.max(15, String(getDisplayHeader(header)).length + 5),
-    }));
+    worksheet.columns = [
+      {
+        header: '',
+        key: '_iterationNumber',
+        width: 8,
+      },
+      ...headers.map(header => ({
+        header: getDisplayHeader(header),
+        key: header,
+        width: Math.max(String(getDisplayHeader(header)).length + 5, 15),
+      }))
+    ];
 
     worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFF' } };
     worksheet.getRow(1).fill = {
@@ -169,8 +176,10 @@ headers = headers.sort((a, b) => {
     };
     worksheet.getRow(1).alignment = { horizontal: 'center', vertical: 'center' };
 
-    assets.forEach(asset => {
-      const rowData = {};
+    assets.forEach((asset, index) => {
+      const rowData = {
+        _iterationNumber: index + 1
+      };
       headers.forEach(header => {
         rowData[header] = getAssetValue(asset, header);
       });

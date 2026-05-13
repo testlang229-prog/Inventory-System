@@ -19,7 +19,8 @@ export default function AssetTable({
 
   const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
   const currentMonth = monthNames[new Date().getMonth()];
-  const displayMonth = `${currentMonth[0]}${currentMonth.slice(1).toLowerCase()}`;
+  const currentYear = new Date().getFullYear();
+  const currentRemarksLabel = `${currentMonth} ${currentYear} REMARKS`;
 
   const defaultColumns = [
     { key: 'asset', label: 'Asset #' },
@@ -29,7 +30,7 @@ export default function AssetTable({
     { key: 'correctRoom', label: 'Room' },
     { key: 'status', label: 'Status' },
     { key: `${currentMonth} STATUS`, label: `${currentMonth} STATUS` },
-    { key: 'remarks', label: `${displayMonth} Remarks` },
+    { key: 'remarks', label: currentRemarksLabel },
   ];
 
   const normalizeLabel = (label) =>
@@ -42,54 +43,137 @@ export default function AssetTable({
   const isInternalField = (label) =>
     normalizeLabel(label).replace(/\s+/g, '') === 'scanningmonth';
 
-  const isCurrentMonthYearHeader = (label) => {
+  const isMonthlyRemarksHeader = (label) => {
     const normalized = normalizeLabel(label);
-    const currentMonthHeader = `${currentMonth.toLowerCase()} ${new Date().getFullYear()}`;
-    return normalized === currentMonthHeader || normalized === currentMonthHeader.replace(/ /g, '');
+    return /^(january|february|march|april|may|june|july|august|september|october|november|december)\s*\d{4}\s*remarks$/.test(normalized);
   };
 
   const isRemarksHeader = (label) => {
     const normalized = normalizeLabel(label);
-    return (
-      normalized === 'remarks' ||
-      normalized.endsWith(' remarks') ||
-      isCurrentMonthYearHeader(label)
-    );
+    return normalized === 'remarks' || (normalized.endsWith(' remarks') && !isMonthlyRemarksHeader(label));
   };
 
-  const getDisplayLabel = (header) => {
-    if (isRemarksHeader(header)) {
-      return `${displayMonth} Remarks`;
+  const getAssetValue = (asset, header) => {
+    if (isMonthlyRemarksHeader(header)) {
+      if (asset[header] !== undefined) {
+        return asset[header];
+      }
+      const normalizedHeader = normalizeLabel(header);
+      const matchingKey = Object.keys(asset).find(key => normalizeLabel(key) === normalizedHeader);
+      return matchingKey ? asset[matchingKey] : '';
     }
 
-    return normalizeLabel(header) === 'no change with change'
-      ? String(header).replace(/\s*\(\d+\)\s*$/, '')
-      : header;
+    if (isRemarksHeader(header)) {
+      return asset.remarks || asset.REMARKS || asset.Remarks || asset.remark || asset.notes || asset.note || asset.comments || asset.comment || '';
+    }
+
+    if (asset[header] !== undefined) {
+      return asset[header];
+    }
+
+    const normalizedHeader = normalizeLabel(header);
+    const matchingKey = Object.keys(asset).find(key => {
+      const normalizedKey = normalizeLabel(key);
+      return normalizedKey === normalizedHeader;
+    });
+
+    return matchingKey ? asset[matchingKey] : '';
   };
+const tableColumns = headers && headers.length > 0
+  ? (() => {
+      let processedHeaders = [...headers].filter(
+        header => !isInternalField(header)
+      );
 
-  const currentMonthHeaderNormalized = `${currentMonth.toLowerCase()} ${new Date().getFullYear()}`;
-  const hasCurrentMonthRemarks = headers.some(header => {
-    const normalized = normalizeLabel(header);
-    return normalized === currentMonthHeaderNormalized || normalized === currentMonthHeaderNormalized.replace(/ /g, '');
-  });
+      const monthRegex =
+        /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4}/i;
 
-  const currentMonthDisplayRemarks = `${displayMonth} Remarks`;
-  const isCurrentMonthDisplayRemarksHeader = (label) =>
-    normalizeLabel(label) === normalizeLabel(currentMonthDisplayRemarks);
+      // AUTO ADD missing STATUS/REMARKS pair
+      processedHeaders.forEach(header => {
+        const normalized = normalizeLabel(header);
 
-  const tableColumns = headers && headers.length > 0
-    ? headers
-        .filter(header => !isInternalField(header))
-        .filter(header => {
-          if (!hasCurrentMonthRemarks) return true;
-          const normalized = normalizeLabel(header);
-          return (
-            normalized !== 'remarks' &&
-            !isCurrentMonthDisplayRemarksHeader(header)
+        const match = normalized.match(monthRegex);
+
+        if (match) {
+          const monthYear = match[0];
+
+          const statusHeader =
+            `${monthYear.toUpperCase()} STATUS`;
+
+          const remarksHeader =
+            `${monthYear.toUpperCase()} REMARKS`;
+
+          const hasStatus = processedHeaders.some(
+            h => normalizeLabel(h) === normalizeLabel(statusHeader)
           );
-        })
-        .map(header => ({ key: header, label: getDisplayLabel(header) }))
-    : defaultColumns;
+
+          const hasRemarks = processedHeaders.some(
+            h => normalizeLabel(h) === normalizeLabel(remarksHeader)
+          );
+
+          if (!hasStatus) {
+            processedHeaders.push(statusHeader);
+          }
+
+          if (!hasRemarks) {
+            processedHeaders.push(remarksHeader);
+          }
+        }
+      });
+
+      // REMOVE DUPLICATES
+      processedHeaders = [...new Set(processedHeaders)];
+
+      // SORT MONTH COLUMNS
+      processedHeaders.sort((a, b) => {
+        const aNorm = normalizeLabel(a);
+        const bNorm = normalizeLabel(b);
+
+        const aMatch = aNorm.match(monthRegex);
+        const bMatch = bNorm.match(monthRegex);
+
+        if (aMatch && bMatch) {
+          const monthOrder = [
+            'january', 'february', 'march', 'april',
+            'may', 'june', 'july', 'august',
+            'september', 'october', 'november', 'december'
+          ];
+
+          const [aMonth, aYear] = aMatch[0].split(' ');
+          const [bMonth, bYear] = bMatch[0].split(' ');
+
+          if (aYear !== bYear) {
+            return parseInt(aYear) - parseInt(bYear);
+          }
+
+          const monthCompare =
+            monthOrder.indexOf(aMonth) -
+            monthOrder.indexOf(bMonth);
+
+          if (monthCompare !== 0) {
+            return monthCompare;
+          }
+
+          const aIsStatus = aNorm.endsWith(' status');
+          const aIsRemarks = aNorm.endsWith(' remarks');
+
+          const bIsStatus = bNorm.endsWith(' status');
+          const bIsRemarks = bNorm.endsWith(' remarks');
+
+          if (aIsStatus && bIsRemarks) return -1;
+          if (aIsRemarks && bIsStatus) return 1;
+        }
+
+        return 0;
+      });
+
+      return processedHeaders.map(header => ({
+        key: header,
+        label: header,
+      }));
+    })()
+  : defaultColumns;
+  
 
   const normalizeHeader = (header) =>
     String(header || '')
@@ -105,26 +189,7 @@ export default function AssetTable({
     return 2;
   };
 
-  const getAssetValue = (asset, fieldName) => {
-    if (!asset || typeof asset !== 'object') return '';
-    
-    // Try direct key match first
-    if (asset.hasOwnProperty(fieldName)) {
-      return asset[fieldName];
-    }
-
-    // Try normalized match
-    const normalizedField = normalizeHeader(fieldName);
-    const matchingKey = Object.keys(asset).find(
-      key => normalizeHeader(key) === normalizedField
-    );
-
-    if (matchingKey) {
-      return asset[matchingKey];
-    }
-
-    return '';
-  };
+  
 
   /**
    * Filter and sort assets based on search, status filter, and sort options
@@ -144,13 +209,40 @@ export default function AssetTable({
 
     if (filterStatus !== 'ALL') {
       if (filterStatus === 'FOUND' || filterStatus === 'NOT_FOUND') {
-        filtered = filtered.filter(asset => {
-          const remark = String(asset.remarks || asset.REMARKS || asset.Remarks || asset.comments || asset.note || '').toLowerCase().trim();
-          return filterStatus === 'FOUND'
-            ? remark === 'found'
-            : remark === 'not found' || remark === 'notfound';
-        });
-      } else {
+  filtered = filtered.filter(asset => {
+
+    // check ALL monthly STATUS columns
+    const monthlyStatuses = Object.keys(asset)
+      .filter(key => {
+  const normalized = normalizeLabel(key);
+
+  return (
+    normalized.endsWith(' status') &&
+    normalized !== 'status' &&
+    normalized !== 'status accounted unaccounted reconciling'
+  );
+})
+      .map(key =>
+        String(asset[key] || '')
+          .toLowerCase()
+          .trim()
+      );
+
+    const hasFound = monthlyStatuses.some(
+      value => value === 'found'
+    );
+
+    const hasNotFound = monthlyStatuses.some(
+      value =>
+        value === 'not found' ||
+        value === 'notfound'
+    );
+
+    return filterStatus === 'FOUND'
+      ? hasFound
+      : hasNotFound;
+  });
+} else {
         filtered = filtered.filter(asset => String(asset.status || '').toUpperCase() === filterStatus);
       }
     }
@@ -292,6 +384,9 @@ export default function AssetTable({
           <table className="w-full text-sm">
             <thead className="bg-gray-100 border-b-2 border-gray-300">
               <tr>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700 w-12">
+                  
+                </th>
                 {tableColumns.map(col => (
                   <th
                     key={col.key}
@@ -310,7 +405,7 @@ export default function AssetTable({
             </thead>
 
             <tbody>
-              {filteredAssets.map((asset) => {
+              {filteredAssets.map((asset, index) => {
                 const statusValue = asset.status || asset['STATUS'] || asset['Status'] || '';
                 return (
                   <tr
@@ -323,6 +418,9 @@ export default function AssetTable({
                         : 'bg-red-50'
                     }`}
                   >
+                    <td className="px-4 py-3 text-gray-600 font-semibold w-12">
+                      {index + 1}
+                    </td>
                     {tableColumns.map(column => {
                       const cellValue = getAssetValue(asset, column.key);
                       const isStatusColumn = normalizeHeader(column.key) === 'status';

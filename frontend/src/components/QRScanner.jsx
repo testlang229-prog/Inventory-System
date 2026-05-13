@@ -42,6 +42,11 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
       const result = await processScan(trimmedValue);
       onScanSuccess(result);
       setManualScanValue('');
+
+      if (result.action === 'NEW_ASSET' && shouldResumeScanner && scannerInstanceRef.current) {
+        await stopScanner();
+        return;
+      }
     } catch (error) {
       onScanError(error.message || 'Failed to process scan');
     } finally {
