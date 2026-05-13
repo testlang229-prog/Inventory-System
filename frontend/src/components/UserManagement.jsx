@@ -1,7 +1,6 @@
 // frontend/src/components/UserManagement.jsx
 import { useState, useEffect } from 'react';
 
-const API_BASE = 'http://localhost:5000/api';
 const API_BASE = 'http://localhost:2026/api';
 
 export default function UserManagement() {
