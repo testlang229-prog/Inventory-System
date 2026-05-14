@@ -14,7 +14,8 @@ import {
   downloadExcel,
   clearAssets,
   addAsset,
-  loginUser
+  loginUser,
+  getLastUpdated
 } from './services/api';
 
 const fallbackAssetHeaders = [
@@ -112,13 +113,34 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginView, setLoginView] = useState('user');
   const [currentUser, setCurrentUser] = useState({ employeeId: '', department: '', role: 'user' });
+  const [lastKnownUpdate, setLastKnownUpdate] = useState(null);
 
   /**
    * Fetch assets from backend when component mounts
    */
   useEffect(() => {
-    loadAssets();
-  }, []);
+  loadAssets();
+
+  const checkUpdates = async () => {
+    const latestUpdate = await getLastUpdated();
+
+    if (
+      latestUpdate &&
+      lastKnownUpdate &&
+      latestUpdate !== lastKnownUpdate
+    ) {
+      await loadAssets();
+    }
+
+    if (latestUpdate) {
+      setLastKnownUpdate(latestUpdate);
+    }
+  };
+
+  const interval = setInterval(checkUpdates, 2000);
+
+  return () => clearInterval(interval);
+}, [lastKnownUpdate]);
 
   /**
    * Auto-hide notifications after 4 seconds
