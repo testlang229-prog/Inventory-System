@@ -154,7 +154,9 @@ export default function App() {
 
   const [notification, setNotification] = useState(null);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+const [lastKnownUpdate, setLastKnownUpdate] = useState(null);
+
+const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [loginView, setLoginView] = useState('user');
 
