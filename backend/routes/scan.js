@@ -10,6 +10,7 @@ const {
 } = require('../db/database');
 
 const router = express.Router();
+const { updateLastUpdated } = require('../utils/updateTracker');
 
 /**
  * POST /api/scan
@@ -58,14 +59,17 @@ router.post('/', (req, res) => {
     updateMonthlyStatus(asset.id, 'FOUND');
 
     // Fetch the updated asset
-    const updatedAsset = getAssetById(asset.id);
+    // Fetch the updated asset
+const updatedAsset = getAssetById(asset.id);
 
-    res.json({
-      success: true,
-      message: 'Asset marked as ACCOUNTED',
-      asset: updatedAsset,
-      action: 'UPDATED',
-    });
+updateLastUpdated();
+
+res.json({
+  success: true,
+  message: 'Asset marked as ACCOUNTED',
+  asset: updatedAsset,
+  action: 'UPDATED',
+});
   } catch (error) {
     console.error('Scan error:', error);
     res.status(500).json({

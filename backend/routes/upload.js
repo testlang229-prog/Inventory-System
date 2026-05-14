@@ -22,6 +22,7 @@ const {
 const upload = require('../middleware/uploadConfig');
 
 const router = express.Router();
+const { updateLastUpdated } = require('../utils/updateTracker');
 
 function cleanupUploadedFile(filePath) {
   if (!filePath || !fs.existsSync(filePath)) return;
@@ -114,6 +115,7 @@ router.post('/', (req, res) => {
     // Clean up the uploaded file. Cleanup should not turn a successful import into a failed request.
     cleanupUploadedFile(filePath);
 
+    updateLastUpdated();
     // Return success response
     res.json({
       success: true,
