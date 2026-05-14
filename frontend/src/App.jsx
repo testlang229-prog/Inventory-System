@@ -371,15 +371,13 @@ const handleLogin = async (user) => {
       return;
     }
 
-    const userData = {
-      ...result.user,
-      role: 'user'
-    };
+    const userData = result.user;
 
     setIsLoggedIn(true);
     setCurrentUser(userData);
 
     localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('token', result.token);
     localStorage.setItem('currentUser', JSON.stringify(userData));
 
     await loadAssets();
@@ -396,13 +394,9 @@ const handleLogin = async (user) => {
   /**
    * Handle admin login
    */
-  const handleAdminLogin = (adminUser) => {
-    const userData = { ...adminUser, role: 'admin' };
-    setIsLoggedIn(true);
-    setCurrentUser(userData);
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('currentUser', JSON.stringify(userData));
-  };
+  const handleAdminLogin = async (adminUser) => {
+  await handleLogin(adminUser);
+};
 
   /**
    * Handle logout
@@ -412,7 +406,8 @@ const handleLogin = async (user) => {
     setLoginView('user');
     setCurrentUser({ employeeId: '', department: '', role: 'user' });
     localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('currentUser');
+localStorage.removeItem('token');
+localStorage.removeItem('currentUser');
     // Clear any sensitive data if needed
     setAssets([]);
     setHeaders([]);
@@ -456,11 +451,11 @@ const handleLogin = async (user) => {
               </p>
               {isAdmin ? (
                 <p className="text-gray-500 text-sm mt-1">
-                  Admin: {currentUser.username}
+                  Admin: {currentUser.employeeId}
                 </p>
               ) : currentUser.employeeId ? (
                 <p className="text-gray-500 text-sm mt-1">
-                  Employee ID: {currentUser.employeeId} | Department: {currentUser.department}
+                  {currentUser.name} | Employee ID: {currentUser.employeeId} | Department: {currentUser.department}
                 </p>
               ) : null}
             </div>
