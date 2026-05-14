@@ -367,6 +367,51 @@ function getAssetStatistics() {
 /**
  * Export all functions for use in routes
  */
+function checkDuplicateAsset(asset, assetDescription, serialNumber) {
+  const data = loadData();
+
+  const normalizedAsset =
+    String(asset || '').trim().toLowerCase();
+
+  const normalizedDescription =
+    String(assetDescription || '').trim().toLowerCase();
+
+  const normalizedSerial =
+    String(serialNumber || '').trim().toLowerCase();
+
+  return data.assets.find(existingAsset => {
+    const existingAssetNumber =
+      String(existingAsset.asset || '')
+        .trim()
+        .toLowerCase();
+
+    const existingDescription =
+      String(
+        existingAsset.assetDescription ||
+        existingAsset['Asset Description'] ||
+        ''
+      )
+        .trim()
+        .toLowerCase();
+
+    const existingSerial =
+      String(existingAsset.serialNumber || '')
+        .trim()
+        .toLowerCase();
+
+    return (
+      (normalizedAsset &&
+        existingAssetNumber === normalizedAsset) ||
+
+      (normalizedDescription &&
+        existingDescription === normalizedDescription) ||
+
+      (normalizedSerial &&
+        existingSerial === normalizedSerial)
+    );
+  });
+}
+
 module.exports = {
   initializeDatabase,
   getAllAssets,
@@ -374,6 +419,7 @@ module.exports = {
   updateHeaders,
   getAssetById,
   getAssetByAssetOrSerial,
+  checkDuplicateAsset,
   upsertAsset,
   updateAssetStatus,
   updateMonthlyStatus,

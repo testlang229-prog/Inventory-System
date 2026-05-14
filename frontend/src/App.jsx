@@ -61,8 +61,18 @@ const isInternalField = (header) =>
 const isMonthlyStatusHeader = (header) =>
   monthNames.some(month => normalizeHeader(header) === `${month.toLowerCase()} status`);
 
-const getCurrentMonthStatusHeader = () =>
-  `${monthNames[new Date().getMonth()]} STATUS`;
+const getCurrentMonthStatusHeader = () => {
+  const currentDate = new Date();
+
+  const month =
+    monthNames[currentDate.getMonth()]
+      .charAt(0) +
+    monthNames[currentDate.getMonth()]
+      .slice(1)
+      .toLowerCase();
+
+  return `${month} ${currentDate.getFullYear()} STATUS`;
+};
 
 const getNewAssetColumns = (headers) => {
   const currentMonthStatusHeader = getCurrentMonthStatusHeader();
@@ -153,6 +163,8 @@ export default function App() {
     department: '',
     role: 'user',
   });
+
+  const [lastKnownUpdate, setLastKnownUpdate] = useState(null);
 
   useEffect(() => {
   loadAssets();
@@ -364,13 +376,26 @@ export default function App() {
         loadAssets();
       }, 500);
     } catch (error) {
-      console.error('Error adding asset:', error);
+  if (error.message?.includes('already exists')) {
 
-      showNotification(
-        error.message || 'Failed to add new asset',
-        'error'
-      );
-    } finally {
+  alert(
+  error.message ||
+  '⚠️ Same asset already exists in the inventory.'
+);
+
+  showNotification(
+    '⚠️ Same asset already exists in the inventory.',
+    'info'
+  );
+} else {
+    console.error('Error adding asset:', error);
+
+    showNotification(
+      error.message || 'Failed to add new asset',
+      'error'
+    );
+  }
+} finally {
       setIsAddingAsset(false);
     }
   };
@@ -509,7 +534,32 @@ export default function App() {
     setScannedAssets([]);
   };
 
-  const newAssetColumns = getNewAssetColumns(headers);
+  const hiddenFields = [
+  'REMARKS',
+  'NO CHANGE / WITH CHANGE',
+  'CORRECT COST CENTER',
+  'CORRECT SERIAL NUMBER',
+  'CORRECT RESP. COST CENTER',
+  'CORRECT ASSIGNEE',
+  'CORRECT PLANT CODE',
+];
+
+const newAssetColumns = getNewAssetColumns(headers).filter(header => {
+  const normalized = normalizeHeader(header);
+
+  if (
+    normalized.includes('remarks') ||
+    normalized.includes('may') ||
+    normalized.includes('no change')
+  ) {
+    return false;
+  }
+
+  return !hiddenFields.some(
+    hidden =>
+      normalizeHeader(hidden) === normalized
+  );
+});
 
   const isGeneratedNewAssetField = (header) => {
     const normalizedHeader = normalizeHeader(header);
@@ -520,6 +570,18 @@ export default function App() {
       isMonthlyStatusHeader(header)
     );
   };
+
+  const dropdownFields = [
+  'STATUS (ACCOUNTED / UNACCOUNTED / RECONCILING)',
+];
+
+const getDropdownOptions = (header) => {
+  const values = assets
+    .map(asset => asset[header])
+    .filter(value => value && String(value).trim() !== '');
+
+  return [...new Set(values)];
+};
 
   const isRequiredNewAssetField = (header) => {
     const normalizedHeader = normalizeHeader(header);
@@ -783,18 +845,41 @@ export default function App() {
                       {header}
                     </span>
 
-                    <input
-                      name={header}
-                      value={newAssetForm[header] || ''}
-                      onChange={handleNewAssetFormChange}
-                      required={isRequiredNewAssetField(header)}
-                      readOnly={isGeneratedNewAssetField(header)}
-                      className={`w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        isGeneratedNewAssetField(header)
-                          ? 'bg-gray-100 text-gray-600'
-                          : ''
-                      }`}
-                    />
+                    {dropdownFields.includes(header) ? (
+  <select
+    name={header}
+    value={newAssetForm[header] || ''}
+    onChange={handleNewAssetFormChange}
+    className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <option value="">Select {header}</option>
+
+    <option value="ACCOUNTED">
+  ACCOUNTED
+</option>
+
+<option value="UNACCOUNTED">
+  UNACCOUNTED
+</option>
+
+<option value="RECONCILING">
+  RECONCILING
+</option>
+  </select>
+) : (
+  <input
+    name={header}
+    value={newAssetForm[header] || ''}
+    onChange={handleNewAssetFormChange}
+    required={isRequiredNewAssetField(header)}
+    readOnly={isGeneratedNewAssetField(header)}
+    className={`w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+      isGeneratedNewAssetField(header)
+        ? 'bg-gray-100 text-gray-600'
+        : ''
+    }`}
+  />
+)}
 
                   </label>
                 ))}

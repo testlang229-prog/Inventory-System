@@ -8,6 +8,7 @@ const {
   getHeaders,
   getAssetById,
   getAssetByAssetOrSerial,
+  checkDuplicateAsset,
   updateHeaders,
   upsertAsset,
   deleteAllAssets,
@@ -16,6 +17,7 @@ const {
   getMonthlyStatusHeader,
   getMonthlyRemarksHeader,
   isMonthlyStatusHeader,
+  isMonthlyRemarksHeader,
   normalizeHeader,
 } = require('../utils/monthColumns');
 
@@ -105,14 +107,54 @@ router.post('/', (req, res) => {
       });
     }
 
-    const existingAsset = getAssetByAssetOrSerial(assetNumber, serialNumber);
+    const duplicateAsset = checkDuplicateAsset(
+  assetNumber,
+  assetDescription,
+  serialNumber
+);
 
-    if (existingAsset) {
-      return res.status(409).json({
-        success: false,
-        message: `Asset with number "${assetNumber}" already exists in the system. Cannot add duplicate.`,
-      });
-    }
+if (duplicateAsset) {
+  const duplicateReasons = [];
+
+  if (
+    String(duplicateAsset.asset || '')
+      .trim()
+      .toLowerCase() ===
+    assetNumber.trim().toLowerCase()
+  ) {
+    duplicateReasons.push('Asset');
+  }
+
+  if (
+    String(
+      duplicateAsset.assetDescription ||
+      duplicateAsset['Asset Description'] ||
+      ''
+    )
+      .trim()
+      .toLowerCase() ===
+    assetDescription.trim().toLowerCase()
+  ) {
+    duplicateReasons.push('Asset Description');
+  }
+
+  if (
+    String(duplicateAsset.serialNumber || '')
+      .trim()
+      .toLowerCase() ===
+    serialNumber.trim().toLowerCase()
+  ) {
+    duplicateReasons.push('Serial Number');
+  }
+
+  return res.status(409).json({
+    success: false,
+    duplicateReasons,
+    message:
+      `⚠️ Same asset already exists.\n\n` +
+      `Duplicate found in:\n• ${duplicateReasons.join('\n• ')}`,
+  });
+}
 
     // Validate that the asset number is not an empty string or whitespace only
     if (!assetNumber || assetNumber.length === 0) {
@@ -129,7 +171,8 @@ router.post('/', (req, res) => {
     const remarksHeader = headers.find(header => normalizeHeader(header) === 'remarks' || isMonthlyRemarksHeader(header)) ||
       'REMARKS';
 
-    fields[statusHeader] = 'ACCOUNTED';
+    fields[statusHeader] =
+  fields[statusHeader] || 'ACCOUNTED';
     fields[monthlyStatusHeader] = '';
     fields[remarksHeader] = '';
 
@@ -152,7 +195,8 @@ router.post('/', (req, res) => {
       serialNumber,
       respCostCenter: findFieldValue(['resp cost center', 'responsible cost center']),
       correctRoom: findFieldValue(['correct room', 'room', 'location']),
-      status: 'ACCOUNTED',
+      status:
+  fields[statusHeader] || 'ACCOUNTED',
       remarks: '',
     });
 
