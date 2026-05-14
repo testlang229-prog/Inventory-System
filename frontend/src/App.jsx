@@ -154,6 +154,8 @@ export default function App() {
     role: 'user',
   });
 
+  const [lastKnownUpdate, setLastKnownUpdate] = useState(null);
+
   useEffect(() => {
   loadAssets();
 
