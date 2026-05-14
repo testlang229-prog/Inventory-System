@@ -2,11 +2,10 @@
 // Routes for user management (admin only)
 
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
-
 const bcrypt = require('bcryptjs');
 const { generateToken } = require('../utils/auth');
+const { ensureMongoConnected } = require('../db/mongoose');
+const User = require('../models/User');
 const {
   authenticateToken,
   requireAdmin,
@@ -14,46 +13,39 @@ const {
 
 const router = express.Router();
 
-// Path to users data file
-const usersFilePath = path.join(__dirname, '../db/users.json');
+router.use(ensureMongoConnected);
 
-// Helper function to read users
-const readUsers = () => {
-  try {
-    if (fs.existsSync(usersFilePath)) {
-      const data = fs.readFileSync(usersFilePath, 'utf-8');
-      return JSON.parse(data);
-    }
-    return [];
-  } catch (error) {
-    console.error('Error reading users:', error);
-    return [];
-  }
-};
+function sanitizeUser(user) {
+  if (!user) return null;
+  return {
+    id: user.id,
+    employeeId: user.employeeId,
+    email: user.email,
+    name: user.name,
+    department: user.department,
+    role: user.role || 'user',
+    createdAt: user.createdAt,
+    lastLogin: user.lastLogin,
+  };
+}
 
-// Helper function to write users
-const writeUsers = (users) => {
-  try {
-    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
-    return true;
-  } catch (error) {
-    console.error('Error writing users:', error);
-    return false;
-  }
-};
+function isDuplicateKeyError(error) {
+  return error && error.code === 11000;
+}
+
+function duplicateMessage(error) {
+  const field = Object.keys(error.keyPattern || error.keyValue || {})[0];
+  if (field === 'email') return 'Email already exists';
+  return 'Employee ID already exists';
+}
 
 // GET /api/users - Get all users
-router.get('/', authenticateToken, requireAdmin, (req, res) => {
+router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const users = readUsers();
-    const sanitized = users.map(u => ({
-      id: u.id,
-      employeeId: u.employeeId,
-      department: u.department,
-      createdAt: u.createdAt,
-      lastLogin: u.lastLogin
-    }));
-    res.json({ success: true, users: sanitized });
+    const users = await User.find({})
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json({ success: true, users: users.map(sanitizeUser) });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch users' });
   }
@@ -63,59 +55,59 @@ router.get('/', authenticateToken, requireAdmin, (req, res) => {
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const {
-  employeeId,
-  name,
-  department,
-  password,
-  role = 'user',
-} = req.body;
+      employeeId,
+      email,
+      name,
+      department,
+      password,
+      role = 'user',
+    } = req.body;
 
     if (!employeeId || !name || !department || !password) {
-  return res.status(400).json({
-    success: false,
-    message: 'Employee ID, Department, and Password are required'
-  });
-}
-
-    const users = readUsers();
+      return res.status(400).json({
+        success: false,
+        message: 'Employee ID, Department, and Password are required'
+      });
+    }
 
     // Check if employee already exists
-    if (users.some(u => u.employeeId === employeeId)) {
+    const existingUser = await User.findOne({ employeeId: employeeId.trim() });
+    if (existingUser) {
       return res.status(400).json({ success: false, message: 'Employee ID already exists' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const newUser = {
-  id: Date.now().toString(),
-  employeeId,
-  name,
-  department,
+    const newUser = await User.create({
+      id: Date.now().toString(),
+      employeeId: employeeId.trim(),
+      email: email ? email.trim() : undefined,
+      name: name.trim(),
+      department: department.trim(),
       passwordHash,
       role,
-      createdAt: new Date().toISOString(),
       lastLogin: null
-    };
-
-    users.push(newUser);
-    writeUsers(users);
+    });
 
     res.json({ 
       success: true, 
       message: 'User created successfully',
-      user: newUser 
+      user: sanitizeUser(newUser)
     });
   } catch (error) {
+    if (isDuplicateKeyError(error)) {
+      return res.status(400).json({ success: false, message: duplicateMessage(error) });
+    }
     res.status(500).json({ success: false, message: 'Failed to create user' });
   }
 });
 
 // PUT /api/users/:employeeId - Update a user
-// PUT /api/users/:employeeId - Update a user
 router.put('/:employeeId', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const {
       employeeId: newEmployeeId,
+      email,
       name,
       department,
       password,
@@ -124,13 +116,9 @@ router.put('/:employeeId', authenticateToken, requireAdmin, async (req, res) => 
 
     const { employeeId } = req.params;
 
-    const users = readUsers();
+    const user = await User.findOne({ employeeId });
 
-    const userIndex = users.findIndex(
-      u => u.employeeId === employeeId
-    );
-
-    if (userIndex === -1) {
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
@@ -141,7 +129,7 @@ router.put('/:employeeId', authenticateToken, requireAdmin, async (req, res) => 
     if (
       newEmployeeId &&
       newEmployeeId !== employeeId &&
-      users.some(u => u.employeeId === newEmployeeId)
+      await User.exists({ employeeId: newEmployeeId.trim() })
     ) {
       return res.status(400).json({
         success: false,
@@ -151,36 +139,46 @@ router.put('/:employeeId', authenticateToken, requireAdmin, async (req, res) => 
 
     // Update fields
     if (newEmployeeId) {
-      users[userIndex].employeeId = newEmployeeId;
+      user.employeeId = newEmployeeId.trim();
+    }
+
+    if (email !== undefined) {
+      user.email = email ? email.trim() : undefined;
     }
 
     if (name) {
-      users[userIndex].name = name;
+      user.name = name.trim();
     }
 
     if (department) {
-      users[userIndex].department = department;
+      user.department = department.trim();
     }
 
     if (role) {
-      users[userIndex].role = role;
+      user.role = role;
     }
 
     // Re-hash new password
     if (password && password.trim() !== '') {
       const passwordHash = await bcrypt.hash(password, 10);
-      users[userIndex].passwordHash = passwordHash;
+      user.passwordHash = passwordHash;
     }
 
-    writeUsers(users);
+    await user.save();
 
     res.json({
       success: true,
       message: 'User updated successfully',
-      user: users[userIndex]
+      user: sanitizeUser(user)
     });
 
   } catch (error) {
+    if (isDuplicateKeyError(error)) {
+      return res.status(400).json({
+        success: false,
+        message: duplicateMessage(error)
+      });
+    }
     res.status(500).json({
       success: false,
       message: 'Failed to update user'
@@ -189,24 +187,22 @@ router.put('/:employeeId', authenticateToken, requireAdmin, async (req, res) => 
 });
 
 // DELETE /api/users/:employeeId - Delete a user
-router.delete('/:employeeId', authenticateToken, requireAdmin, (req, res) => {
+router.delete('/:employeeId', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { employeeId } = req.params;
 
-    const users = readUsers();
     if (employeeId === 'admin') {
-  return res.status(403).json({
-    success: false,
-    message: 'Main admin account cannot be deleted'
-  });
-}
-    const filteredUsers = users.filter(u => u.employeeId !== employeeId);
-
-    if (filteredUsers.length === users.length) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(403).json({
+        success: false,
+        message: 'Main admin account cannot be deleted'
+      });
     }
 
-    writeUsers(filteredUsers);
+    const result = await User.deleteOne({ employeeId });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
     res.json({ success: true, message: 'User deleted successfully' });
   } catch (error) {
@@ -226,13 +222,9 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    const users = readUsers();
-
-    const matchedUser = users.find(
-      user =>
-        String(user.employeeId).trim() ===
-        String(employeeId).trim()
-    );
+    const matchedUser = await User.findOne({
+      employeeId: String(employeeId).trim(),
+    });
 
     if (!matchedUser) {
       return res.status(401).json({
@@ -242,19 +234,19 @@ router.post('/login', async (req, res) => {
     }
 
     const validPassword = await bcrypt.compare(
-  password,
-  matchedUser.passwordHash
-);
+      password,
+      matchedUser.passwordHash
+    );
 
-if (!validPassword) {
-  return res.status(401).json({
-    success: false,
-    message: 'Invalid credentials',
-  });
-}
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials',
+      });
+    }
 
-    matchedUser.lastLogin = new Date().toISOString();
-    writeUsers(users);
+    matchedUser.lastLogin = new Date();
+    await matchedUser.save();
 
     const token = generateToken(matchedUser);
 
@@ -262,11 +254,11 @@ if (!validPassword) {
       success: true,
       token,
       user: {
-  employeeId: matchedUser.employeeId,
-  name: matchedUser.name,
-  department: matchedUser.department,
-  role: matchedUser.role,
-},
+        employeeId: matchedUser.employeeId,
+        name: matchedUser.name,
+        department: matchedUser.department,
+        role: matchedUser.role,
+      },
     });
 
   } catch (error) {

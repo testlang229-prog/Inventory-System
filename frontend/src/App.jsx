@@ -166,7 +166,6 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
     role: 'user',
   });
 
-  const [lastKnownUpdate, setLastKnownUpdate] = useState(null);
 
   useEffect(() => {
   loadAssets();

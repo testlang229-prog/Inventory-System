@@ -69,7 +69,7 @@ A complete **web-based asset inventory system** for digitizing and managing phys
 | **Frontend** | React 18.2 | Component-based, real-time updates |
 | **Styling** | Tailwind CSS | Responsive, utility-first design |
 | **Backend** | Node.js + Express | Lightweight, fast, JavaScript everywhere |
-| **Storage** | JSON File | No build tools needed, beginner-friendly |
+| **Storage** | JSON File + MongoDB Atlas | Inventory stays in JSON; users/auth use MongoDB Atlas |
 | **Excel Processing** | XLSX + ExcelJS | Industry standard, full Excel support |
 | **File Upload** | Multer | Standard Express middleware |
 | **QR Scanning** | html5-qrcode | Mobile-ready, no server-side QR generation |
@@ -97,7 +97,11 @@ inventory-system/
 │   │
 │   ├── db/
 │   │   ├── database.js               # JSON-based data storage
+│   │   ├── mongoose.js               # MongoDB Atlas connection for users
 │   │   └── inventory.json            # Data file (auto-created)
+│   │
+│   ├── models/
+│   │   └── User.js                   # User schema for authentication
 │   │
 │   ├── utils/
 │   │   ├── excelParser.js            # Parse uploaded files
@@ -148,7 +152,20 @@ cd backend
 npm install
 ```
 
-### Step 2: Start Backend Server
+### Step 2: Configure MongoDB Atlas for Users
+
+Create `backend/.env` from `backend/.env.example` and set your Atlas credentials:
+
+```bash
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.d12nazu.mongodb.net/inventory_system?retryWrites=true&w=majority
+MONGODB_DB_NAME=inventory_system
+```
+
+Do not commit `backend/.env`. If a real MongoDB URI or password was shared, rotate the Atlas database user password before using it.
+
+Inventory asset data still uses `backend/db/inventory.json`; only user management and login use MongoDB Atlas.
+
+### Step 3: Start Backend Server
 
 ```bash
 npm run dev
@@ -161,14 +178,14 @@ npm run dev
 # ╚════════════════════════════════════════════╝
 ```
 
-### Step 3: Install Frontend
+### Step 4: Install Frontend
 
 ```bash
 cd frontend
 npm install
 ```
 
-### Step 4: Start Frontend Dev Server
+### Step 5: Start Frontend Dev Server
 
 ```bash
 npm run dev
@@ -284,7 +301,8 @@ Response: <binary xlsx file>
 |---------|----------|
 | **Port 5000 already in use** | Change `PORT` in backend/server.js or kill the process using port 5000 |
 | **npm install fails** | Make sure you have Node.js v16+ installed |
-| **Database errors** | Delete `backend/db/inventory.json` to reset |
+| **Inventory database errors** | Delete `backend/db/inventory.json` to reset inventory data |
+| **User login errors** | Check `backend/.env`, Atlas network access, and the `users` collection in `inventory_system` |
 | **CORS errors** | Check CORS is enabled in backend/server.js |
 
 ### Frontend Issues
@@ -402,7 +420,7 @@ This project is designed for **beginners** with:
 ✅ **Clear comments** explaining each code block
 ✅ **Simple folder structure** - easy to navigate
 ✅ **No complex abstractions** - straightforward logic
-✅ **JSON storage** - no database setup needed
+✅ **JSON inventory storage** - assets stay simple; users authenticate with MongoDB Atlas
 ✅ **Error handling** - helpful error messages
 ✅ **Real-world use case** - practical learning
 
