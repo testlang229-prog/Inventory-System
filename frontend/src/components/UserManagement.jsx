@@ -1,16 +1,24 @@
 // frontend/src/components/UserManagement.jsx
 import { useState, useEffect } from 'react';
+import apiClient from '../services/api';
 
-const API_BASE = 'http://localhost:2026/api';
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ employeeId: '', department: '' });
+  const [formData, setFormData] = useState({
+  employeeId: '',
+  name: '',
+  department: '',
+  password: '',
+  role: 'user'
+});
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [editingId, setEditingId] = useState(null);
+const [showRemoveModal, setShowRemoveModal] = useState(false);
+const [selectedUserId, setSelectedUserId] = useState('');
 
   const departments = [
     'IT Department',
@@ -31,8 +39,8 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/users`);
-      const data = await response.json();
+      const response = await apiClient.get('/users');
+const data = response.data;
       if (data.success) {
         setUsers(data.users);
       }
@@ -48,7 +56,12 @@ export default function UserManagement() {
     setError('');
     setSuccess('');
 
-    if (!formData.employeeId.trim() || !formData.department) {
+    if (
+  !formData.employeeId.trim() ||
+  !formData.name.trim() ||
+  !formData.department ||
+  !formData.password
+) {
       setError('Please fill in all fields');
       return;
     }
@@ -56,23 +69,21 @@ export default function UserManagement() {
     try {
       let response;
       if (editingId) {
-        response = await fetch(`${API_BASE}/users/${editingId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
+        response = await apiClient.put(`/users/${editingId}`, formData);
       } else {
-        response = await fetch(`${API_BASE}/users`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
+        response = await apiClient.post('/users', formData);
       }
 
-      const data = await response.json();
+      const data = response.data;
       if (data.success) {
         setSuccess(data.message);
-        setFormData({ employeeId: '', department: '' });
+        setFormData({
+  employeeId: '',
+  name: '',
+  department: '',
+  password: '',
+  role: 'user'
+});
         setEditingId(null);
         setShowForm(false);
         fetchUsers();
@@ -85,37 +96,51 @@ export default function UserManagement() {
   };
 
   const handleEdit = (user) => {
-    setFormData({ employeeId: user.employeeId, department: user.department });
+    setFormData({
+  employeeId: user.employeeId,
+  name: user.name || '',
+  department: user.department,
+  password: '',
+  role: user.role || 'user'
+});
     setEditingId(user.employeeId);
     setShowForm(true);
     setError('');
   };
 
-  const handleDelete = async (employeeId) => {
-    if (!window.confirm(`Are you sure you want to delete employee ${employeeId}?`)) {
-      return;
-    }
+  const handleDelete = (employeeId) => {
+  setSelectedUserId(employeeId);
+  setShowRemoveModal(true);
+};
 
-    try {
-      const response = await fetch(`${API_BASE}/users/${employeeId}`, {
-        method: 'DELETE'
-      });
+const confirmRemoveUser = async () => {
+  try {
+    const response = await apiClient.delete(`/users/${selectedUserId}`);
+    const data = response.data;
 
-      const data = await response.json();
-      if (data.success) {
-        setSuccess(data.message);
-        fetchUsers();
-      } else {
-        setError(data.message);
-      }
-    } catch (err) {
-      setError('Failed to delete user');
+    if (data.success) {
+      setSuccess(data.message);
+      fetchUsers();
+    } else {
+      setError(data.message);
     }
-  };
+  } catch (err) {
+    setError('Failed to remove user');
+  } finally {
+    setShowRemoveModal(false);
+    setSelectedUserId('');
+  }
+};
 
   const handleCancel = () => {
     setShowForm(false);
-    setFormData({ employeeId: '', department: '' });
+    setFormData({
+  employeeId: '',
+  name: '',
+  department: '',
+  password: '',
+  role: 'user'
+});
     setEditingId(null);
     setError('');
   };
@@ -153,35 +178,103 @@ export default function UserManagement() {
           </h3>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Employee ID
-              </label>
-              <input
-                type="text"
-                value={formData.employeeId}
-                onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., EMP001"
-                required
-              />
-            </div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Employee ID
+  </label>
+
+  <input
+    type="text"
+    value={formData.employeeId}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        employeeId: e.target.value
+      })
+    }
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    placeholder="e.g., EMP001"
+    required
+  />
+</div>
+
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Full Name
+  </label>
+
+  <input
+    type="text"
+    value={formData.name}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        name: e.target.value
+      })
+    }
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    placeholder="Enter full name"
+    required
+  />
+</div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Department
-              </label>
-              <select
-                value={formData.department}
-                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Select Department</option>
-                {departments.map((dept) => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-              </select>
-            </div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Department
+  </label>
+
+  <select
+    value={formData.department}
+    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    required
+  >
+    <option value="">Select Department</option>
+
+    {departments.map((dept) => (
+      <option key={dept} value={dept}>{dept}</option>
+    ))}
+  </select>
+</div>
+
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Password
+  </label>
+
+  <input
+    type="password"
+    value={formData.password}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        password: e.target.value
+      })
+    }
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    placeholder="Enter password"
+    required
+  />
+</div>
+
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Role
+  </label>
+
+  <select
+    value={formData.role}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        role: e.target.value
+      })
+    }
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <option value="user">User</option>
+    <option value="admin">Admin</option>
+  </select>
+</div>
 
             <div className="md:col-span-2 flex gap-3 justify-end">
               <button
@@ -239,12 +332,14 @@ export default function UserManagement() {
                     >
                       Edit
                     </button>
-                    <button
-                      onClick={() => handleDelete(user.employeeId)}
-                      className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition"
-                    >
-                      Delete
-                    </button>
+                    {user.employeeId !== 'admin' && (
+  <button
+    onClick={() => handleDelete(user.employeeId)}
+    className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition"
+  >
+    Remove
+  </button>
+)}
                   </td>
                 </tr>
               ))}
@@ -252,6 +347,39 @@ export default function UserManagement() {
           </table>
         </div>
       )}
+    {showRemoveModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+      <h3 className="text-xl font-bold text-gray-800 mb-4">
+        Remove User
+      </h3>
+
+      <p className="text-gray-600 mb-6">
+        Are you sure you want to remove this account?
+      </p>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => {
+            setShowRemoveModal(false);
+            setSelectedUserId('');
+          }}
+          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={confirmRemoveUser}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          Confirm
+        </button>
+      </div>
     </div>
-  );
+  </div>
+)}
+
+</div>
+);
 }

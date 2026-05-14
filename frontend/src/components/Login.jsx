@@ -1,29 +1,23 @@
 // frontend/src/components/Login.jsx
 import { useState } from 'react';
 
-const departments = [
-  'IT Department',
-  'HR Department',
-  'Finance Department',
-  'Operations Department',
-  'Maintenance Department',
-  'Security Department',
-  'Administration',
-  'Other'
-];
+
 
 export default function Login({ onLogin, onShowAdmin }) {
   const [employeeId, setEmployeeId] = useState('');
-  const [department, setDepartment] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (employeeId.trim() && department) {
-      onLogin({ employeeId: employeeId.trim(), department });
+    if (employeeId.trim() && password.trim()) {
+  onLogin({
+    employeeId: employeeId.trim(),
+    password,
+  });
       setError('');
     } else {
-      setError('Please enter your Employee ID and select a department');
+      setError('Please enter your Employee ID and password');
     }
   };
 
@@ -54,29 +48,28 @@ export default function Login({ onLogin, onShowAdmin }) {
             />
           </div>
 
-          <div className="mb-6">
-            <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-2">
-              Department
-            </label>
-            <select
-              id="department"
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Select your department</option>
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </select>
-          </div>
+<div className="mb-6">
+  <label
+    htmlFor="password"
+    className="block text-sm font-medium text-gray-700 mb-2"
+  >
+    Password
+  </label>
 
-          {error && (
-            <p className="text-red-500 text-sm mb-4">{error}</p>
-          )}
+  <input
+    type="password"
+    id="password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    placeholder="Enter your password"
+    required
+  />
+</div>
+
+{error && (
+  <p className="text-red-500 text-sm mb-4">{error}</p>
+)}
 
           <button
             type="submit"

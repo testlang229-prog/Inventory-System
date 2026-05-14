@@ -4,7 +4,7 @@
 import axios from 'axios';
 
 // Base URL for backend API
-const API_BASE_URL = 'http://192.168.137.1:2026/api';
+const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:2026/api`;
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -12,6 +12,26 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
 });
 
 /**
