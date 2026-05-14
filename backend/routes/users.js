@@ -5,6 +5,13 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 
+const bcrypt = require('bcryptjs');
+const { generateToken } = require('../utils/auth');
+const {
+  authenticateToken,
+  requireAdmin,
+} = require('../middleware/authMiddleware');
+
 const router = express.Router();
 
 // Path to users data file
@@ -36,7 +43,7 @@ const writeUsers = (users) => {
 };
 
 // GET /api/users - Get all users
-router.get('/', (req, res) => {
+router.get('/', authenticateToken, requireAdmin, (req, res) => {
   try {
     const users = readUsers();
     const sanitized = users.map(u => ({
@@ -53,13 +60,22 @@ router.get('/', (req, res) => {
 });
 
 // POST /api/users - Create a new user
-router.post('/', (req, res) => {
+router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { employeeId, department } = req.body;
+    const {
+  employeeId,
+  name,
+  department,
+  password,
+  role = 'user',
+} = req.body;
 
-    if (!employeeId || !department) {
-      return res.status(400).json({ success: false, message: 'Employee ID and Department are required' });
-    }
+    if (!employeeId || !name || !department || !password) {
+  return res.status(400).json({
+    success: false,
+    message: 'Employee ID, Department, and Password are required'
+  });
+}
 
     const users = readUsers();
 
@@ -68,10 +84,15 @@ router.post('/', (req, res) => {
       return res.status(400).json({ success: false, message: 'Employee ID already exists' });
     }
 
+    const passwordHash = await bcrypt.hash(password, 10);
+
     const newUser = {
-      id: Date.now().toString(),
-      employeeId,
-      department,
+  id: Date.now().toString(),
+  employeeId,
+  name,
+  department,
+      passwordHash,
+      role,
       createdAt: new Date().toISOString(),
       lastLogin: null
     };
@@ -90,44 +111,95 @@ router.post('/', (req, res) => {
 });
 
 // PUT /api/users/:employeeId - Update a user
-router.put('/:employeeId', (req, res) => {
+// PUT /api/users/:employeeId - Update a user
+router.put('/:employeeId', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { employeeId: newEmployeeId, department } = req.body;
+    const {
+      employeeId: newEmployeeId,
+      name,
+      department,
+      password,
+      role
+    } = req.body;
+
     const { employeeId } = req.params;
 
     const users = readUsers();
-    const userIndex = users.findIndex(u => u.employeeId === employeeId);
+
+    const userIndex = users.findIndex(
+      u => u.employeeId === employeeId
+    );
 
     if (userIndex === -1) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
-    // Check if new employeeId already exists (if different)
-    if (newEmployeeId && newEmployeeId !== employeeId && users.some(u => u.employeeId === newEmployeeId)) {
-      return res.status(400).json({ success: false, message: 'Employee ID already exists' });
+    // Prevent duplicate employee IDs
+    if (
+      newEmployeeId &&
+      newEmployeeId !== employeeId &&
+      users.some(u => u.employeeId === newEmployeeId)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Employee ID already exists'
+      });
     }
 
-    if (newEmployeeId) users[userIndex].employeeId = newEmployeeId;
-    if (department) users[userIndex].department = department;
+    // Update fields
+    if (newEmployeeId) {
+      users[userIndex].employeeId = newEmployeeId;
+    }
+
+    if (name) {
+      users[userIndex].name = name;
+    }
+
+    if (department) {
+      users[userIndex].department = department;
+    }
+
+    if (role) {
+      users[userIndex].role = role;
+    }
+
+    // Re-hash new password
+    if (password && password.trim() !== '') {
+      const passwordHash = await bcrypt.hash(password, 10);
+      users[userIndex].passwordHash = passwordHash;
+    }
 
     writeUsers(users);
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'User updated successfully',
-      user: users[userIndex] 
+      user: users[userIndex]
     });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to update user' });
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update user'
+    });
   }
 });
 
 // DELETE /api/users/:employeeId - Delete a user
-router.delete('/:employeeId', (req, res) => {
+router.delete('/:employeeId', authenticateToken, requireAdmin, (req, res) => {
   try {
     const { employeeId } = req.params;
 
     const users = readUsers();
+    if (employeeId === 'admin') {
+  return res.status(403).json({
+    success: false,
+    message: 'Main admin account cannot be deleted'
+  });
+}
     const filteredUsers = users.filter(u => u.employeeId !== employeeId);
 
     if (filteredUsers.length === users.length) {
@@ -143,49 +215,64 @@ router.delete('/:employeeId', (req, res) => {
 });
 
 // POST /api/users/login - Validate user login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   try {
-    const { employeeId, department } = req.body;
+    const { employeeId, password } = req.body;
 
-    if (!employeeId || !department) {
+    if (!employeeId || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Employee ID and Department are required'
+        message: 'Employee ID and password are required',
       });
     }
 
     const users = readUsers();
 
-    const matchedUser = users.find(user =>
-      String(user.employeeId).trim() === String(employeeId).trim() &&
-      String(user.department).trim().toLowerCase() ===
-      String(department).trim().toLowerCase()
+    const matchedUser = users.find(
+      user =>
+        String(user.employeeId).trim() ===
+        String(employeeId).trim()
     );
 
     if (!matchedUser) {
       return res.status(401).json({
         success: false,
-        message: 'Unauthorized user'
+        message: 'Invalid credentials',
       });
     }
 
-    // update last login
+    const validPassword = await bcrypt.compare(
+  password,
+  matchedUser.passwordHash
+);
+
+if (!validPassword) {
+  return res.status(401).json({
+    success: false,
+    message: 'Invalid credentials',
+  });
+}
+
     matchedUser.lastLogin = new Date().toISOString();
     writeUsers(users);
 
+    const token = generateToken(matchedUser);
+
     res.json({
       success: true,
-      message: 'Login successful',
+      token,
       user: {
-        employeeId: matchedUser.employeeId,
-        department: matchedUser.department
-      }
+  employeeId: matchedUser.employeeId,
+  name: matchedUser.name,
+  department: matchedUser.department,
+  role: matchedUser.role,
+},
     });
 
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Login failed'
+      message: 'Login failed',
     });
   }
 });

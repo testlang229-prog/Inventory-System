@@ -1,9 +1,22 @@
 [
   {
-    "id": "1778480418047",
-    "employeeId": "123",
+    "id": "1",
+    "employeeId": "admin",
+    "name": "System Administrator",
+    "department": "Administration",
+    "passwordHash": "$2b$10$R9Bou4PjeZn6TI3ZHimtvuO1fg4Ny3OX92ePgp2RhjgT7EcQ/KPFi",
+    "role": "admin",
+    "createdAt": "2026-05-13T00:00:00.000Z",
+    "lastLogin": "2026-05-13T23:42:37.737Z"
+  },
+  {
+    "id": "1778706605271",
+    "employeeId": "test",
+    "name": "Kevin",
     "department": "IT Department",
-    "createdAt": "2026-05-11T06:20:18.047Z",
-    "lastLogin": null
+    "passwordHash": "$2b$10$i3SvKZ490dsAkF0pvzOIDe1VBvtx/wVWE2jTJZOgOJSUluo7kgORe",
+    "role": "user",
+    "createdAt": "2026-05-13T21:10:05.271Z",
+    "lastLogin": "2026-05-13T23:41:44.068Z"
   }
 ]
