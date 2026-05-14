@@ -20,6 +20,7 @@ const {
 } = require('../utils/monthColumns');
 
 const router = express.Router();
+const { updateLastUpdated } = require('../utils/updateTracker');
 
 /**
  * GET /api/assets
@@ -155,6 +156,7 @@ router.post('/', (req, res) => {
       remarks: '',
     });
 
+    updateLastUpdated();
     res.status(201).json({
       success: true,
       message: 'New asset added successfully',
@@ -179,6 +181,7 @@ router.delete('/', (req, res) => {
   try {
     deleteAllAssets();
 
+      updateLastUpdated();
     res.json({
       success: true,
       message: 'Inventory list cleared successfully',

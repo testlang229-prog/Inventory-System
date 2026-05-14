@@ -15,6 +15,7 @@ const scanRoute = require('./routes/scan');
 const downloadRoute = require('./routes/download');
 const assetsRoute = require('./routes/assets');
 const usersRoute = require('./routes/users');
+const { getLastUpdated } = require('./utils/updateTracker');
 
 // Initialize Express app
 const app = express();
@@ -68,6 +69,17 @@ app.use('/api/assets', assetsRoute);
 
 // GET/POST/PUT/DELETE /api/users - Manage users
 app.use('/api/users', usersRoute);
+
+// ============================================
+// LIVE UPDATE CHECK ENDPOINT
+// ============================================
+
+app.get('/api/last-updated', (req, res) => {
+  res.json({
+    success: true,
+    lastUpdated: getLastUpdated(),
+  });
+});
 
 // ============================================
 // HEALTH CHECK ENDPOINT
