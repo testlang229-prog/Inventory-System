@@ -106,8 +106,8 @@ export default function ScannedAssetDetails({ scannedAssets }) {
         <div
           className="space-y-3 overscroll-contain px-4 py-3"
           style={{
-            height: '260px',
-            maxHeight: '260px',
+  height: '420px',
+maxHeight: '420px',
             overflowY: 'auto',
             scrollbarGutter: 'stable',
           }}

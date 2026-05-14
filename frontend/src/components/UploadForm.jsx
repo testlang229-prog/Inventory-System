@@ -68,8 +68,8 @@ export default function UploadForm({ onUploadSuccess, onUploadError }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
         📤 Upload Excel File
       </h2>
 
@@ -79,7 +79,7 @@ export default function UploadForm({ onUploadSuccess, onUploadError }) {
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
+        className={`border-2 border-dashed rounded-lg p-4 sm:p-8 text-center cursor-pointer transition ${
           dragActive
             ? 'border-blue-500 bg-blue-50'
             : 'border-gray-300 bg-gray-50 hover:border-gray-400'
@@ -102,7 +102,7 @@ export default function UploadForm({ onUploadSuccess, onUploadError }) {
         </div>
 
         <label className="block cursor-pointer">
-          <span className="text-lg font-semibold text-gray-700">
+          <span className="text-base sm:text-lg font-semibold text-gray-700">
             {isLoading ? 'Uploading...' : 'Drag and drop your Excel file here'}
           </span>
           <span className="text-sm text-gray-500 mt-2 block">

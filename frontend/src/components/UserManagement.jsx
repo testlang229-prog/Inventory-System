@@ -146,14 +146,14 @@ const confirmRemoveUser = async () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 overflow-hidden">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
           👥 User Management
         </h2>
         <button
           onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
         >
           ➕ Add User
         </button>
@@ -176,7 +176,7 @@ const confirmRemoveUser = async () => {
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
             {editingId ? 'Edit User' : 'Add New User'}
           </h3>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div>
   <label className="block text-sm font-medium text-gray-700 mb-2">
     Employee ID
@@ -276,7 +276,7 @@ const confirmRemoveUser = async () => {
   </select>
 </div>
 
-            <div className="md:col-span-2 flex gap-3 justify-end">
+            <div className="lg:col-span-2 flex flex-col sm:flex-row gap-3 justify-end">
               <button
                 type="button"
                 onClick={handleCancel}
@@ -308,7 +308,7 @@ const confirmRemoveUser = async () => {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="min-w-[700px] w-full">
             <thead className="bg-gray-100 border-b border-gray-300">
               <tr>
                 <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Employee ID</th>
@@ -348,7 +348,7 @@ const confirmRemoveUser = async () => {
         </div>
       )}
     {showRemoveModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
     <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
       <h3 className="text-xl font-bold text-gray-800 mb-4">
         Remove User

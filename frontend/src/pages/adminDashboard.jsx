@@ -43,10 +43,14 @@ export default function AdminDashboard({
           {/* Upload Button */}
           <button
             onClick={() => setActivePage("upload")}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl p-8 shadow-lg transition"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-6 md:p-8 shadow-lg transition-all duration-300"
           >
-            <div className="text-5xl mb-4">📤</div>
-            <h2 className="text-2xl font-bold">Upload</h2>
+            <div className="text-4xl md:text-5xl mb-4">📤</div>
+
+            <h2 className="text-xl md:text-2xl font-bold">
+              Upload
+            </h2>
+
             <p className="mt-2 text-sm text-blue-100">
               Upload Excel asset files
             </p>
@@ -106,20 +110,26 @@ export default function AdminDashboard({
             ← Back to Dashboard
           </button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* CUSTOM LAYOUT */}
+<div className="flex flex-col xl:flex-row gap-4 items-start">
 
-            {/* Left Side */}
-            <div className="lg:col-span-1">
-              <ScannedAssetDetails scannedAssets={scannedAssets} />
+  {/* LEFT SIDEBAR */}
+  <div className="w-full xl:w-[340px] flex-shrink-0 space-y-4">
 
-              <QRScanner
-                onScanSuccess={onScanSuccess}
-                onScanError={onScanError}
-              />
-            </div>
+    <ScannedAssetDetails
+      scannedAssets={scannedAssets}
+    />
 
-            {/* Right Side */}
-            <div className="lg:col-span-2">
+    <QRScanner
+      onScanSuccess={onScanSuccess}
+      onScanError={onScanError}
+    />
+
+  </div>
+
+  {/* RIGHT CONTENT */}
+  <div className="flex-1 min-w-0 w-full">
+
               {isLoading ? (
                 <div className="bg-white rounded-lg shadow-md p-12 text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
