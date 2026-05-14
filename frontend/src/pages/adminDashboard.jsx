@@ -1,12 +1,162 @@
+import { useState } from "react";
+
 import UploadForm from "../components/UploadForm";
 import ScannedAssetDetails from "../components/ScannedAssetDetails";
 import UserManagement from "../components/UserManagement";
 import AssetTable from "../components/AssetTable";
 import QRScanner from "../components/QRScanner";
 
-export default function AdminDashboard() {
-    <h1 className="text-3xl font-bold mb-4">
-        Admin Dashboard
-    </h1>
-}
+export default function AdminDashboard({
+  assets = [],
+  headers = [],
+  scannedAssets = [],
+  isLoading,
+  onUploadSuccess,
+  onUploadError,
+  onScanSuccess,
+  onScanError,
+  onDownload,
+  isDownloading,
+  onClearAssets,
+  isClearing,
+}) {
+  const [activePage, setActivePage] = useState("dashboard");
 
+  return (
+    <div className="min-h-screen bg-gray-100 p-6">
+      
+      {/* Dashboard Header */}
+      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">
+          🔒 Admin Dashboard
+        </h1>
+
+        <p className="text-gray-500 mt-2">
+          Manage uploads, scanning, and users
+        </p>
+      </div>
+
+      {/* Dashboard Buttons */}
+      {activePage === "dashboard" && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          {/* Upload Button */}
+          <button
+            onClick={() => setActivePage("upload")}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl p-8 shadow-lg transition"
+          >
+            <div className="text-5xl mb-4">📤</div>
+            <h2 className="text-2xl font-bold">Upload</h2>
+            <p className="mt-2 text-sm text-blue-100">
+              Upload Excel asset files
+            </p>
+          </button>
+
+          {/* Scan Button */}
+          <button
+            onClick={() => setActivePage("scan")}
+            className="bg-green-600 hover:bg-green-700 text-white rounded-xl p-8 shadow-lg transition"
+          >
+            <div className="text-5xl mb-4">📱</div>
+            <h2 className="text-2xl font-bold">Scan</h2>
+            <p className="mt-2 text-sm text-green-100">
+              Scan and manage assets
+            </p>
+          </button>
+
+          {/* User Management Button */}
+          <button
+            onClick={() => setActivePage("users")}
+            className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl p-8 shadow-lg transition"
+          >
+            <div className="text-5xl mb-4">👥</div>
+            <h2 className="text-2xl font-bold">User Management</h2>
+            <p className="mt-2 text-sm text-purple-100">
+              Manage system users
+            </p>
+          </button>
+
+        </div>
+      )}
+
+      {/* Upload Page */}
+      {activePage === "upload" && (
+        <div>
+          <button
+            onClick={() => setActivePage("dashboard")}
+            className="mb-4 px-4 py-2 bg-gray-700 text-white rounded-lg"
+          >
+            ← Back to Dashboard
+          </button>
+
+          <UploadForm
+            onUploadSuccess={onUploadSuccess}
+            onUploadError={onUploadError}
+          />
+        </div>
+      )}
+
+      {/* Scan Page */}
+      {activePage === "scan" && (
+        <div>
+          <button
+            onClick={() => setActivePage("dashboard")}
+            className="mb-4 px-4 py-2 bg-gray-700 text-white rounded-lg"
+          >
+            ← Back to Dashboard
+          </button>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            {/* Left Side */}
+            <div className="lg:col-span-1">
+              <ScannedAssetDetails scannedAssets={scannedAssets} />
+
+              <QRScanner
+                onScanSuccess={onScanSuccess}
+                onScanError={onScanError}
+              />
+            </div>
+
+            {/* Right Side */}
+            <div className="lg:col-span-2">
+              {isLoading ? (
+                <div className="bg-white rounded-lg shadow-md p-12 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+
+                  <p className="text-gray-600 mt-4">
+                    Loading assets...
+                  </p>
+                </div>
+              ) : (
+                <AssetTable
+                  assets={assets}
+                  headers={headers}
+                  onDownload={onDownload}
+                  isDownloading={isDownloading}
+                  onClearAssets={onClearAssets}
+                  isClearing={isClearing}
+                />
+              )}
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* User Management Page */}
+      {activePage === "users" && (
+        <div>
+          <button
+            onClick={() => setActivePage("dashboard")}
+            className="mb-4 px-4 py-2 bg-gray-700 text-white rounded-lg"
+          >
+            ← Back to Dashboard
+          </button>
+
+          <UserManagement />
+        </div>
+      )}
+    </div>
+  );
+}

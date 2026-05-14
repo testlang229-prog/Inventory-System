@@ -7,7 +7,7 @@
     "passwordHash": "$2b$10$R9Bou4PjeZn6TI3ZHimtvuO1fg4Ny3OX92ePgp2RhjgT7EcQ/KPFi",
     "role": "admin",
     "createdAt": "2026-05-13T00:00:00.000Z",
-    "lastLogin": "2026-05-13T23:42:37.737Z"
+    "lastLogin": "2026-05-14T00:40:13.697Z"
   },
   {
     "id": "1778706605271",
@@ -15,20 +15,16 @@
     "name": "Kevin",
     "department": "IT Department",
     "createdAt": "2026-05-11T06:20:18.047Z",
-    "lastLogin": "2026-05-13T23:48:24.495Z"
+    "lastLogin": "2026-05-13T06:55:50.561Z"
   },
   {
     "id": "1778655493955",
     "employeeId": "kevin",
-    "department": "Security Department",
+    "department": "Administration",
     "createdAt": "2026-05-13T06:58:13.955Z",
-    "lastLogin": "2026-05-13T06:58:35.125Z"
-  },
-  {
-    "id": "1778716637199",
-    "employeeId": "2001",
-    "department": "Finance Department",
-    "createdAt": "2026-05-13T23:57:17.199Z",
-    "lastLogin": null
+    "lastLogin": "2026-05-14T00:40:24.442Z",
+    "name": "troy",
+    "role": "user",
+    "passwordHash": "$2b$10$GDspaLxQ1WCpCYsYL2eJh.bEW23v4jXTe3FbftOudcDesrFx2dkxK"
   }
 ]
