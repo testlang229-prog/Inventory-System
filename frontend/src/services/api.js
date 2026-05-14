@@ -164,4 +164,13 @@ export async function loginUser(credentials) {
   }
 }
 
+export async function getLastUpdated() {
+  try {
+    const response = await apiClient.get('/last-updated');
+    return response.data.lastUpdated;
+  } catch (error) {
+    return null;
+  }
+}
+
 export default apiClient;

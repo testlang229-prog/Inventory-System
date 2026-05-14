@@ -17,7 +17,8 @@ import {
   downloadExcel,
   clearAssets,
   addAsset,
-  loginUser
+  loginUser,
+  getLastUpdated
 } from './services/api';
 
 const fallbackAssetHeaders = [
@@ -154,8 +155,28 @@ export default function App() {
   });
 
   useEffect(() => {
-    loadAssets();
-  }, []);
+  loadAssets();
+
+  const checkUpdates = async () => {
+    const latestUpdate = await getLastUpdated();
+
+    if (
+      latestUpdate &&
+      lastKnownUpdate &&
+      latestUpdate !== lastKnownUpdate
+    ) {
+      await loadAssets();
+    }
+
+    if (latestUpdate) {
+      setLastKnownUpdate(latestUpdate);
+    }
+  };
+
+  const interval = setInterval(checkUpdates, 2000);
+
+  return () => clearInterval(interval);
+}, [lastKnownUpdate]);
 
   useEffect(() => {
     if (notification) {
