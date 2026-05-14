@@ -4,7 +4,7 @@
     "employeeId": "123",
     "department": "IT Department",
     "createdAt": "2026-05-11T06:20:18.047Z",
-    "lastLogin": "2026-05-13T06:55:50.561Z"
+    "lastLogin": "2026-05-13T23:48:24.495Z"
   },
   {
     "id": "1778655493955",
@@ -12,5 +12,12 @@
     "department": "Security Department",
     "createdAt": "2026-05-13T06:58:13.955Z",
     "lastLogin": "2026-05-13T06:58:35.125Z"
+  },
+  {
+    "id": "1778716637199",
+    "employeeId": "2001",
+    "department": "Finance Department",
+    "createdAt": "2026-05-13T23:57:17.199Z",
+    "lastLogin": null
   }
 ]
