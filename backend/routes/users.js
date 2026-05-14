@@ -43,7 +43,7 @@ function duplicateMessage(error) {
 router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const users = await User.find({})
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: 1 })
       .lean();
     res.json({ success: true, users: users.map(sanitizeUser) });
   } catch (error) {
