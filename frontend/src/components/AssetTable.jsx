@@ -304,9 +304,9 @@ const tableColumns = headers && headers.length > 0
   ).length;
 
   return (
-    <div className="bg-white rounded-lg max-h-screen overflow-y-auto shadow-lg border border-gray-50 shadow-md p-6">
+    <div className="bg-white rounded-lg overflow-hidden shadow-lg border border-gray-50 shadow-md p-3 sm:p-6 h-full">
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="text-3xl font-bold text-blue-600">{assets.length}</div>
           <div className="text-sm text-gray-600">Total Assets</div>
@@ -380,18 +380,18 @@ const tableColumns = headers && headers.length > 0
 
       {/* Assets Table */}
       {filteredAssets.length > 0 ? (
-        <div className="overflow-x-auto ">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-100 border-b-2 border-gray-300">
+        <div className="overflow-auto w-full max-h-[70vh] rounded-lg border border-gray-200 asset-table-scroll">
+          <table className="min-w-[1000px] w-full text-sm">
+            <thead className="bg-gray-100 border-b-2 border-gray-300 sticky top-0 z-20">
               <tr>
-                <th className="px-4 py-3 text-left font-semibold text-gray-700 w-12">
+                <th className="px-4 py-3 text-left font-semibold text-gray-700 w-12 bg-gray-100 sticky top-0 z-20">
                   
                 </th>
                 {tableColumns.map(col => (
                   <th
-                    key={col.key}
+  key={col.key}
                     onClick={() => handleSort(col.key)}
-                    className="px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-200"
+                    className="px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-200 bg-gray-100 sticky top-0 z-20"
                   >
                     {col.label}
                     {sortBy === col.key && (

@@ -32,11 +32,11 @@ export default function AdminDashboard({
           {/* Upload */}
           <button
             onClick={() => setActivePage("upload")}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-8 shadow-lg transition-all duration-300"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-6 md:p-8 shadow-lg transition-all duration-300"
           >
-            <div className="text-5xl mb-4">📤</div>
+            <div className="text-4xl md:text-5xl mb-4">📤</div>
 
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-xl md:text-2xl font-bold">
               Upload
             </h2>
 
@@ -111,30 +111,25 @@ export default function AdminDashboard({
             ← Back to Dashboard
           </button>
 
-          {/* CUSTOM GRID LAYOUT */}
-          <div className="grid grid-cols-4 grid-rows-8 gap-4 min-h-[750px]">
+          {/* CUSTOM LAYOUT */}
+<div className="flex flex-col xl:flex-row gap-4 items-start">
 
-            {/* DIV 1 — DETAILS */}
-            <div className="col-span-1 row-span-5">
+  {/* LEFT SIDEBAR */}
+  <div className="w-full xl:w-[340px] flex-shrink-0 space-y-4">
 
-              <ScannedAssetDetails
-                scannedAssets={scannedAssets}
-              />
+    <ScannedAssetDetails
+      scannedAssets={scannedAssets}
+    />
 
-            </div>
+    <QRScanner
+      onScanSuccess={onScanSuccess}
+      onScanError={onScanError}
+    />
 
-            {/* DIV 2 — SCANNER */}
-            <div className="col-span-1 row-span-2 row-start-6">
+  </div>
 
-              <QRScanner
-                onScanSuccess={onScanSuccess}
-                onScanError={onScanError}
-              />
-
-            </div>
-
-            {/* DIV 3 — TABLE */}
-            <div className="col-span-3 row-span-8 col-start-2 row-start-1">
+  {/* RIGHT CONTENT */}
+  <div className="flex-1 min-w-0 w-full">
 
               {isLoading ? (
                 <div className="bg-white rounded-lg shadow-md p-12 text-center h-full flex flex-col justify-center">

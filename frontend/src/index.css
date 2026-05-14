@@ -52,3 +52,51 @@ html {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+
+html,
+body,
+#root {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+input,
+select,
+button,
+textarea {
+  font-size: 16px;
+}
+
+@media (max-width: 640px) {
+  .html5-qrcode-element {
+    width: 100% !important;
+  }
+
+  #qr-scanner video {
+    border-radius: 12px;
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .scan-layout-table {
+    min-height: 780px;
+  }
+}
+
+.asset-table-scroll {
+  scrollbar-gutter: stable;
+}
