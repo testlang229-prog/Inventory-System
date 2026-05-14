@@ -14,9 +14,14 @@
     "employeeId": "test",
     "name": "Kevin",
     "department": "IT Department",
-    "passwordHash": "$2b$10$i3SvKZ490dsAkF0pvzOIDe1VBvtx/wVWE2jTJZOgOJSUluo7kgORe",
-    "role": "user",
-    "createdAt": "2026-05-13T21:10:05.271Z",
-    "lastLogin": "2026-05-13T23:41:44.068Z"
+    "createdAt": "2026-05-11T06:20:18.047Z",
+    "lastLogin": "2026-05-13T06:55:50.561Z"
+  },
+  {
+    "id": "1778655493955",
+    "employeeId": "kevin",
+    "department": "Security Department",
+    "createdAt": "2026-05-13T06:58:13.955Z",
+    "lastLogin": "2026-05-13T06:58:35.125Z"
   }
 ]
