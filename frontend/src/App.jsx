@@ -602,9 +602,8 @@ const getDropdownOptions = (header) => {
       {/* Header */}
       <header className="bg-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-6">
-
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
+          
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">  
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
                 {isAdmin

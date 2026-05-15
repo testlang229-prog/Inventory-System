@@ -167,7 +167,25 @@ const tableColumns = headers && headers.length > 0
         return 0;
       });
 
-      return processedHeaders.map(header => ({
+      // PRIORITIZE CURRENT MONTH STATUS COLUMN IN TABLE DISPLAY ONLY
+      const currentMonthStatusHeader =
+        `${currentMonth} ${currentYear} STATUS`;
+
+      const reorderedHeaders = [...processedHeaders].sort((a, b) => {
+        const aNorm = normalizeLabel(a);
+        const bNorm = normalizeLabel(b);
+
+        const currentStatusNorm =
+          normalizeLabel(currentMonthStatusHeader);
+
+        // move current month status to the front
+        if (aNorm === currentStatusNorm) return -1;
+        if (bNorm === currentStatusNorm) return 1;
+
+        return 0;
+      });
+
+      return reorderedHeaders.map(header => ({
         key: header,
         label: header,
       }));
