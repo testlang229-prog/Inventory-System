@@ -235,14 +235,14 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
             onChange={(event) => setManualScanValue(event.target.value)}
             placeholder="Enter asset #, serial #, or barcode"
             disabled={isLoading}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="flex-1 px-1 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
           />
           <button
             type="submit"
             disabled={isLoading || manualScanValue.trim().length === 0}
-            className="px-5 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-semibold"
+            className="px-5 py-2 w-50 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-semibold"
           >
-            {isLoading ? 'Processing...' : 'Submit'}
+            {isLoading ? 'Processing' : 'Submit'}
           </button>
         </div>
       </form>

@@ -5,7 +5,7 @@ import axios from 'axios';
 
 // Base URL for backend API
 const API_BASE_URL =
-'http://localhost:2026/api';
+'https://inventory-system-viy2.onrender.com/api';
 
 // Create axios instance with default config
 const apiClient = axios.create({
