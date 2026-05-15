@@ -10,6 +10,13 @@ const {
 } = require('../db/database');
 
 const router = express.Router();
+const {
+  authenticateToken,
+} = require('../middleware/authMiddleware');
+
+const {
+  addActivityHistory,
+} = require('../db/database');
 const { updateLastUpdated } = require('../utils/updateTracker');
 
 /**
@@ -23,7 +30,10 @@ const { updateLastUpdated } = require('../utils/updateTracker');
  *   - asset: The matched asset details
  *   - action: 'UPDATED' or 'ALREADY_ACCOUNTED' (indicates what was done)
  */
-router.post('/', (req, res) => {
+router.post(
+  '/',
+  authenticateToken,
+  async (req, res) => {
   try {
     const { scannedValue } = req.body;
     const normalizedScannedValue = String(scannedValue || '').trim();
@@ -62,6 +72,46 @@ router.post('/', (req, res) => {
     // Fetch the updated asset
 const updatedAsset = getAssetById(asset.id);
 
+/**
+ * CURRENT USER
+ */
+const currentUser = {
+  employeeId:
+    req.user.employeeId,
+
+  name:
+    req.user.name ||
+    req.user.employeeId,
+};
+
+/**
+ * SAVE ACTIVITY HISTORY
+ */
+addActivityHistory({
+  employeeId:
+    currentUser?.employeeId || 'Unknown',
+
+  userName:
+    currentUser?.name || 'Unknown User',
+
+  asset:
+    updatedAsset.asset ||
+    updatedAsset.Asset ||
+    '',
+
+  assetDescription:
+    updatedAsset.assetDescription ||
+    updatedAsset['Asset Description'] ||
+    '',
+
+  serialNumber:
+    updatedAsset.serialNumber ||
+    updatedAsset['Serial number'] ||
+    '',
+
+  scannedAt: new Date(),
+});
+
 updateLastUpdated();
 
 res.json({
@@ -77,6 +127,7 @@ res.json({
       message: error.message || 'Scan processing failed',
     });
   }
-});
+  }
+);
 
 module.exports = router;

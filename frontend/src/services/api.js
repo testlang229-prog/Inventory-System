@@ -5,7 +5,7 @@ import axios from 'axios';
 
 // Base URL for backend API
 const API_BASE_URL =
-'https://inventory-system-viy2.onrender.com/api';
+'http://localhost:2026/api';
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -154,6 +154,24 @@ export async function loginUser(credentials) {
     error.response?.data?.message ||
     '❌ Access denied. Your Employee ID and Department are not registered by the administrator.'
 };
+  }
+}
+
+export async function fetchActivityHistory() {
+  try {
+    const response =
+      await apiClient.get(
+        '/activity-history'
+      );
+
+    return response.data.history || [];
+  } catch (error) {
+    throw (
+      error.response?.data || {
+        message:
+          'Failed to fetch activity history',
+      }
+    );
   }
 }
 

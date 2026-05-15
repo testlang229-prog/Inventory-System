@@ -262,32 +262,16 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
   };
 
   const addScannedAssetDetail = (asset) => {
-    if (!asset) return;
+  if (!asset) return;
 
-    setScannedAssets(currentAssets => {
-      const assetKey = String(
-        asset.id || asset.asset || asset.Asset || ''
-      );
-
-      const withoutExisting = currentAssets.filter(
-        currentAsset =>
-          String(
-            currentAsset.id ||
-              currentAsset.asset ||
-              currentAsset.Asset ||
-              ''
-          ) !== assetKey
-      );
-
-      return [
-        ...withoutExisting,
-        {
-          ...asset,
-          scannedAt: new Date().toISOString(),
-        },
-      ];
-    });
-  };
+  setScannedAssets(currentAssets => [
+    {
+      ...asset,
+      scannedAt: new Date().toISOString(),
+    },
+    ...currentAssets,
+  ]);
+};
 
   const handleScanSuccess = (result) => {
     if (result.action === 'UPDATED') {

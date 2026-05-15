@@ -5,6 +5,7 @@ import ScannedAssetDetails from "../components/ScannedAssetDetails";
 import UserManagement from "../components/UserManagement";
 import AssetTable from "../components/AssetTable";
 import QRScanner from "../components/QRScanner";
+import ActivityHistory from "../components/ActivityHistory";
 
 export default function AdminDashboard({
   assets,
@@ -76,6 +77,26 @@ export default function AdminDashboard({
               Manage system users
             </p>
           </button>
+
+          {/* Activity History */}
+<button
+  onClick={() =>
+    setActivePage("activityHistory")
+  }
+  className="bg-orange-600 hover:bg-orange-700 text-white rounded-2xl p-8 shadow-lg transition-all duration-300"
+>
+  <div className="text-5xl mb-4">
+    📋
+  </div>
+
+  <h2 className="text-2xl font-bold">
+    Activity History
+  </h2>
+
+  <p className="mt-2 text-sm text-orange-100">
+    View user scan activity logs
+  </p>
+</button>
 
         </div>
       )}
@@ -176,6 +197,29 @@ export default function AdminDashboard({
 
         </div>
       )}
+
+      {/* ACTIVITY HISTORY PAGE */}
+{activePage === "activityHistory" && (
+  <div>
+
+    <button
+      onClick={() =>
+        setActivePage("dashboard")
+      }
+      className="mb-6 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition"
+    >
+      ← Back to Dashboard
+    </button>
+
+    <ActivityHistory
+  scannedAssets={scannedAssets}
+  currentUser={JSON.parse(
+    localStorage.getItem('currentUser')
+  )}
+/>
+
+  </div>
+)}
 
     </div>
   );

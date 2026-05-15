@@ -13,6 +13,10 @@ const {
 
 // Path to JSON database file
 const dbPath = path.join(__dirname, 'inventory.json');
+const activityHistoryPath = path.join(
+  __dirname,
+  'activityHistory.json'
+);
 
 /**
  * Load data from JSON file
@@ -412,7 +416,80 @@ function checkDuplicateAsset(asset, assetDescription, serialNumber) {
   });
 }
 
+/**
+ * LOAD ACTIVITY HISTORY
+ */
+function loadActivityHistory() {
+  try {
+    if (fs.existsSync(activityHistoryPath)) {
+      const data = fs.readFileSync(
+        activityHistoryPath,
+        'utf8'
+      );
+
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error(
+      'Error loading activity history:',
+      error.message
+    );
+  }
+
+  return [];
+}
+
+/**
+ * SAVE ACTIVITY HISTORY
+ */
+function saveActivityHistory(history) {
+  try {
+    fs.writeFileSync(
+      activityHistoryPath,
+      JSON.stringify(history, null, 2),
+      'utf8'
+    );
+  } catch (error) {
+    console.error(
+      'Error saving activity history:',
+      error.message
+    );
+  }
+}
+
+/**
+ * GET ALL ACTIVITY HISTORY
+ */
+function getActivityHistory() {
+  return loadActivityHistory().sort(
+    (a, b) =>
+      new Date(b.scannedAt) -
+      new Date(a.scannedAt)
+  );
+}
+
+/**
+ * ADD ACTIVITY HISTORY
+ */
+function addActivityHistory(historyItem) {
+  const history = loadActivityHistory();
+
+  history.push({
+    id: Date.now(),
+
+    ...historyItem,
+
+    scannedAt:
+      historyItem.scannedAt ||
+      new Date().toISOString(),
+  });
+
+  saveActivityHistory(history);
+}
+
 module.exports = {
+  getActivityHistory,
+  addActivityHistory,
   initializeDatabase,
   getAllAssets,
   getHeaders,
