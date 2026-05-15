@@ -4,11 +4,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'inventory-secret-key';
 
 function generateToken(user) {
   return jwt.sign(
-    {
-      employeeId: user.employeeId,
-      department: user.department,
-      role: user.role || 'user',
-    },
+  {
+    employeeId: user.employeeId,
+    name: user.name,
+    department: user.department,
+    role: user.role || 'user',
+  },
     JWT_SECRET,
     { expiresIn: '12h' }
   );

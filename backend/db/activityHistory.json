@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1778810342635,
+    "employeeId": "yvan",
+    "userName": "Unknown User",
+    "asset": "60010013672",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533566",
+    "serialNumber": "H0500626533566",
+    "scannedAt": "2026-05-15T01:59:02.634Z"
+  },
+  {
+    "id": 1778810901257,
+    "employeeId": "yvan",
+    "userName": "Unknown User",
+    "asset": "60010019624",
+    "assetDescription": "HP L1950G - 19\" LCD SN:CNC942P9C2",
+    "serialNumber": "CNC942P9C2",
+    "scannedAt": "2026-05-15T02:08:21.257Z"
+  },
+  {
+    "id": 1778811319561,
+    "employeeId": "yvan",
+    "userName": "yvan",
+    "asset": "60010013720",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533453",
+    "serialNumber": "H0500626533453",
+    "scannedAt": "2026-05-15T02:15:19.561Z"
+  },
+  {
+    "id": 1778811509427,
+    "employeeId": "yvan",
+    "userName": "yvan",
+    "asset": "60010025333",
+    "assetDescription": "Alcatel A4028 IP Touch Phone SN:FCN01232714129",
+    "serialNumber": "FCN01232714129",
+    "scannedAt": "2026-05-15T02:18:29.426Z"
+  },
+  {
+    "id": 1778811707454,
+    "employeeId": "yvan",
+    "userName": "yvan",
+    "asset": "60010035068",
+    "assetDescription": "HP LASERJET ENTERPRISE MFP M632FHT SN:CNEKLBH438",
+    "serialNumber": "CNEKLBH438",
+    "scannedAt": "2026-05-15T02:21:47.454Z"
+  },
+  {
+    "id": 1778812163737,
+    "employeeId": "yvan",
+    "userName": "yvan",
+    "asset": "60010039792",
+    "assetDescription": "HP ELITE DISPLAY E190I - 18.9\" LED SN:CN442905TD",
+    "serialNumber": "CN442905TD",
+    "scannedAt": "2026-05-15T02:29:23.737Z"
+  },
+  {
+    "id": 1778812193757,
+    "employeeId": "kevin",
+    "userName": "kevin",
+    "asset": "60010025328",
+    "assetDescription": "Alcatel A4028 IP Touch Phone SN:FCN01232714151",
+    "serialNumber": "FCN01232714151",
+    "scannedAt": "2026-05-15T02:29:53.757Z"
+  },
+  {
+    "id": 1778812920353,
+    "employeeId": "kevin",
+    "userName": "kevin",
+    "asset": "60010013686",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533568",
+    "serialNumber": "H0500626533568",
+    "scannedAt": "2026-05-15T02:42:00.353Z"
+  },
+  {
+    "id": 1778813438051,
+    "employeeId": "kevin",
+    "userName": "troy",
+    "asset": "60010013766",
+    "assetDescription": "AL4018IP Touch Set SN:H0500615252919",
+    "serialNumber": "H0500615252919",
+    "scannedAt": "2026-05-15T02:50:38.051Z"
+  },
+  {
+    "id": 1778813497248,
+    "employeeId": "justine",
+    "userName": "kisteria",
+    "asset": "60010042821",
+    "assetDescription": "MC930B Zebra RF Scanner - 23132522502959",
+    "serialNumber": "23132522502959",
+    "scannedAt": "2026-05-15T02:51:37.248Z"
+  }
+]
