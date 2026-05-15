@@ -724,8 +724,6 @@ const getDropdownOptions = (header) => {
                   headers={headers}
                   onDownload={handleDownload}
                   isDownloading={isDownloading}
-                  onClearAssets={handleClearAssets}
-                  isClearing={isClearing}
                 />
               )}
 

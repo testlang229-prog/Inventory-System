@@ -387,13 +387,15 @@ const tableColumns = headers && headers.length > 0
         </button>
 
         {/* Clear List Button */}
-        <button
-          onClick={onClearAssets}
-          disabled={isClearing || assets.length === 0}
-          className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-        >
-          {isClearing ? 'Clearing...' : 'Clear List'}
-        </button>
+        {onClearAssets && (
+          <button
+            onClick={onClearAssets}
+            disabled={isClearing || assets.length === 0}
+            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+          >
+            {isClearing ? 'Clearing...' : 'Clear List'}
+          </button>
+        )}
       </div>
 
       {/* Assets Table */}
