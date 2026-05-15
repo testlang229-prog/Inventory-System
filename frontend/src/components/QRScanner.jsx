@@ -39,7 +39,12 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
     setIsLoading(true);
 
     try {
-      const result = await processScan(trimmedValue);
+      const result = await processScan(
+  trimmedValue,
+  shouldResumeScanner
+    ? 'QR'
+    : 'MANUAL'
+);
       onScanSuccess(result);
       setManualScanValue('');
 

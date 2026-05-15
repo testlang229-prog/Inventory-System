@@ -4,9 +4,8 @@
 import axios from 'axios';
 
 // Base URL for backend API
-const API_BASE_URL ='https://inventory-system-viy2.onrender.com/api'; // Use Render backend for production
-
-//const API_BASE_URL ='http://localhost:2026/api'; // Use local backend for development
+const API_BASE_URL =
+`${window.location.protocol}//${window.location.hostname}:2026/api`;
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -98,10 +97,14 @@ export async function addAsset(assetDetails) {
  * @param {string} scannedValue - The value from scanned QR code
  * @returns {Promise<Object>} - Updated asset information
  */
-export async function processScan(scannedValue) {
+export async function processScan(
+  scannedValue,
+  scanMethod = 'QR'
+) {
   try {
     const response = await apiClient.post('/scan', {
-      scannedValue: scannedValue,
+      scannedValue,
+      scanMethod,
     });
     return response.data;
   } catch (error) {
