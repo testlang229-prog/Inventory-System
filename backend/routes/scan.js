@@ -35,7 +35,10 @@ router.post(
   authenticateToken,
   async (req, res) => {
   try {
-    const { scannedValue } = req.body;
+    const {
+  scannedValue,
+  scanMethod = 'QR',
+} = req.body;
     const normalizedScannedValue = String(scannedValue || '').trim();
 
     if (!normalizedScannedValue) {
@@ -109,7 +112,8 @@ addActivityHistory({
     updatedAsset['Serial number'] ||
     '',
 
-  scannedAt: new Date(),
+  scanMethod,
+scannedAt: new Date(),
 });
 
 updateLastUpdated();

@@ -88,5 +88,173 @@
     "assetDescription": "MC930B Zebra RF Scanner - 23132522502959",
     "serialNumber": "23132522502959",
     "scannedAt": "2026-05-15T02:51:37.248Z"
+  },
+  {
+    "id": 1778815347250,
+    "employeeId": "justine",
+    "userName": "kisteria",
+    "asset": "60010045105",
+    "assetDescription": "HP E24 G5 FHD MONITOR - CN44311404",
+    "serialNumber": "CN44311404",
+    "scannedAt": "2026-05-15T03:22:27.249Z"
+  },
+  {
+    "id": 1778815387738,
+    "employeeId": "justine",
+    "userName": "kisteria",
+    "asset": "1",
+    "assetDescription": "q",
+    "serialNumber": "",
+    "scannedAt": "2026-05-15T03:23:07.738Z"
+  },
+  {
+    "id": 1778822667994,
+    "employeeId": "justine",
+    "userName": "kisteria",
+    "asset": "60010013672",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533566",
+    "serialNumber": "H0500626533566",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:24:27.994Z"
+  },
+  {
+    "id": 1778823867213,
+    "employeeId": "kevin",
+    "userName": "troy",
+    "asset": "123",
+    "assetDescription": "1",
+    "serialNumber": "1",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:44:27.212Z"
+  },
+  {
+    "id": 1778824053945,
+    "employeeId": "kevin",
+    "userName": "troy",
+    "asset": "60010013672",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533566",
+    "serialNumber": "H0500626533566",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:47:33.945Z"
+  },
+  {
+    "id": 1778824072238,
+    "employeeId": "admin",
+    "userName": "System Administrator",
+    "asset": "60010013674",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533572",
+    "serialNumber": "H0500626533572",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:47:52.237Z"
+  },
+  {
+    "id": 1778824072805,
+    "employeeId": "kevin",
+    "userName": "troy",
+    "asset": "60010013674",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533572",
+    "serialNumber": "H0500626533572",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:47:52.805Z"
+  },
+  {
+    "id": 1778824080221,
+    "employeeId": "admin",
+    "userName": "System Administrator",
+    "asset": "60010013720",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533453",
+    "serialNumber": "H0500626533453",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:48:00.221Z"
+  },
+  {
+    "id": 1778824105564,
+    "employeeId": "kevin",
+    "userName": "troy",
+    "asset": "60010013683",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533400",
+    "serialNumber": "H0500626533400",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:48:25.564Z"
+  },
+  {
+    "id": 1778824619529,
+    "employeeId": "kevin",
+    "userName": "troy",
+    "asset": "60010013714",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533591",
+    "serialNumber": "H0500626533591",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:56:59.529Z"
+  },
+  {
+    "id": 1778824630485,
+    "employeeId": "kevin",
+    "userName": "troy",
+    "asset": "60010013674",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533572",
+    "serialNumber": "H0500626533572",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:57:10.485Z"
+  },
+  {
+    "id": 1778824656281,
+    "employeeId": "kevin",
+    "userName": "troy",
+    "asset": "60010013674",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533572",
+    "serialNumber": "H0500626533572",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:57:36.281Z"
+  },
+  {
+    "id": 1778824666013,
+    "employeeId": "kevin",
+    "userName": "troy",
+    "asset": "60010013672",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533566",
+    "serialNumber": "H0500626533566",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:57:46.012Z"
+  },
+  {
+    "id": 1778824673456,
+    "employeeId": "admin",
+    "userName": "System Administrator",
+    "asset": "60010013686",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533568",
+    "serialNumber": "H0500626533568",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:57:53.456Z"
+  },
+  {
+    "id": 1778824681113,
+    "employeeId": "admin",
+    "userName": "System Administrator",
+    "asset": "60010013754",
+    "assetDescription": "AL4018IP Touch Set SN:  H0500615252922",
+    "serialNumber": "H0500615252922",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T05:58:01.112Z"
+  },
+  {
+    "id": 1778825151531,
+    "employeeId": "admin",
+    "userName": "System Administrator",
+    "asset": "123",
+    "assetDescription": "q",
+    "serialNumber": "q",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T06:05:51.531Z"
+  },
+  {
+    "id": 1778826258487,
+    "employeeId": "yvan",
+    "userName": "YVAN",
+    "asset": "60010013674",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533572",
+    "serialNumber": "H0500626533572",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-15T06:24:18.487Z"
   }
 ]

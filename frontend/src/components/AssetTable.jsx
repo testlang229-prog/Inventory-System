@@ -167,25 +167,7 @@ const tableColumns = headers && headers.length > 0
         return 0;
       });
 
-      // PRIORITIZE CURRENT MONTH STATUS COLUMN IN TABLE DISPLAY ONLY
-      const currentMonthStatusHeader =
-        `${currentMonth} ${currentYear} STATUS`;
-
-      const reorderedHeaders = [...processedHeaders].sort((a, b) => {
-        const aNorm = normalizeLabel(a);
-        const bNorm = normalizeLabel(b);
-
-        const currentStatusNorm =
-          normalizeLabel(currentMonthStatusHeader);
-
-        // move current month status to the front
-        if (aNorm === currentStatusNorm) return -1;
-        if (bNorm === currentStatusNorm) return 1;
-
-        return 0;
-      });
-
-      return reorderedHeaders.map(header => ({
+            return processedHeaders.map(header => ({
         key: header,
         label: header,
       }));
@@ -402,25 +384,55 @@ const tableColumns = headers && headers.length > 0
       {filteredAssets.length > 0 ? (
         <div className="overflow-auto w-full max-h-[70vh] rounded-lg border border-gray-200 asset-table-scroll">
           <table className="min-w-[1000px] w-full text-sm">
-            <thead className="bg-gray-100 border-b-2 border-gray-300 sticky top-0 z-20">
+            <thead className="sticky top-0 z-40 bg-gray-100 border-b-2 border-gray-300">
               <tr>
-                <th className="px-4 py-3 text-left font-semibold text-gray-700 w-12 bg-gray-100 sticky top-0 z-20">
+                <th className="px-4 py-3 text-left font-semibold text-gray-700 w-12 bg-gray-100 sticky top-0 z-40">
                   
                 </th>
-                {tableColumns.map(col => (
-                  <th
-  key={col.key}
-                    onClick={() => handleSort(col.key)}
-                    className="px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-200 bg-gray-100 sticky top-0 z-20"
-                  >
-                    {col.label}
-                    {sortBy === col.key && (
-                      <span className="ml-2">
-                        {sortOrder === 'asc' ? '↑' : '↓'}
-                      </span>
-                    )}
-                  </th>
-                ))}
+                {tableColumns.map((col) => {
+
+  const normalizedKey =
+    normalizeHeader(col.key);
+
+  const isCurrentMonthStatus =
+    normalizedKey ===
+    normalizeHeader(
+      `${currentMonth} ${currentYear} STATUS`
+    );
+
+  const isCurrentMonthRemarks =
+    normalizedKey ===
+    normalizeHeader(
+      `${currentMonth} ${currentYear} REMARKS`
+    );
+
+  return (
+    <th
+      key={col.key}
+      onClick={() => handleSort(col.key)}
+      className={`px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-200 bg-gray-100 sticky top-0 z-40
+        ${
+          isCurrentMonthRemarks
+  ? 'sticky right-0 z-30 w-[140px] min-w-[140px] max-w-[140px] shadow-[-2px_0_5px_rgba(0,0,0,0.1)]'
+            : ''
+        }
+        ${
+          isCurrentMonthStatus
+  ? 'sticky right-[140px] bg-gray-100 z-30 shadow-[-2px_0_5px_rgba(0,0,0,0.1)]'
+            : ''
+        }
+      `}
+    >
+      {col.label}
+
+      {sortBy === col.key && (
+        <span className="ml-2">
+          {sortOrder === 'asc' ? '↑' : '↓'}
+        </span>
+      )}
+    </th>
+  );
+})}
               </tr>
             </thead>
 
@@ -442,22 +454,52 @@ const tableColumns = headers && headers.length > 0
                       {index + 1}
                     </td>
                     {tableColumns.map(column => {
-                      const cellValue = getAssetValue(asset, column.key);
-                      const isStatusColumn = normalizeHeader(column.key) === 'status';
 
-                      return (
-                        <td
-                          key={`${asset.id || asset.asset}-${column.key}`}
-                          className="px-4 py-3 text-gray-600"
-                        >
-                          {isStatusColumn ? (
-                            <StatusBadge status={cellValue} />
-                          ) : (
-                            String(cellValue || '')
-                          )}
-                        </td>
-                      );
-                    })}
+  const normalizedKey =
+    normalizeHeader(column.key);
+
+  const isCurrentMonthStatus =
+    normalizedKey ===
+    normalizeHeader(
+      `${currentMonth} ${currentYear} STATUS`
+    );
+
+  const isCurrentMonthRemarks =
+    normalizedKey ===
+    normalizeHeader(
+      `${currentMonth} ${currentYear} REMARKS`
+    );
+
+  const cellValue =
+    getAssetValue(asset, column.key);
+
+  const isStatusColumn =
+    normalizeHeader(column.key) === 'status';
+
+  return (
+    <td
+      key={`${asset.id || asset.asset}-${column.key}`}
+      className={`px-4 py-3 text-gray-600
+        ${
+          isCurrentMonthRemarks
+  ? 'sticky right-0 bg-inherit z-20 backdrop-blur-0 w-[140px] min-w-[140px] max-w-[140px] shadow-[-2px_0_5px_rgba(0,0,0,0.05)]'
+            : ''
+        }
+        ${
+          isCurrentMonthStatus
+  ? 'sticky right-[140px] bg-inherit z-20 backdrop-blur-0 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]'
+            : ''
+        }
+      `}
+    >
+      {isStatusColumn ? (
+        <StatusBadge status={cellValue} />
+      ) : (
+        String(cellValue || '')
+      )}
+    </td>
+  );
+})}
                   </tr>
                 );
               })}

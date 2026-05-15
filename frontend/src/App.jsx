@@ -264,12 +264,11 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
   const addScannedAssetDetail = (asset) => {
   if (!asset) return;
 
-  setScannedAssets(currentAssets => [
+  setScannedAssets([
     {
       ...asset,
       scannedAt: new Date().toISOString(),
     },
-    ...currentAssets,
   ]);
 };
 
@@ -289,18 +288,28 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
         'info'
       );
     } else if (result.action === 'NEW_ASSET') {
-      const scannedValue = result.scannedValue || '';
 
-      setNewAssetScannedValue(scannedValue);
+  if (assets.length === 0) {
+    showNotification(
+      '⚠️ Upload an asset list first before scanning.',
+      'info'
+    );
 
-      setNewAssetForm(
-        createNewAssetForm(headers, scannedValue)
-      );
+    return;
+  }
 
-      setShowNewAssetConfirm(true);
+  const scannedValue = result.scannedValue || '';
 
-      return;
-    }
+  setNewAssetScannedValue(scannedValue);
+
+  setNewAssetForm(
+    createNewAssetForm(headers, scannedValue)
+  );
+
+  setShowNewAssetConfirm(true);
+
+  return;
+}
 
     loadAssets();
   };
@@ -472,6 +481,14 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
 
       const userData = result.user;
 
+      if (userData.role === 'admin') {
+  alert(
+    '⚠️ Please use the Admin Login page for administrator accounts.'
+  );
+
+  return;
+}
+
       setIsLoggedIn(true);
       setCurrentUser(userData);
 
@@ -496,8 +513,52 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
   };
 
   const handleAdminLogin = async (adminUser) => {
-    await handleLogin(adminUser);
-  };
+  try {
+    const result = await loginUser(adminUser);
+
+    if (!result.success) {
+      showNotification(
+        '❌ Unauthorized admin',
+        'error'
+      );
+
+      return;
+    }
+
+    const userData = result.user;
+
+    if (userData.role !== 'admin') {
+      alert(
+        '❌ Access denied.\n\nThis account is not an administrator.'
+      );
+
+      return;
+    }
+
+    setIsLoggedIn(true);
+    setCurrentUser(userData);
+
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('token', result.token);
+
+    localStorage.setItem(
+      'currentUser',
+      JSON.stringify(userData)
+    );
+
+    await loadAssets();
+
+    showNotification(
+      '✅ Admin login successful',
+      'success'
+    );
+
+  } catch (error) {
+    alert(
+      '❌ Admin login failed.'
+    );
+  }
+};
 
   const handleLogout = () => {
     setIsLoggedIn(false);

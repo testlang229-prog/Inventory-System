@@ -169,6 +169,10 @@ const loadHistory = async () => {
                   Time
                 </th>
 
+                <th className="border px-4 py-3 text-left">
+  Scan Method
+</th>   
+
               </tr>
 
             </thead>
@@ -220,6 +224,18 @@ const loadHistory = async () => {
                     <td className="border px-4 py-2">
                       {scanDate.toLocaleTimeString()}
                     </td>
+
+                    <td className="border px-4 py-2">
+  <span
+    className={
+      item.scanMethod === 'MANUAL'
+        ? 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-semibold'
+        : 'bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold'
+    }
+  >
+    {item.scanMethod || 'QR'}
+  </span>
+</td>
 
                   </tr>
                 );
