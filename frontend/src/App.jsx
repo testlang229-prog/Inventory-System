@@ -1,7 +1,11 @@
 // frontend/src/App.jsx
 // Main application component
 
-import { useState, useEffect } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+} from 'react';
 
 import UploadForm from './components/UploadForm';
 import AssetTable from './components/AssetTable';
@@ -160,6 +164,28 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [loginView, setLoginView] = useState('user');
 
+  const [isSwitchingLogin, setIsSwitchingLogin] =
+  useState(false);
+
+  const [showProfileMenu, setShowProfileMenu] =
+  useState(false);
+
+const profileMenuRef = useRef(null);
+
+const switchLoginView = view => {
+  setIsSwitchingLogin(true);
+
+  setTimeout(() => {
+
+    setLoginView(view);
+
+    setTimeout(() => {
+      setIsSwitchingLogin(false);
+    }, 50);
+
+  }, 250);
+};
+
   const [currentUser, setCurrentUser] = useState({
     employeeId: '',
     department: '',
@@ -200,6 +226,31 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
       return () => clearTimeout(timer);
     }
   }, [notification]);
+
+  useEffect(() => {
+  const handleClickOutside = event => {
+    if (
+      profileMenuRef.current &&
+      !profileMenuRef.current.contains(
+        event.target
+      )
+    ) {
+      setShowProfileMenu(false);
+    }
+  };
+
+  document.addEventListener(
+    'mousedown',
+    handleClickOutside
+  );
+
+  return () => {
+    document.removeEventListener(
+      'mousedown',
+      handleClickOutside
+    );
+  };
+}, []);
 
   useEffect(() => {
     const loggedIn =
@@ -561,6 +612,7 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
 };
 
   const handleLogout = () => {
+    setShowProfileMenu(false);
     setIsLoggedIn(false);
 
     setLoginView('user');
@@ -642,18 +694,34 @@ const getDropdownOptions = (header) => {
   };
 
   if (!isLoggedIn) {
-    return loginView === 'admin' ? (
-      <AdminLogin
-        onLogin={handleAdminLogin}
-        onBack={() => setLoginView('user')}
-      />
-    ) : (
-      <Login
-        onLogin={handleLogin}
-        onShowAdmin={() => setLoginView('admin')}
-      />
-    );
-  }
+  return (
+    <div
+      className={`transition-opacity duration-300 ${
+  isSwitchingLogin
+    ? 'opacity-0'
+    : 'opacity-100'
+}`}
+    >
+
+      {loginView === 'admin' ? (
+        <AdminLogin
+          onLogin={handleAdminLogin}
+          onBack={() =>
+            switchLoginView('user')
+          }
+        />
+      ) : (
+        <Login
+          onLogin={handleLogin}
+          onShowAdmin={() =>
+            switchLoginView('admin')
+          }
+        />
+      )}
+
+    </div>
+  );
+}
 
   const isAdmin = currentUser.role === 'admin';
 
@@ -662,11 +730,11 @@ const getDropdownOptions = (header) => {
 
       {/* Header */}
       <header className="bg-white shadow-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
           
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start justify-between gap-4 lg:items-center">
             <div className="flex flex-col gap-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+              <h1 className="text-xl md:text-3xl font-bold text-gray-800">
                 {isAdmin
                   ? '🔒 Admin Dashboard'
                   : '🏢 Asset Inventory System'}
@@ -676,50 +744,99 @@ const getDropdownOptions = (header) => {
                 GMADC - OJT Project
               </p>
 
-              <div className="inline-flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 shadow-sm w-fit">
+              
+            </div>
 
-  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white text-base font-bold">
-    {isAdmin ? 'A' : currentUser.name?.charAt(0)?.toUpperCase() || 'U'}
-  </div>
+<div
+  ref={profileMenuRef}
+  className="relative self-start lg:self-center"
+>
 
-  <div className="leading-tight">
-    <p className="font-semibold text-gray-800">
+  <button
+  onClick={() =>
+    setShowProfileMenu(
+      !showProfileMenu
+    )
+  }
+  className="inline-flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-2 py-2 shadow-sm hover:bg-gray-100 transition"
+>
+
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white text-base font-bold">
       {isAdmin
-        ? 'Administrator'
-        : currentUser.name}
-    </p>
+        ? 'A'
+        : currentUser.name
+            ?.charAt(0)
+            ?.toUpperCase() || 'U'}
+    </div>
 
-    <p className="text-sm text-gray-500">
-      ID: {currentUser.employeeId}
-    </p>
-
-    {!isAdmin && (
-      <p className="text-xs text-gray-400">
-        {currentUser.department}
+    <div className="hidden md:block leading-tight text-left">
+      <p className="font-semibold text-gray-800">
+        {isAdmin
+          ? 'Administrator'
+          : currentUser.name}
       </p>
-    )}
-  </div>
+
+      <p className="text-sm text-gray-500">
+        ID: {currentUser.employeeId}
+      </p>
+
+      {!isAdmin && (
+        <p className="text-xs text-gray-400">
+          {currentUser.department}
+        </p>
+      )}
+    </div>
+
+    <span className="hidden md:block text-gray-400 text-sm">
+      ▼
+    </span>
+
+  </button>
+
+  {showProfileMenu && (
+  <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden z-50">
+
+<div className="block md:hidden px-4 py-3 border-b border-gray-100">
+
+  <p className="font-semibold text-gray-800">
+    {isAdmin
+      ? 'Administrator'
+      : currentUser.name}
+  </p>
+
+  <p className="text-sm text-gray-500">
+    ID: {currentUser.employeeId}
+  </p>
+
+  {!isAdmin && (
+    <p className="text-xs text-gray-400 mt-1">
+      {currentUser.department}
+    </p>
+  )}
 
 </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-2 w-full lg:flex lg:w-auto">
+      <button
+        onClick={() => {
+          loadAssets();
+          setShowProfileMenu(false);
+        }}
+        className="w-full px-4 py-3 text-left hover:bg-gray-100 transition"
+      >
+        🔄 Refresh
+      </button>
 
-              <button
-                onClick={loadAssets}
-                className="w-full lg:w-auto px-4 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-              >
-                🔄 Refresh
-              </button>
+      <button
+        onClick={handleLogout}
+        className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition"
+      >
+        🚪 Logout
+      </button>
 
-              <button
-                onClick={handleLogout}
-                className="w-full lg:w-auto px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-              >
-                🚪 Logout
-              </button>
+    </div>
+  )}
 
-            </div>
+</div>
 
           </div>
 

@@ -496,5 +496,35 @@
     "serialNumber": "w",
     "scanMethod": "MANUAL",
     "scannedAt": "2026-05-16T02:10:53.374Z"
+  },
+  {
+    "id": 1778899846174,
+    "employeeId": "admin",
+    "userName": "System Administrator",
+    "asset": "60010013672",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533566",
+    "serialNumber": "H0500626533566",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-16T02:50:46.174Z"
+  },
+  {
+    "id": 1778899860330,
+    "employeeId": "admin",
+    "userName": "System Administrator",
+    "asset": "60010013714",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533591",
+    "serialNumber": "H0500626533591",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-16T02:51:00.330Z"
+  },
+  {
+    "id": 1778899882769,
+    "employeeId": "yvan",
+    "userName": "YVAN",
+    "asset": "60010013683",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533400",
+    "serialNumber": "H0500626533400",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-16T02:51:22.769Z"
   }
 ]
