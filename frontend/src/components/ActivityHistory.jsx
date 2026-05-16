@@ -133,6 +133,7 @@ const loadHistory = async () => {
           No activity history yet.
         </div>
       ) : (
+<<<<<<< Updated upstream
         <div className="overflow-auto max-h-[600px] border border-gray-200 rounded-lg">
 
           <table className="min-w-full border border-gray-200">
@@ -170,6 +171,45 @@ const loadHistory = async () => {
                 </th>
 
                 <th className="border px-4 py-5 text-left bg-gray-100">
+=======
+        <div className="overflow-auto max-h-[600px] rounded-lg border border-gray-200">
+
+          <table className="min-w-full border border-gray-200">
+
+            <thead className="sticky top-0 z-20 bg-gray-100">
+
+              <tr>
+
+                <th className="border px-4 py-4 text-left bg-gray-100">
+                  Employee ID
+                </th>
+
+                <th className="border px-4 py-4 text-left bg-gray-100">
+                  User Name
+                </th>
+
+                <th className="border px-4 py-4 text-left bg-gray-100">
+                  Asset
+                </th>
+
+                <th className="border px-4 py-4 text-left bg-gray-100">
+                  Asset Description
+                </th>
+
+                <th className="border px-4 py-4 text-left bg-gray-100">
+                  Serial Number
+                </th>
+
+                <th className="border px-4 py-4 text-left bg-gray-100">
+                  Date
+                </th>
+
+                <th className="border px-4 py-4 text-left bg-gray-100">
+                  Time
+                </th>
+
+                <th className="border px-4 py-4 text-left bg-gray-100">
+>>>>>>> Stashed changes
   Scan Method
 </th>   
 

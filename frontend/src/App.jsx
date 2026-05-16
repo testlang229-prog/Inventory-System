@@ -662,10 +662,10 @@ const getDropdownOptions = (header) => {
 
       {/* Header */}
       <header className="bg-white shadow-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">  
-            <div>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-3">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
                 {isAdmin
                   ? '🔒 Admin Dashboard'
@@ -676,31 +676,45 @@ const getDropdownOptions = (header) => {
                 GMADC - OJT Project
               </p>
 
-              {isAdmin ? (
-                <p className="text-gray-500 text-sm mt-1">
-                  Admin: {currentUser.employeeId}
-                </p>
-              ) : currentUser.employeeId ? (
-                <p className="text-gray-500 text-sm mt-1">
-                  {currentUser.name} | Employee ID:{' '}
-                  {currentUser.employeeId} |
-                  Department: {currentUser.department}
-                </p>
-              ) : null}
+              <div className="inline-flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 shadow-sm w-fit">
+
+  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white text-base font-bold">
+    {isAdmin ? 'A' : currentUser.name?.charAt(0)?.toUpperCase() || 'U'}
+  </div>
+
+  <div className="leading-tight">
+    <p className="font-semibold text-gray-800">
+      {isAdmin
+        ? 'Administrator'
+        : currentUser.name}
+    </p>
+
+    <p className="text-sm text-gray-500">
+      ID: {currentUser.employeeId}
+    </p>
+
+    {!isAdmin && (
+      <p className="text-xs text-gray-400">
+        {currentUser.department}
+      </p>
+    )}
+  </div>
+
+</div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+            <div className="grid grid-cols-2 gap-2 w-full lg:flex lg:w-auto">
 
               <button
                 onClick={loadAssets}
-                className="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                className="w-full lg:w-auto px-4 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
               >
                 🔄 Refresh
               </button>
 
               <button
                 onClick={handleLogout}
-                className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                className="w-full lg:w-auto px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
               >
                 🚪 Logout
               </button>
@@ -751,17 +765,21 @@ const getDropdownOptions = (header) => {
           /* USER VIEW */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 flex flex-col gap-6">
 
-              <ScannedAssetDetails
-                scannedAssets={scannedAssets}
-                headers={headers}
-              />
+              <div className="order-2 lg:order-1">
+  <ScannedAssetDetails
+    scannedAssets={scannedAssets}
+    headers={headers}
+  />
+</div>
 
-              <QRScanner
-                onScanSuccess={handleScanSuccess}
-                onScanError={handleScanError}
-              />
+<div className="order-1 lg:order-2">
+  <QRScanner
+    onScanSuccess={handleScanSuccess}
+    onScanError={handleScanError}
+  />
+</div>
 
             </div>
 

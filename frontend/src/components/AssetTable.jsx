@@ -413,12 +413,12 @@ const tableColumns = headers && headers.length > 0
       className={`px-4 py-3 text-left font-semibold text-gray-700 cursor-pointer hover:bg-gray-200 bg-gray-100 sticky top-0 z-40
         ${
           isCurrentMonthRemarks
-  ? 'sticky right-0 z-30 w-[140px] min-w-[140px] max-w-[140px] shadow-[-2px_0_5px_rgba(0,0,0,0.1)]'
+  ? 'md:sticky md:right-0 z-30 w-[140px] min-w-[140px] max-w-[140px] shadow-[-2px_0_5px_rgba(0,0,0,0.1)]'
             : ''
         }
         ${
           isCurrentMonthStatus
-  ? 'sticky right-[140px] bg-gray-100 z-30 shadow-[-2px_0_5px_rgba(0,0,0,0.1)]'
+  ? 'sticky right-0 md:right-[140px] bg-gray-100 z-30 shadow-[-2px_0_5px_rgba(0,0,0,0.1)]'
             : ''
         }
       `}
@@ -482,12 +482,12 @@ const tableColumns = headers && headers.length > 0
       className={`px-4 py-3 text-gray-600
         ${
           isCurrentMonthRemarks
-  ? 'sticky right-0 bg-inherit z-20 backdrop-blur-0 w-[140px] min-w-[140px] max-w-[140px] shadow-[-2px_0_5px_rgba(0,0,0,0.05)]'
+  ? 'md:sticky md:right-0 bg-inherit z-20 backdrop-blur-0 w-[140px] min-w-[140px] max-w-[140px] shadow-[-2px_0_5px_rgba(0,0,0,0.05)]'
             : ''
         }
         ${
           isCurrentMonthStatus
-  ? 'sticky right-[140px] bg-inherit z-20 backdrop-blur-0 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]'
+  ? 'sticky right-0 md:right-[140px] bg-inherit z-20 backdrop-blur-0 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]'
             : ''
         }
       `}

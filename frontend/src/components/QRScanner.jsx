@@ -25,6 +25,40 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
   const scannerInstanceRef = useRef(null);
   const lastScannedTimeRef = useRef(0);
 
+  const playScanBeep = () => {
+  try {
+    const audioContext = new (
+      window.AudioContext ||
+      window.webkitAudioContext
+    )();
+
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(
+      900,
+      audioContext.currentTime
+    );
+
+    gainNode.gain.setValueAtTime(
+  0.3,
+  audioContext.currentTime
+);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start();
+
+    oscillator.stop(
+      audioContext.currentTime + 0.12
+    );
+  } catch (error) {
+    console.error('Beep failed:', error);
+  }
+};
+
   /**
    * Process a camera scan or manually entered asset/barcode value.
    */
@@ -46,6 +80,7 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
     : 'MANUAL'
 );
       onScanSuccess(result);
+      playScanBeep();
       setManualScanValue('');
 
       if (result.action === 'NEW_ASSET' && shouldResumeScanner && scannerInstanceRef.current) {

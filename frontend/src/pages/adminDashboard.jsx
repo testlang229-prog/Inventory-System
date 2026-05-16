@@ -136,16 +136,20 @@ export default function AdminDashboard({
 <div className="flex flex-col xl:flex-row gap-4 items-start">
 
   {/* LEFT SIDEBAR */}
-  <div className="w-full xl:w-[340px] flex-shrink-0 space-y-4">
+  <div className="w-full xl:w-[340px] flex-shrink-0 flex flex-col gap-6">
 
-    <ScannedAssetDetails
-      scannedAssets={scannedAssets}
-    />
+    <div className="order-2 xl:order-1">
+  <ScannedAssetDetails
+    scannedAssets={scannedAssets}
+  />
+</div>
 
-    <QRScanner
-      onScanSuccess={onScanSuccess}
-      onScanError={onScanError}
-    />
+<div className="order-1 xl:order-2">
+  <QRScanner
+    onScanSuccess={onScanSuccess}
+    onScanError={onScanError}
+  />
+</div>
 
   </div>
 
