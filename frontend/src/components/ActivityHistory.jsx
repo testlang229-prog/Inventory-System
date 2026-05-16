@@ -29,26 +29,18 @@ const [lastKnownUpdate, setLastKnownUpdate] =
   useEffect(() => {
   loadHistory();
 
-  const checkUpdates = async () => {
+  async function checkUpdates(){
     try {
-      const latestUpdate =
-        await getLastUpdated();
+      const latestUpdate = await getLastUpdated();
 
-      if (
-        latestUpdate &&
-        lastKnownUpdate &&
-        latestUpdate !== lastKnownUpdate
-      ) {
+      if (latestUpdate && latestUpdate !== lastKnownUpdate) {
+        setLastKnownUpdate(latestUpdate);
         await loadHistory();
       }
-
-      if (latestUpdate) {
-        setLastKnownUpdate(latestUpdate);
-      }
     } catch (error) {
-      console.error(error);
+      console.error("Failed to check for updates", error);
     }
-  };
+  }
 
   const interval = setInterval(
     checkUpdates,
@@ -58,20 +50,19 @@ const [lastKnownUpdate, setLastKnownUpdate] =
   return () => clearInterval(interval);
 }, [lastKnownUpdate]);
 
-const loadHistory = async () => {
+async function loadHistory() {
+  setIsLoading(true);
   try {
-    setIsLoading(true);
-
     const data =
       await fetchActivityHistory();
-
-    setHistory(data || []);
+    setHistory(data);
   } catch (error) {
-    console.error(error);
+    console.error("Failed to load history",error);
+    setHistory([]);
   } finally {
     setIsLoading(false);
   }
-};
+}
 
   const filteredHistory =
     history.filter(item => {

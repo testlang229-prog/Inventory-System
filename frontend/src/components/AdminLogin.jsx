@@ -5,11 +5,19 @@ export default function AdminLogin({ onLogin, onBack }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  const validateInput = () => {
+    if (!employeeId.trim() || !password.trim()) {
+      return 'Please enter Employee ID and password';
+    }
+    return '';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!employeeId.trim() || !password.trim()) {
-      setError('Please enter Employee ID and password');
+    const error = validateInput();
+    if (error) {
+      setError(error);
       return;
     }
 

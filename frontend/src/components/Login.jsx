@@ -8,17 +8,28 @@ export default function Login({ onLogin, onShowAdmin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  const validateInput = () => {
+    if (!employeeId.trim() || !password.trim()) {
+      return 'Please enter your Employee ID and password';
+    }
+    return '';
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (employeeId.trim() && password.trim()) {
-  onLogin({
-    employeeId: employeeId.trim(),
-    password,
-  });
-      setError('');
-    } else {
-      setError('Please enter your Employee ID and password');
+
+    const error = validateInput();
+    if (error) {
+      setError(error);
+      return;
     }
+
+    setError('');
+
+    onLogin({
+      employeeId: employeeId.trim(),
+      password,
+    });
   };
 
   return (
