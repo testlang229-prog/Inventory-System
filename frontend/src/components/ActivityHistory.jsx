@@ -133,43 +133,43 @@ const loadHistory = async () => {
           No activity history yet.
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-auto max-h-[600px] border border-gray-200 rounded-lg">
 
           <table className="min-w-full border border-gray-200">
 
-            <thead className="bg-gray-100">
+            <thead className="bg-gray-100 sticky top-0 z-20">
 
               <tr>
 
-                <th className="border px-4 py-3 text-left">
+                <th className="border px-4 py-5 text-left bg-gray-100">
                   Employee ID
                 </th>
 
-                <th className="border px-4 py-3 text-left">
+                <th className="border px-4 py-5 text-left bg-gray-100">
                   User Name
                 </th>
 
-                <th className="border px-4 py-3 text-left">
+                <th className="border px-4 py-5 text-left bg-gray-100">
                   Asset
                 </th>
 
-                <th className="border px-4 py-3 text-left">
+                <th className="border px-4 py-5 text-left bg-gray-100">
                   Asset Description
                 </th>
 
-                <th className="border px-4 py-3 text-left">
+                <th className="border px-4 py-5 text-left bg-gray-100">
                   Serial Number
                 </th>
 
-                <th className="border px-4 py-3 text-left">
+                <th className="border px-4 py-5 text-left bg-gray-100">
                   Date
                 </th>
 
-                <th className="border px-4 py-3 text-left">
+                <th className="border px-4 py-5 text-left bg-gray-100">
                   Time
                 </th>
 
-                <th className="border px-4 py-3 text-left">
+                <th className="border px-4 py-5 text-left bg-gray-100">
   Scan Method
 </th>   
 
