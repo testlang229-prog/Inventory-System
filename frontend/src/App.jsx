@@ -204,7 +204,7 @@ const switchLoginView = view => {
       lastKnownUpdate &&
       latestUpdate !== lastKnownUpdate
     ) {
-      await loadAssets();
+      await loadAssets(true);
     }
 
     if (latestUpdate) {
@@ -270,8 +270,13 @@ const switchLoginView = view => {
     setCurrentUser(user);
   }, []);
 
-  const loadAssets = async () => {
+  const loadAssets = async (
+  silent = false
+) => {
+
+  if (!silent) {
     setIsLoading(true);
+  }
 
     try {
       const data = await fetchAssets();
@@ -295,8 +300,12 @@ const switchLoginView = view => {
         'error'
       );
     } finally {
-      setIsLoading(false);
-    }
+
+  if (!silent) {
+    setIsLoading(false);
+  }
+
+}
   };
 
   const handleUploadSuccess = (result) => {
@@ -916,11 +925,12 @@ const getDropdownOptions = (header) => {
                 </div>
               ) : (
                 <AssetTable
-                  assets={assets}
-                  headers={headers}
-                  onDownload={handleDownload}
-                  isDownloading={isDownloading}
-                />
+  assets={assets}
+  headers={headers}
+  onDownload={handleDownload}
+  isDownloading={isDownloading}
+  isLoading={isLoading}
+/>
               )}
 
             </div>

@@ -1,14 +1,21 @@
 // frontend/src/components/AssetTable.jsx
 // Component to display assets in a table with sorting and filtering
 
-import { useState, useMemo } from 'react';
+import {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+} from 'react';
 import StatusBadge from './StatusBadge';
+import { QRCodeCanvas } from 'qrcode.react';
 
 export default function AssetTable({
   assets,
   headers = [],
   onDownload,
   isDownloading,
+  isLoading,
   onClearAssets,
   isClearing,
 }) {
@@ -16,6 +23,37 @@ export default function AssetTable({
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [sortBy, setSortBy] = useState('asset');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [selectedQRAsset, setSelectedQRAsset] =
+  useState(null);
+
+const qrRef = useRef(null);
+const searchPlaceholders = [
+  '🔍 Search Asset #: 10001234',
+  '🔍 Search Serial #: DELL-9282',
+  '🔍 Search Description: Monitor',
+  '🔍 Search Cost Center',
+  '🔍 Search Room',
+];
+
+const [placeholderIndex, setPlaceholderIndex] =
+  useState(0);
+
+  useEffect(() => {
+
+  if (searchTerm) return;
+
+  const interval = setInterval(() => {
+
+    setPlaceholderIndex(prev =>
+      (prev + 1) %
+      searchPlaceholders.length
+    );
+
+  }, 3500);
+
+  return () => clearInterval(interval);
+
+}, [searchTerm]);
 
   const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
   const currentMonth = monthNames[new Date().getMonth()];
@@ -299,6 +337,59 @@ const tableColumns = headers && headers.length > 0
   const unaccountedCount = assets.filter(
     a => a.status === 'UNACCOUNTED'
   ).length;
+
+const highlightText = (text) => {
+
+  if (!searchTerm) {
+    return String(text || '');
+  }
+
+  const value = String(text || '');
+
+  const regex = new RegExp(
+    `(${searchTerm})`,
+    'gi'
+  );
+
+  const parts = value.split(regex);
+
+  return parts.map((part, index) => (
+
+    regex.test(part) ? (
+      <mark
+        key={index}
+        className="bg-yellow-200 text-gray-900 px-0.5 rounded"
+      >
+        {part}
+      </mark>
+    ) : (
+      part
+    )
+
+  ));
+};
+
+  const handleDownloadQR = () => {
+
+  if (!selectedQRAsset) return;
+
+  const canvas =
+    qrRef.current?.querySelector('canvas');
+
+  if (!canvas) return;
+
+  const url = canvas.toDataURL('image/png');
+
+  const link =
+    document.createElement('a');
+
+  link.href = url;
+
+  link.download =
+    `${selectedQRAsset.asset}.png`;
+
+  link.click();
+};
   const reconcilingCount = assets.filter(
     a => a.status === 'RECONCILING'
   ).length;
@@ -335,14 +426,18 @@ const tableColumns = headers && headers.length > 0
       </div>
 
       {/* Search and Filter Bar */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="sticky top-[72px] z-30 bg-white flex flex-col md:flex-row gap-4 mb-6 pb-4">
         {/* Search Input */}
         <input
           type="text"
-          placeholder="🔍 Search by Asset, Description, or Serial..."
+          placeholder={
+  searchPlaceholders[
+    placeholderIndex
+  ]
+}
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
         />
 
         {/* Status Filter */}
@@ -381,7 +476,54 @@ const tableColumns = headers && headers.length > 0
       </div>
 
       {/* Assets Table */}
-      {filteredAssets.length > 0 ? (
+{isLoading ? (
+
+  <div className="overflow-auto w-full max-h-[70vh] rounded-lg border border-gray-200 animate-pulse">
+
+    <table className="min-w-[1000px] w-full text-sm">
+
+      <thead className="bg-gray-100 border-b border-gray-300">
+        <tr>
+
+          {[...Array(8)].map((_, index) => (
+            <th
+              key={index}
+              className="px-4 py-4"
+            >
+              <div className="h-4 bg-gray-300 rounded w-24"></div>
+            </th>
+          ))}
+
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {[...Array(8)].map((_, rowIndex) => (
+          <tr
+            key={rowIndex}
+            className="border-b border-gray-200"
+          >
+
+            {[...Array(8)].map((_, colIndex) => (
+              <td
+                key={colIndex}
+                className="px-4 py-4"
+              >
+                <div className="h-4 bg-gray-200 rounded w-full"></div>
+              </td>
+            ))}
+
+          </tr>
+        ))}
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+) : filteredAssets.length > 0 ? (
         <div className="overflow-auto w-full max-h-[70vh] rounded-lg border border-gray-200 asset-table-scroll">
           <table className="min-w-[1000px] w-full text-sm">
             <thead className="sticky top-0 z-40 bg-gray-100 border-b-2 border-gray-300">
@@ -389,6 +531,9 @@ const tableColumns = headers && headers.length > 0
                 <th className="px-4 py-3 text-left font-semibold text-gray-700 w-12 bg-gray-100 sticky top-0 z-40">
                   
                 </th>
+                <th className="px-4 py-3 text-center font-semibold text-gray-700 bg-gray-100 sticky top-0 z-40">
+  QR
+</th>
                 {tableColumns.map((col) => {
 
   const normalizedKey =
@@ -453,6 +598,18 @@ const tableColumns = headers && headers.length > 0
                     <td className="px-4 py-3 text-gray-600 font-semibold w-12">
                       {index + 1}
                     </td>
+                    <td className="px-4 py-3 text-center">
+
+  <button
+    onClick={() =>
+      setSelectedQRAsset(asset)
+    }
+    className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-semibold"
+  >
+    Generate QR
+  </button>
+
+</td>
                     {tableColumns.map(column => {
 
   const normalizedKey =
@@ -495,7 +652,7 @@ const tableColumns = headers && headers.length > 0
       {isStatusColumn ? (
         <StatusBadge status={cellValue} />
       ) : (
-        String(cellValue || '')
+        highlightText(cellValue)
       )}
     </td>
   );
@@ -513,10 +670,108 @@ const tableColumns = headers && headers.length > 0
         </div>
       ) : (
         <div className="text-center py-12 text-gray-500">
-          <p className="text-lg">📭 No assets found</p>
-          <p className="text-sm">Upload an Excel file to get started</p>
+          <p className="text-lg">
+  📭 No matching assets found
+</p>
+
+<p className="text-sm">
+
+  {searchTerm
+    ? `No assets matched "${searchTerm}"`
+    : 'Upload an Excel file to get started'}
+
+</p>
         </div>
       )}
+    {selectedQRAsset && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+
+    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 relative animate-fadeIn">
+
+      <button
+        onClick={() =>
+          setSelectedQRAsset(null)
+        }
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl"
+      >
+        ×
+      </button>
+
+      <div className="text-center">
+
+        <h2 className="text-2xl font-bold text-gray-800">
+          Asset QR Code
+        </h2>
+
+        <p className="text-gray-500 mt-2">
+          Generate and download QR label
+        </p>
+
+      </div>
+
+      <div
+        ref={qrRef}
+        className="mt-8 flex justify-center"
+      >
+        <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+
+          <QRCodeCanvas
+            value={String(
+              selectedQRAsset.asset
+            )}
+            size={220}
+            level="H"
+            includeMargin
+          />
+
+        </div>
+      </div>
+
+      <div className="mt-6 text-center">
+
+        <h3 className="text-lg font-bold text-gray-800">
+          {selectedQRAsset.asset}
+        </h3>
+
+        <p className="text-sm text-gray-500 mt-1">
+          {selectedQRAsset.assetDescription ||
+            'No description'}
+        </p>
+
+        <p className="text-xs text-gray-400 mt-2">
+          Serial #: {
+            selectedQRAsset.serialNumber ||
+            'N/A'
+          }
+        </p>
+
+      </div>
+
+      <div className="mt-8 flex gap-3">
+
+        <button
+          onClick={handleDownloadQR}
+          className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition font-semibold"
+        >
+          📥 Download PNG
+        </button>
+
+        <button
+          onClick={() =>
+            window.print()
+          }
+          className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 transition font-semibold"
+        >
+          🖨️ Print
+        </button>
+
+      </div>
+
     </div>
+
+  </div>
+)}
+
+</div>
   );
 }
