@@ -20,6 +20,10 @@ const {
   isMonthlyRemarksHeader,
   normalizeHeader,
 } = require('../utils/monthColumns');
+const {
+  authenticateToken,
+  requireAdmin,
+} = require('../middleware/authMiddleware');
 
 const router = express.Router();
 const { updateLastUpdated } = require('../utils/updateTracker');
@@ -221,7 +225,7 @@ if (duplicateAsset) {
  *
  * Response: { success, message }
  */
-router.delete('/', (req, res) => {
+router.delete('/', authenticateToken, requireAdmin, (req, res) => {
   try {
     deleteAllAssets();
 

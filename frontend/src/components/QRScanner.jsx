@@ -25,6 +25,40 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
   const scannerInstanceRef = useRef(null);
   const lastScannedTimeRef = useRef(0);
 
+  const playScanBeep = () => {
+  try {
+    const audioContext = new (
+      window.AudioContext ||
+      window.webkitAudioContext
+    )();
+
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(
+      900,
+      audioContext.currentTime
+    );
+
+    gainNode.gain.setValueAtTime(
+  0.3,
+  audioContext.currentTime
+);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start();
+
+    oscillator.stop(
+      audioContext.currentTime + 0.12
+    );
+  } catch (error) {
+    console.error('Beep failed:', error);
+  }
+};
+
   /**
    * Process a camera scan or manually entered asset/barcode value.
    */
@@ -39,8 +73,14 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
     setIsLoading(true);
 
     try {
-      const result = await processScan(trimmedValue);
+      const result = await processScan(
+  trimmedValue,
+  shouldResumeScanner
+    ? 'QR'
+    : 'MANUAL'
+);
       onScanSuccess(result);
+      playScanBeep();
       setManualScanValue('');
 
       if (result.action === 'NEW_ASSET' && shouldResumeScanner && scannerInstanceRef.current) {
@@ -235,14 +275,14 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
             onChange={(event) => setManualScanValue(event.target.value)}
             placeholder="Enter asset #, serial #, or barcode"
             disabled={isLoading}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="flex-1 px-1 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
           />
           <button
             type="submit"
             disabled={isLoading || manualScanValue.trim().length === 0}
-            className="px-5 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-semibold"
+            className="px-5 py-2 w-50 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-semibold"
           >
-            {isLoading ? 'Processing...' : 'Submit'}
+            {isLoading ? 'Processing' : 'Submit'}
           </button>
         </div>
       </form>

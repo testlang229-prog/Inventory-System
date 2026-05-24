@@ -17,6 +17,8 @@ const scanRoute = require('./routes/scan');
 const downloadRoute = require('./routes/download');
 const assetsRoute = require('./routes/assets');
 const usersRoute = require('./routes/users');
+const activityHistoryRoute =
+require('./routes/activityHistory');
 const { getLastUpdated } = require('./utils/updateTracker');
 
 // Initialize Express app
@@ -71,6 +73,11 @@ app.use('/api/assets', assetsRoute);
 
 // GET/POST/PUT/DELETE /api/users - Manage users
 app.use('/api/users', usersRoute);
+
+app.use(
+  '/api/activity-history',
+  activityHistoryRoute
+);
 
 // ============================================
 // LIVE UPDATE CHECK ENDPOINT

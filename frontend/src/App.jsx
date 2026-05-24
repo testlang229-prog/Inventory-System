@@ -1,7 +1,11 @@
 // frontend/src/App.jsx
 // Main application component
 
-import { useState, useEffect } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+} from 'react';
 
 import UploadForm from './components/UploadForm';
 import AssetTable from './components/AssetTable';
@@ -160,6 +164,28 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [loginView, setLoginView] = useState('user');
 
+  const [isSwitchingLogin, setIsSwitchingLogin] =
+  useState(false);
+
+  const [showProfileMenu, setShowProfileMenu] =
+  useState(false);
+
+const profileMenuRef = useRef(null);
+
+const switchLoginView = view => {
+  setIsSwitchingLogin(true);
+
+  setTimeout(() => {
+
+    setLoginView(view);
+
+    setTimeout(() => {
+      setIsSwitchingLogin(false);
+    }, 50);
+
+  }, 250);
+};
+
   const [currentUser, setCurrentUser] = useState({
     employeeId: '',
     department: '',
@@ -178,7 +204,7 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
       lastKnownUpdate &&
       latestUpdate !== lastKnownUpdate
     ) {
-      await loadAssets();
+      await loadAssets(true);
     }
 
     if (latestUpdate) {
@@ -202,6 +228,31 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
   }, [notification]);
 
   useEffect(() => {
+  const handleClickOutside = event => {
+    if (
+      profileMenuRef.current &&
+      !profileMenuRef.current.contains(
+        event.target
+      )
+    ) {
+      setShowProfileMenu(false);
+    }
+  };
+
+  document.addEventListener(
+    'mousedown',
+    handleClickOutside
+  );
+
+  return () => {
+    document.removeEventListener(
+      'mousedown',
+      handleClickOutside
+    );
+  };
+}, []);
+
+  useEffect(() => {
     const loggedIn =
       localStorage.getItem('isLoggedIn') === 'true';
 
@@ -219,8 +270,13 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
     setCurrentUser(user);
   }, []);
 
-  const loadAssets = async () => {
+  const loadAssets = async (
+  silent = false
+) => {
+
+  if (!silent) {
     setIsLoading(true);
+  }
 
     try {
       const data = await fetchAssets();
@@ -244,8 +300,12 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
         'error'
       );
     } finally {
-      setIsLoading(false);
-    }
+
+  if (!silent) {
+    setIsLoading(false);
+  }
+
+}
   };
 
   const handleUploadSuccess = (result) => {
@@ -262,32 +322,15 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
   };
 
   const addScannedAssetDetail = (asset) => {
-    if (!asset) return;
+  if (!asset) return;
 
-    setScannedAssets(currentAssets => {
-      const assetKey = String(
-        asset.id || asset.asset || asset.Asset || ''
-      );
-
-      const withoutExisting = currentAssets.filter(
-        currentAsset =>
-          String(
-            currentAsset.id ||
-              currentAsset.asset ||
-              currentAsset.Asset ||
-              ''
-          ) !== assetKey
-      );
-
-      return [
-        ...withoutExisting,
-        {
-          ...asset,
-          scannedAt: new Date().toISOString(),
-        },
-      ];
-    });
-  };
+  setScannedAssets([
+    {
+      ...asset,
+      scannedAt: new Date().toISOString(),
+    },
+  ]);
+};
 
   const handleScanSuccess = (result) => {
     if (result.action === 'UPDATED') {
@@ -305,18 +348,28 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
         'info'
       );
     } else if (result.action === 'NEW_ASSET') {
-      const scannedValue = result.scannedValue || '';
 
-      setNewAssetScannedValue(scannedValue);
+  if (assets.length === 0) {
+    showNotification(
+      '⚠️ Upload an asset list first before scanning.',
+      'info'
+    );
 
-      setNewAssetForm(
-        createNewAssetForm(headers, scannedValue)
-      );
+    return;
+  }
 
-      setShowNewAssetConfirm(true);
+  const scannedValue = result.scannedValue || '';
 
-      return;
-    }
+  setNewAssetScannedValue(scannedValue);
+
+  setNewAssetForm(
+    createNewAssetForm(headers, scannedValue)
+  );
+
+  setShowNewAssetConfirm(true);
+
+  return;
+}
 
     loadAssets();
   };
@@ -488,6 +541,14 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
 
       const userData = result.user;
 
+      if (userData.role === 'admin') {
+  alert(
+    '⚠️ Please use the Admin Login page for administrator accounts.'
+  );
+
+  return;
+}
+
       setIsLoggedIn(true);
       setCurrentUser(userData);
 
@@ -512,10 +573,55 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
   };
 
   const handleAdminLogin = async (adminUser) => {
-    await handleLogin(adminUser);
-  };
+  try {
+    const result = await loginUser(adminUser);
+
+    if (!result.success) {
+      showNotification(
+        '❌ Unauthorized admin',
+        'error'
+      );
+
+      return;
+    }
+
+    const userData = result.user;
+
+    if (userData.role !== 'admin') {
+      alert(
+        '❌ Access denied.\n\nThis account is not an administrator.'
+      );
+
+      return;
+    }
+
+    setIsLoggedIn(true);
+    setCurrentUser(userData);
+
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('token', result.token);
+
+    localStorage.setItem(
+      'currentUser',
+      JSON.stringify(userData)
+    );
+
+    await loadAssets();
+
+    showNotification(
+      '✅ Admin login successful',
+      'success'
+    );
+
+  } catch (error) {
+    alert(
+      '❌ Admin login failed.'
+    );
+  }
+};
 
   const handleLogout = () => {
+    setShowProfileMenu(false);
     setIsLoggedIn(false);
 
     setLoginView('user');
@@ -597,18 +703,34 @@ const getDropdownOptions = (header) => {
   };
 
   if (!isLoggedIn) {
-    return loginView === 'admin' ? (
-      <AdminLogin
-        onLogin={handleAdminLogin}
-        onBack={() => setLoginView('user')}
-      />
-    ) : (
-      <Login
-        onLogin={handleLogin}
-        onShowAdmin={() => setLoginView('admin')}
-      />
-    );
-  }
+  return (
+    <div
+      className={`transition-opacity duration-300 ${
+  isSwitchingLogin
+    ? 'opacity-0'
+    : 'opacity-100'
+}`}
+    >
+
+      {loginView === 'admin' ? (
+        <AdminLogin
+          onLogin={handleAdminLogin}
+          onBack={() =>
+            switchLoginView('user')
+          }
+        />
+      ) : (
+        <Login
+          onLogin={handleLogin}
+          onShowAdmin={() =>
+            switchLoginView('admin')
+          }
+        />
+      )}
+
+    </div>
+  );
+}
 
   const isAdmin = currentUser.role === 'admin';
 
@@ -617,12 +739,11 @@ const getDropdownOptions = (header) => {
 
       {/* Header */}
       <header className="bg-white shadow-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+        <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
+          
+          <div className="flex items-start justify-between gap-4 lg:items-center">
+            <div className="flex flex-col gap-3">
+              <h1 className="text-xl md:text-3xl font-bold text-gray-800">
                 {isAdmin
                   ? '🔒 Admin Dashboard'
                   : '🏢 Asset Inventory System'}
@@ -632,36 +753,99 @@ const getDropdownOptions = (header) => {
                 GMADC - OJT Project
               </p>
 
-              {isAdmin ? (
-                <p className="text-gray-500 text-sm mt-1">
-                  Admin: {currentUser.employeeId}
-                </p>
-              ) : currentUser.employeeId ? (
-                <p className="text-gray-500 text-sm mt-1">
-                  {currentUser.name} | Employee ID:{' '}
-                  {currentUser.employeeId} |
-                  Department: {currentUser.department}
-                </p>
-              ) : null}
+              
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+<div
+  ref={profileMenuRef}
+  className="relative self-start lg:self-center"
+>
 
-              <button
-                onClick={loadAssets}
-                className="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-              >
-                🔄 Refresh
-              </button>
+  <button
+  onClick={() =>
+    setShowProfileMenu(
+      !showProfileMenu
+    )
+  }
+  className="inline-flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-2 py-2 shadow-sm hover:bg-gray-100 transition"
+>
 
-              <button
-                onClick={handleLogout}
-                className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-              >
-                🚪 Logout
-              </button>
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white text-base font-bold">
+      {isAdmin
+        ? 'A'
+        : currentUser.name
+            ?.charAt(0)
+            ?.toUpperCase() || 'U'}
+    </div>
 
-            </div>
+    <div className="hidden md:block leading-tight text-left">
+      <p className="font-semibold text-gray-800">
+        {isAdmin
+          ? 'Administrator'
+          : currentUser.name}
+      </p>
+
+      <p className="text-sm text-gray-500">
+        ID: {currentUser.employeeId}
+      </p>
+
+      {!isAdmin && (
+        <p className="text-xs text-gray-400">
+          {currentUser.department}
+        </p>
+      )}
+    </div>
+
+    <span className="hidden md:block text-gray-400 text-sm">
+      ▼
+    </span>
+
+  </button>
+
+  {showProfileMenu && (
+  <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden z-50">
+
+<div className="block md:hidden px-4 py-3 border-b border-gray-100">
+
+  <p className="font-semibold text-gray-800">
+    {isAdmin
+      ? 'Administrator'
+      : currentUser.name}
+  </p>
+
+  <p className="text-sm text-gray-500">
+    ID: {currentUser.employeeId}
+  </p>
+
+  {!isAdmin && (
+    <p className="text-xs text-gray-400 mt-1">
+      {currentUser.department}
+    </p>
+  )}
+
+</div>
+
+      <button
+        onClick={() => {
+          loadAssets();
+          setShowProfileMenu(false);
+        }}
+        className="w-full px-4 py-3 text-left hover:bg-gray-100 transition"
+      >
+        🔄 Refresh
+      </button>
+
+      <button
+        onClick={handleLogout}
+        className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition"
+      >
+        🚪 Logout
+      </button>
+
+    </div>
+  )}
+
+</div>
 
           </div>
 
@@ -707,17 +891,21 @@ const getDropdownOptions = (header) => {
           /* USER VIEW */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 flex flex-col gap-6">
 
-              <ScannedAssetDetails
-                scannedAssets={scannedAssets}
-                headers={headers}
-              />
+              <div className="order-2 lg:order-1">
+  <ScannedAssetDetails
+    scannedAssets={scannedAssets}
+    headers={headers}
+  />
+</div>
 
-              <QRScanner
-                onScanSuccess={handleScanSuccess}
-                onScanError={handleScanError}
-              />
+<div className="order-1 lg:order-2">
+  <QRScanner
+    onScanSuccess={handleScanSuccess}
+    onScanError={handleScanError}
+  />
+</div>
 
             </div>
 
@@ -737,13 +925,12 @@ const getDropdownOptions = (header) => {
                 </div>
               ) : (
                 <AssetTable
-                  assets={assets}
-                  headers={headers}
-                  onDownload={handleDownload}
-                  isDownloading={isDownloading}
-                  onClearAssets={handleClearAssets}
-                  isClearing={isClearing}
-                />
+  assets={assets}
+  headers={headers}
+  onDownload={handleDownload}
+  isDownloading={isDownloading}
+  isLoading={isLoading}
+/>
               )}
 
             </div>

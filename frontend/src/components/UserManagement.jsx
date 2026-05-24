@@ -19,17 +19,26 @@ export default function UserManagement() {
   const [editingId, setEditingId] = useState(null);
 const [showRemoveModal, setShowRemoveModal] = useState(false);
 const [selectedUserId, setSelectedUserId] = useState('');
+const [customDepartments, setCustomDepartments] =
+  useState([]);
+
+const [showDepartmentModal, setShowDepartmentModal] =
+  useState(false);
+
+const [newDepartment, setNewDepartment] =
+  useState('');
 
   const departments = [
-    'IT Department',
-    'HR Department',
-    'Finance Department',
-    'Operations Department',
-    'Maintenance Department',
-    'Security Department',
-    'Administration',
-    'Other'
-  ];
+  'IT Department',
+  'HR Department',
+  'Finance Department',
+  'Operations Department',
+  'Maintenance Department',
+  'Security Department',
+  'Administration',
+  ...customDepartments,
+  '➕ Add New Department'
+];
 
   // Fetch users on mount
   useEffect(() => {
@@ -132,6 +141,35 @@ const confirmRemoveUser = async () => {
   }
 };
 
+const handleAddDepartment = () => {
+
+  if (!newDepartment.trim()) return;
+
+  const departmentName =
+    newDepartment.trim();
+
+  if (
+    departments.includes(departmentName)
+  ) {
+    setShowDepartmentModal(false);
+    setNewDepartment('');
+    return;
+  }
+
+  setCustomDepartments(prev => [
+    ...prev,
+    departmentName
+  ]);
+
+  setFormData({
+    ...formData,
+    department: departmentName
+  });
+
+  setNewDepartment('');
+  setShowDepartmentModal(false);
+};
+
   const handleCancel = () => {
     setShowForm(false);
     setFormData({
@@ -223,17 +261,38 @@ const confirmRemoveUser = async () => {
   </label>
 
   <select
-    value={formData.department}
-    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    required
-  >
-    <option value="">Select Department</option>
+  value={formData.department}
+  onChange={(e) => {
 
-    {departments.map((dept) => (
-      <option key={dept} value={dept}>{dept}</option>
-    ))}
-  </select>
+    if (
+      e.target.value ===
+      '➕ Add New Department'
+    ) {
+      setShowDepartmentModal(true);
+      return;
+    }
+
+    setFormData({
+      ...formData,
+      department: e.target.value
+    });
+  }}
+  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  required
+>
+  <option value="">
+    Select Department
+  </option>
+
+  {departments.map((dept) => (
+    <option
+      key={dept}
+      value={dept}
+    >
+      {dept}
+    </option>
+  ))}
+</select>
 </div>
 
 <div>
@@ -296,13 +355,49 @@ const confirmRemoveUser = async () => {
       )}
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <div className="inline-block">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-          <p className="text-gray-600 mt-4">Loading users...</p>
-        </div>
-      ) : users.length === 0 ? (
+
+  <div className="overflow-x-auto animate-pulse">
+
+    <table className="min-w-[700px] w-full">
+
+      <thead className="bg-gray-100 border-b border-gray-300">
+        <tr>
+          {[...Array(5)].map((_, index) => (
+            <th
+              key={index}
+              className="px-4 py-3"
+            >
+              <div className="h-4 bg-gray-300 rounded w-24"></div>
+            </th>
+          ))}
+        </tr>
+      </thead>
+
+      <tbody>
+        {[...Array(6)].map((_, rowIndex) => (
+          <tr
+            key={rowIndex}
+            className="border-b border-gray-200"
+          >
+
+            {[...Array(5)].map((_, colIndex) => (
+              <td
+                key={colIndex}
+                className="px-4 py-4"
+              >
+                <div className="h-4 bg-gray-200 rounded w-full"></div>
+              </td>
+            ))}
+
+          </tr>
+        ))}
+      </tbody>
+
+    </table>
+
+  </div>
+
+) : users.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <p className="text-gray-600">No users found. Create your first user.</p>
         </div>
@@ -313,6 +408,9 @@ const confirmRemoveUser = async () => {
               <tr>
                 <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Employee ID</th>
                 <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Department</th>
+                <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
+  Role
+</th>
                 <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Created Date</th>
                 <th className="px-4 py-2 text-center text-sm font-semibold text-gray-700">Actions</th>
               </tr>
@@ -322,6 +420,19 @@ const confirmRemoveUser = async () => {
                 <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
                   <td className="px-4 py-3 text-sm text-gray-900">{user.employeeId}</td>
                   <td className="px-4 py-3 text-sm text-gray-600">{user.department}</td>
+                  <td className="px-4 py-3 text-sm">
+
+  {user.role === 'admin' ? (
+    <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700 border border-red-200">
+      🛡️ ADMIN
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-200">
+      👤 USER
+    </span>
+  )}
+
+</td>
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
@@ -332,13 +443,21 @@ const confirmRemoveUser = async () => {
                     >
                       Edit
                     </button>
-                    {user.employeeId !== 'admin' && (
+                    {user.role !== 'admin' ? (
+
   <button
     onClick={() => handleDelete(user.employeeId)}
     className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition"
   >
     Remove
   </button>
+
+) : (
+
+  <span className="inline-flex items-center rounded-lg bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500 border border-gray-200">
+    🔒 Protected
+  </span>
+
 )}
                   </td>
                 </tr>
@@ -377,6 +496,55 @@ const confirmRemoveUser = async () => {
         </button>
       </div>
     </div>
+  </div>
+)}
+
+{showDepartmentModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+
+      <h3 className="text-xl font-bold text-gray-800 mb-4">
+        Add New Department
+      </h3>
+
+      <p className="text-sm text-gray-500 mb-4">
+        Create a new department for users.
+      </p>
+
+      <input
+        type="text"
+        value={newDepartment}
+        onChange={(e) =>
+          setNewDepartment(e.target.value)
+        }
+        placeholder="Enter department name"
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+
+      <div className="flex justify-end gap-3 mt-6">
+
+        <button
+          onClick={() => {
+            setShowDepartmentModal(false);
+            setNewDepartment('');
+          }}
+          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleAddDepartment}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Add Department
+        </button>
+
+      </div>
+
+    </div>
+
   </div>
 )}
 

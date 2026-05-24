@@ -5,6 +5,7 @@ import ScannedAssetDetails from "../components/ScannedAssetDetails";
 import UserManagement from "../components/UserManagement";
 import AssetTable from "../components/AssetTable";
 import QRScanner from "../components/QRScanner";
+import ActivityHistory from "../components/ActivityHistory";
 
 export default function AdminDashboard({
   assets,
@@ -27,20 +28,20 @@ export default function AdminDashboard({
 
       {/* DASHBOARD MENU */}
       {activePage === "dashboard" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mt-8 md:mt-10">
 
           {/* Upload */}
           <button
             onClick={() => setActivePage("upload")}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-6 md:p-8 shadow-lg transition-all duration-300"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-4 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl active:scale-[0.98] flex flex-col items-center justify-center min-h-[170px] md:min-h-[240px]"
           >
             <div className="text-4xl md:text-5xl mb-4">📤</div>
 
-            <h2 className="text-xl md:text-2xl font-bold">
+            <h2 className="text-xl md:text-lg md:text-2xl font-bold text-center">
               Upload
             </h2>
 
-            <p className="mt-2 text-sm text-blue-100">
+            <p className="hidden md:block mt-2 text-sm text-blue-100">
               Upload Excel asset files
             </p>
           </button>
@@ -48,11 +49,11 @@ export default function AdminDashboard({
           {/* Scan */}
           <button
             onClick={() => setActivePage("scan")}
-            className="bg-green-600 hover:bg-green-700 text-white rounded-2xl p-8 shadow-lg transition-all duration-300"
+            className="bg-green-600 hover:bg-green-700 text-white rounded-2xl p-4 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl active:scale-[0.98] flex flex-col items-center justify-center min-h-[170px] md:min-h-[240px]"
           >
-            <div className="text-5xl mb-4">📱</div>
+            <div className="text-4xl md:text-5xl mb-4">📱</div>
 
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-lg md:text-2xl font-bold text-center">
               Scan
             </h2>
 
@@ -64,18 +65,38 @@ export default function AdminDashboard({
           {/* User Management */}
           <button
             onClick={() => setActivePage("users")}
-            className="bg-purple-600 hover:bg-purple-700 text-white rounded-2xl p-8 shadow-lg transition-all duration-300"
+            className="bg-purple-600 hover:bg-purple-700 text-white rounded-2xl p-4 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl active:scale-[0.98] flex flex-col items-center justify-center min-h-[170px] md:min-h-[240px]"
           >
-            <div className="text-5xl mb-4">👥</div>
+            <div className="text-4xl md:text-5xl mb-4">👥</div>
 
-            <h2 className="text-2xl font-bold">
+            <h2 className="text-lg md:text-2xl font-bold text-center">
               User Management
             </h2>
 
-            <p className="mt-2 text-sm text-purple-100">
+            <p className="hidden md:block mt-2 text-sm text-purple-100">
               Manage system users
             </p>
           </button>
+
+          {/* Activity History */}
+<button
+  onClick={() =>
+    setActivePage("activityHistory")
+  }
+  className="bg-orange-600 hover:bg-orange-700 text-white rounded-2xl p-4 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl active:scale-[0.98] flex flex-col items-center justify-center min-h-[170px] md:min-h-[240px]"
+>
+  <div className="text-4xl md:text-4xl md:text-5xl mb-4">
+    📋
+  </div>
+
+  <h2 className="text-lg md:text-2xl font-bold text-center">
+    Activity History
+  </h2>
+
+  <p className="hidden md:block mt-2 text-sm text-orange-100">
+    View user scan activity logs
+  </p>
+</button>
 
         </div>
       )}
@@ -115,16 +136,20 @@ export default function AdminDashboard({
 <div className="flex flex-col xl:flex-row gap-4 items-start">
 
   {/* LEFT SIDEBAR */}
-  <div className="w-full xl:w-[340px] flex-shrink-0 space-y-4">
+  <div className="w-full xl:w-[340px] flex-shrink-0 flex flex-col gap-6">
 
-    <ScannedAssetDetails
-      scannedAssets={scannedAssets}
-    />
+    <div className="order-2 xl:order-1">
+  <ScannedAssetDetails
+    scannedAssets={scannedAssets}
+  />
+</div>
 
-    <QRScanner
-      onScanSuccess={onScanSuccess}
-      onScanError={onScanError}
-    />
+<div className="order-1 xl:order-2">
+  <QRScanner
+    onScanSuccess={onScanSuccess}
+    onScanError={onScanError}
+  />
+</div>
 
   </div>
 
@@ -176,6 +201,29 @@ export default function AdminDashboard({
 
         </div>
       )}
+
+      {/* ACTIVITY HISTORY PAGE */}
+{activePage === "activityHistory" && (
+  <div>
+
+    <button
+      onClick={() =>
+        setActivePage("dashboard")
+      }
+      className="mb-6 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition"
+    >
+      ← Back to Dashboard
+    </button>
+
+    <ActivityHistory
+  scannedAssets={scannedAssets}
+  currentUser={JSON.parse(
+    localStorage.getItem('currentUser')
+  )}
+/>
+
+  </div>
+)}
 
     </div>
   );
