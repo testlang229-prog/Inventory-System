@@ -1,4 +1,9 @@
 import { useState } from 'react';
+import adminIcon from '../assets/icons/admin-icon.png';
+import usersIcon from '../assets/icons/users-icon.png';
+import activityIcon from '../assets/icons/activity-icon.png';
+import securityIcon from '../assets/icons/security-icon.png';
+import employeeIcon from '../assets/icons/employee-icon.png';
 
 export default function AdminLogin({ onLogin, onBack }) {
   const [employeeId, setEmployeeId] = useState('');
@@ -56,9 +61,11 @@ export default function AdminLogin({ onLogin, onBack }) {
     <div className="grid grid-cols-3 gap-4 mt-10">
 
       <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/10 transition-all duration-300 hover:-translate-y-3 hover:scale-[1.03] hover:bg-white/15 hover:shadow-2xl cursor-pointer">
-        <div className="text-3xl mb-3">
-          👥
-        </div>
+        <img
+  src={usersIcon}
+  alt="Users"
+  className="w-10 h-10 object-contain mb-4"
+/>
 
         <h3 className="font-bold text-white">
           Users
@@ -70,9 +77,11 @@ export default function AdminLogin({ onLogin, onBack }) {
       </div>
 
       <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/10 transition-all duration-300 hover:-translate-y-3 hover:scale-[1.03] hover:bg-white/15 hover:shadow-2xl cursor-pointer">
-        <div className="text-3xl mb-3">
-          📊
-        </div>
+        <img
+  src={activityIcon}
+  alt="Reports"
+  className="w-10 h-10 object-contain mb-4"
+/>
 
         <h3 className="font-bold text-white">
           Reports
@@ -84,9 +93,11 @@ export default function AdminLogin({ onLogin, onBack }) {
       </div>
 
       <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/10 transition-all duration-300 hover:-translate-y-3 hover:scale-[1.03] hover:bg-white/15 hover:shadow-2xl cursor-pointer">
-        <div className="text-3xl mb-3">
-          🛡️
-        </div>
+        <img
+  src={securityIcon}
+  alt="Security"
+  className="w-10 h-10 object-contain mb-4"
+/>
 
         <h3 className="font-bold text-white">
           Security
@@ -102,19 +113,37 @@ export default function AdminLogin({ onLogin, onBack }) {
   </div>
 
 </div>
-      <div className="max-w-md w-full mx-auto bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8 md:p-10">
+      <div className="login-glow max-w-md w-full mx-auto bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 px-7 py-6 md:p-10">
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-3">
-            🔐 Admin Login
-          </h1>
 
-          <p className="text-gray-600 leading-relaxed">
-  Restricted access for administrators only.
-  <br />
-  Authorized personnel only.
-</p>
-        </div>
+  <div className="flex justify-center mb-5">
+
+    <div className="w-20 h-20 rounded-3xl bg-indigo-50 flex items-center justify-center shadow-sm">
+
+      <img
+        src={adminIcon}
+        alt="Admin"
+        className="w-10 h-10 object-contain"
+      />
+
+    </div>
+
+  </div>
+
+  <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 leading-tight tracking-tight">
+    Admin Login
+  </h1>
+
+  <p className="mt-5 text-slate-500 font-semibold tracking-[0.18em] uppercase text-xs">
+    Enterprise Control Center
+  </p>
+
+  <p className="text-sm text-slate-500 mt-3">
+    Secure administrator control panel
+  </p>
+
+</div>
 
         <form onSubmit={handleSubmit}>
 
@@ -126,15 +155,25 @@ export default function AdminLogin({ onLogin, onBack }) {
               Employee ID
             </label>
 
-            <input
-              type="text"
-              id="employeeId"
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Enter admin employee ID"
-              required
-            />
+            <div className="relative">
+
+  <img
+  src={employeeIcon}
+  alt="Employee"
+  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 object-contain opacity-70"
+/>
+
+  <input
+    type="text"
+    id="employeeId"
+    value={employeeId}
+    onChange={(e) => setEmployeeId(e.target.value)}
+    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+    placeholder="Enter admin employee ID"
+    required
+  />
+
+</div>
           </div>
 
           <div className="mb-6">
@@ -145,15 +184,25 @@ export default function AdminLogin({ onLogin, onBack }) {
               Password
             </label>
 
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Enter password"
-              required
-            />
+            <div className="relative">
+
+  <img
+  src={securityIcon}
+  alt="Password"
+  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 object-contain opacity-70"
+/>
+
+  <input
+    type="password"
+    id="password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+    placeholder="Enter password"
+    required
+  />
+
+</div>
           </div>
 
           {error && (
@@ -166,7 +215,7 @@ export default function AdminLogin({ onLogin, onBack }) {
             type="submit"
             className="w-full bg-indigo-600 text-white py-3 px-4 rounded-xl hover:bg-indigo-700 active:scale-[0.98] transition duration-200 font-semibold shadow-lg shadow-indigo-300/40"
           >
-            Login as Admin
+            Continue
           </button>
         </form>
 
@@ -175,7 +224,7 @@ export default function AdminLogin({ onLogin, onBack }) {
           onClick={onBack}
           className="mt-6 w-full border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-100 transition duration-200"
         >
-          Back to Employee Login
+          Employee Login
         </button>
 
       </div>

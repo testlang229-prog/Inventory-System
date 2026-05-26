@@ -26,6 +26,11 @@ const [lastKnownUpdate, setLastKnownUpdate] =
   const [search, setSearch] =
   useState('');
 
+  const [currentPage, setCurrentPage] =
+  useState(1);
+
+const itemsPerPage = 25;
+
   useEffect(() => {
   loadHistory();
 
@@ -70,11 +75,11 @@ async function loadHistory() {
         search.toLowerCase();
 
       return (
-        (currentUser?.employeeId || '')
+        (item.employeeId || '')
   .toLowerCase()
   .includes(searchValue) ||
 
-(currentUser?.name || '')
+(item.userName || '')
   .toLowerCase()
   .includes(searchValue) ||
 
@@ -87,6 +92,20 @@ async function loadHistory() {
   .includes(searchValue)
       );
     });
+
+    const totalPages = Math.ceil(
+  filteredHistory.length /
+  itemsPerPage
+);
+
+const paginatedHistory =
+  filteredHistory.slice(
+    (currentPage - 1) *
+      itemsPerPage,
+
+    currentPage *
+      itemsPerPage
+  );
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4">
@@ -124,7 +143,104 @@ async function loadHistory() {
           No activity history yet.
         </div>
       ) : (
-        <div className="overflow-auto max-h-[600px] rounded-lg border border-gray-200">
+
+<>
+<div className="md:hidden space-y-4">
+
+  {paginatedHistory.map(item => {
+
+    const scanDate =
+      new Date(item.scannedAt);
+
+    return (
+
+      <div
+        key={`${item.Asset || item.asset}-${item.scannedAt}`}
+        className="border border-gray-200 rounded-xl p-4 shadow-sm bg-white"
+      >
+
+        <div className="flex items-start justify-between mb-3">
+
+          <div>
+
+            <h3 className="font-bold text-gray-800 text-lg">
+              {item.userName || '-'}
+            </h3>
+
+            <p className="text-sm text-gray-500">
+              {item.employeeId || '-'}
+            </p>
+
+          </div>
+
+          <span
+            className={
+              item.scanMethod === 'MANUAL'
+                ? 'bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold'
+                : 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold'
+            }
+          >
+            {item.scanMethod || 'QR'}
+          </span>
+
+        </div>
+
+        <div className="space-y-2 text-sm">
+
+          <div>
+            <span className="font-semibold text-gray-700">
+              Department:
+            </span>{' '}
+            {item.department || '-'}
+          </div>
+
+          <div>
+            <span className="font-semibold text-gray-700">
+              Asset:
+            </span>{' '}
+            {item.asset || item.Asset || '-'}
+          </div>
+
+          <div>
+            <span className="font-semibold text-gray-700">
+              Serial:
+            </span>{' '}
+            {
+              item.serialNumber ||
+              item['Serial number'] ||
+              '-'
+            }
+          </div>
+
+          <div>
+            <span className="font-semibold text-gray-700">
+              Description:
+            </span>{' '}
+            {
+              item.assetDescription ||
+              item['Asset Description'] ||
+              '-'
+            }
+          </div>
+
+          <div className="pt-2 border-t text-xs text-gray-500">
+
+            {scanDate.toLocaleDateString()}
+            {' • '}
+            {scanDate.toLocaleTimeString()}
+
+          </div>
+
+        </div>
+
+      </div>
+
+    );
+
+  })}
+
+</div>
+        <div className="hidden md:block overflow-auto max-h-[600px] rounded-lg border border-gray-200">
 
           <table className="min-w-full border border-gray-200">
 
@@ -139,6 +255,10 @@ async function loadHistory() {
                 <th className="border px-4 py-4 text-left bg-gray-100">
                   User Name
                 </th>
+
+                <th className="border px-4 py-4 text-left bg-gray-100">
+  Department
+</th>
 
                 <th className="border px-4 py-4 text-left bg-gray-100">
                   Asset
@@ -170,7 +290,7 @@ async function loadHistory() {
 
             <tbody>
 
-              {filteredHistory.map(item => {
+              {paginatedHistory.map(item => {
                 const scanDate =
                   new Date(item.scannedAt);
 
@@ -187,6 +307,10 @@ async function loadHistory() {
                     <td className="border px-4 py-2">
                       {item.userName || '-'}
                     </td>
+
+                    <td className="border px-4 py-2">
+  {item.department || '-'}
+</td>
 
                     <td className="border px-4 py-2">
                       {item.asset || item.Asset || '-'}
@@ -236,7 +360,51 @@ async function loadHistory() {
 
           </table>
 
-        </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-white">
+
+  <p className="text-sm text-gray-500">
+    Showing page {currentPage} of {totalPages || 1}
+  </p>
+
+  <div className="flex gap-2">
+
+    <button
+      onClick={() =>
+        setCurrentPage(prev =>
+          Math.max(prev - 1, 1)
+        )
+      }
+      disabled={currentPage === 1}
+      className="px-4 py-2 border rounded-lg disabled:opacity-50"
+    >
+      Previous
+    </button>
+
+    <button
+      onClick={() =>
+        setCurrentPage(prev =>
+          Math.min(
+            prev + 1,
+            totalPages
+          )
+        )
+      }
+      disabled={
+        currentPage === totalPages
+      }
+      className="px-4 py-2 border rounded-lg disabled:opacity-50"
+    >
+      Next
+    </button>
+
+  </div>
+
+</div>
+
+                </div>
+
+      </>
+
       )}
 
     </div>

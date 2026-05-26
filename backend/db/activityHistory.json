@@ -626,5 +626,60 @@
     "serialNumber": "H0500615252922",
     "scanMethod": "MANUAL",
     "scannedAt": "2026-05-19T14:22:52.492Z"
+  },
+  {
+    "id": 1779533538422,
+    "employeeId": "yvan",
+    "userName": "Yvan Canovas",
+    "department": "APLHA MALE",
+    "asset": "60010013720",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533453",
+    "serialNumber": "H0500626533453",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-23T10:52:18.422Z"
+  },
+  {
+    "id": 1779671639033,
+    "employeeId": "kevin",
+    "userName": "Kevin Rebucas",
+    "department": "TEST",
+    "asset": "60010013721",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533590",
+    "serialNumber": "H0500626533590",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-25T01:13:59.032Z"
+  },
+  {
+    "id": 1782350279482,
+    "employeeId": "admin",
+    "userName": "System Administrator",
+    "department": "Administration",
+    "asset": "60010013714",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533591",
+    "serialNumber": "H0500626533591",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-06-25T01:17:59.481Z"
+  },
+  {
+    "id": 1779695533588,
+    "employeeId": "admin",
+    "userName": "System Administrator",
+    "department": "Administration",
+    "asset": "60010036972",
+    "assetDescription": "HP ELITEDESK 800 G5 SFF SN:4CE9450KJ7",
+    "serialNumber": "4CE9450KJ7",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-25T07:52:13.587Z"
+  },
+  {
+    "id": 1779697360523,
+    "employeeId": "admin",
+    "userName": "System Administrator",
+    "department": "Administration",
+    "asset": "60010013672",
+    "assetDescription": "AL4018IP Touch Set SN:H0500626533566",
+    "serialNumber": "H0500626533566",
+    "scanMethod": "MANUAL",
+    "scannedAt": "2026-05-25T08:22:40.523Z"
   }
 ]

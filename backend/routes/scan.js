@@ -85,6 +85,10 @@ const currentUser = {
   name:
     req.user.name ||
     req.user.employeeId,
+
+  department:
+    req.user.department ||
+    'No Department',
 };
 
 /**
@@ -96,6 +100,10 @@ addActivityHistory({
 
   userName:
     currentUser?.name || 'Unknown User',
+
+  department:
+  currentUser?.department ||
+  'No Department',
 
   asset:
     updatedAsset.asset ||

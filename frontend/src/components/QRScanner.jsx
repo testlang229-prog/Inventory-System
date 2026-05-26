@@ -4,6 +4,10 @@
 import { useRef, useState, useEffect } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { processScan } from '../services/api';
+import scannerIcon from '../assets/icons/scanner-icon.png';
+import cameraIcon from '../assets/icons/camera-icon.png';
+import stopIcon from '../assets/icons/stop-icon.png';
+import processingIcon from '../assets/icons/processing-icon.png';
 
 const SUPPORTED_SCAN_FORMATS = [
   Html5QrcodeSupportedFormats.QR_CODE,
@@ -209,9 +213,17 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4">
-      <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
-        📱 Barcode Scanner
-      </h2>
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
+
+  <img
+    src={scannerIcon}
+    alt="Scanner"
+    className="w-8 h-8"
+  />
+
+  <span>Barcode Scanner</span>
+
+</h2>
 
       {!isScanning ? (
         <>
@@ -220,7 +232,17 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
             onClick={startScanner}
             className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
           >
-            🎥 Start Camera
+            <div className="flex items-center justify-center gap-2">
+
+  <img
+    src={cameraIcon}
+    alt="Camera"
+    className="w-5 h-5"
+  />
+
+  <span>Start Camera</span>
+
+</div>
           </button>
         </>
       ) : (
@@ -237,16 +259,36 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
               onClick={stopScanner}
               className="flex-1 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
             >
-              ❌ Stop Camera
+              <div className="flex items-center justify-center gap-2">
+
+  <img
+    src={stopIcon}
+    alt="Stop"
+    className="w-5 h-5"
+  />
+
+  <span>Stop Camera</span>
+
+</div>
             </button>
           </div>
 
           {/* Loading indicator */}
           {isLoading && (
             <div className="bg-blue-50 border border-blue-300 rounded-lg p-4 text-center">
-              <p className="text-blue-700 font-semibold">
-                ⏳ Processing scan...
-              </p>
+              <div className="flex items-center justify-center gap-2">
+
+  <img
+    src={processingIcon}
+    alt="Processing"
+    className="w-5 h-5 animate-spin"
+  />
+
+  <p className="text-blue-700 font-semibold">
+    Processing scan...
+  </p>
+
+</div>
             </div>
           )}
 

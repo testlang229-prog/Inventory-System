@@ -1,5 +1,10 @@
 import { useState } from "react";
 
+import uploadIcon from "../assets/dashboard/upload-icon.png";
+import scanIcon from "../assets/dashboard/scan-icon.png";
+import usersIcon from "../assets/dashboard/users-icon.png";
+import activityIcon from "../assets/dashboard/activity-icon.png";
+
 import UploadForm from "../components/UploadForm";
 import ScannedAssetDetails from "../components/ScannedAssetDetails";
 import UserManagement from "../components/UserManagement";
@@ -22,83 +27,206 @@ export default function AdminDashboard({
   isClearing,
 }) {
   const [activePage, setActivePage] = useState("dashboard");
+  const getGreeting = () => {
+  const hour = new Date().getHours();
+
+  if (hour < 12) {
+    return "Good Morning";
+  }
+
+  if (hour < 18) {
+    return "Good Afternoon";
+  }
+
+  return "Good Evening";
+};
 
   return (
     <div>
 
       {/* DASHBOARD MENU */}
       {activePage === "dashboard" && (
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mt-8 md:mt-10">
+
+  <>
+
+    <div className="mb-8 md:mb-10">
+
+  <div className="flex items-center gap-4">
+
+    <div className="w-16 h-16 rounded-3xl bg-indigo-50 flex items-center justify-center shadow-sm">
+
+      <img
+        src={activityIcon}
+        alt="Dashboard"
+        className="w-8 h-8 object-contain"
+      />
+
+    </div>
+
+    <div>
+
+      <p className="text-sm md:text-base text-slate-500 font-medium">
+        {getGreeting()}, Administrator
+      </p>
+
+      <h1 className="text-3xl md:text-5xl font-extrabold text-slate-800 leading-tight">
+  Operations Overview
+</h1>
+
+      <p className="text-sm md:text-base text-slate-500 mt-1">
+        Monitor assets, users, and inventory operations
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+    <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mt-6 md:mt-10">
 
           {/* Upload */}
-          <button
-            onClick={() => setActivePage("upload")}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl p-4 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl active:scale-[0.98] flex flex-col items-center justify-center min-h-[170px] md:min-h-[240px]"
-          >
-            <div className="text-4xl md:text-5xl mb-4">📤</div>
+<button
+  onClick={() => setActivePage("upload")}
+  className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 p-5 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98] min-h-[150px] md:min-h-[240px]"
+>
 
-            <h2 className="text-xl md:text-lg md:text-2xl font-bold text-center">
-              Upload
-            </h2>
+  <div className="flex flex-col items-start h-full">
 
-            <p className="hidden md:block mt-2 text-sm text-blue-100">
-              Upload Excel asset files
-            </p>
-          </button>
+    <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+
+      <img
+        src={uploadIcon}
+        alt="Upload"
+        className="w-7 h-7 object-contain"
+      />
+
+    </div>
+
+    <div className="mt-8 w-full text-left">
+
+  <h2 className="text-white text-lg md:text-2xl font-bold leading-tight text-left">
+        Upload
+      </h2>
+
+      <p className="hidden md:block min-h-[40px] text-left text-blue-100 text-sm mt-1">
+        Upload inventory files
+      </p>
+
+    </div>
+
+  </div>
+
+</button>
 
           {/* Scan */}
-          <button
-            onClick={() => setActivePage("scan")}
-            className="bg-green-600 hover:bg-green-700 text-white rounded-2xl p-4 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl active:scale-[0.98] flex flex-col items-center justify-center min-h-[170px] md:min-h-[240px]"
-          >
-            <div className="text-4xl md:text-5xl mb-4">📱</div>
+<button
+  onClick={() => setActivePage("scan")}
+  className="dashboard-card-glow group relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 to-green-600 p-5 md:p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98] min-h-[150px] md:min-h-[240px]"
+>
 
-            <h2 className="text-lg md:text-2xl font-bold text-center">
-              Scan
-            </h2>
+  <div className="flex flex-col items-start h-full">
 
-            <p className="mt-2 text-sm text-green-100">
-              Scan and manage assets
-            </p>
-          </button>
+    <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+
+      <img
+        src={scanIcon}
+        alt="Scan"
+        className="w-7 h-7 object-contain"
+      />
+
+    </div>
+
+    <div className="mt-8 w-full text-left">
+
+  <h2 className="text-white text-lg md:text-2xl font-bold leading-tight text-left">
+        Scan
+      </h2>
+
+      <p className="hidden md:block min-h-[40px] text-green-100 text-sm mt-1">
+        Scan and manage assets
+      </p>
+
+    </div>
+
+  </div>
+
+</button>
 
           {/* User Management */}
-          <button
-            onClick={() => setActivePage("users")}
-            className="bg-purple-600 hover:bg-purple-700 text-white rounded-2xl p-4 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl active:scale-[0.98] flex flex-col items-center justify-center min-h-[170px] md:min-h-[240px]"
-          >
-            <div className="text-4xl md:text-5xl mb-4">👥</div>
+<button
+  onClick={() => setActivePage("users")}
+  className="dashboard-card-glow group relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-500 to-purple-600 p-5 md:p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98] min-h-[150px] md:min-h-[240px]"
+>
 
-            <h2 className="text-lg md:text-2xl font-bold text-center">
-              User Management
-            </h2>
+  <div className="flex flex-col items-start h-full">
 
-            <p className="hidden md:block mt-2 text-sm text-purple-100">
-              Manage system users
-            </p>
-          </button>
+    <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+
+      <img
+        src={usersIcon}
+        alt="Users"
+        className="w-7 h-7 object-contain"
+      />
+
+    </div>
+
+    <div className="mt-8 w-full text-left">
+
+  <h2 className="text-white text-lg md:text-2xl font-bold leading-tight text-left">
+        Users
+      </h2>
+
+      <p className="hidden md:block min-h-[40px] text-purple-100 text-sm mt-1">
+        Manage system users
+      </p>
+
+    </div>
+
+  </div>
+
+</button>
 
           {/* Activity History */}
 <button
   onClick={() =>
     setActivePage("activityHistory")
   }
-  className="bg-orange-600 hover:bg-orange-700 text-white rounded-2xl p-4 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl active:scale-[0.98] flex flex-col items-center justify-center min-h-[170px] md:min-h-[240px]"
+  className="dashboard-card-glow group relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange-500 to-amber-500 p-5 md:p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98] min-h-[150px] md:min-h-[240px]"
 >
-  <div className="text-4xl md:text-4xl md:text-5xl mb-4">
-    📋
+
+  <div className="flex flex-col items-start h-full">
+
+    <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+
+      <img
+        src={activityIcon}
+        alt="Activity"
+        className="w-7 h-7 object-contain"
+      />
+
+    </div>
+
+    <div className="mt-8 w-full text-left">
+
+  <h2 className="text-white text-lg md:text-2xl font-bold leading-tight text-left">
+        Activity
+      </h2>
+
+      <p className="hidden md:block min-h-[40px] text-orange-100 text-sm mt-1">
+        View activity logs
+      </p>
+
+    </div>
+
   </div>
 
-  <h2 className="text-lg md:text-2xl font-bold text-center">
-    Activity History
-  </h2>
-
-  <p className="hidden md:block mt-2 text-sm text-orange-100">
-    View user scan activity logs
-  </p>
 </button>
 
-        </div>
+                </div>
+
+  </>
+
       )}
 
       {/* UPLOAD PAGE */}

@@ -15,6 +15,8 @@ import Login from './components/Login';
 import AdminLogin from './components/AdminLogin';
 import UserManagement from './components/UserManagement';
 import AdminDashboard from './pages/adminDashboard';
+import adminIcon from './assets/icons/admin-icon.png';
+import employeeIcon from './assets/icons/employee-icon.png';
 
 import {
   fetchAssets,
@@ -742,19 +744,43 @@ const getDropdownOptions = (header) => {
         <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
           
           <div className="flex items-start justify-between gap-4 lg:items-center">
-            <div className="flex flex-col gap-3">
-              <h1 className="text-xl md:text-3xl font-bold text-gray-800">
-                {isAdmin
-                  ? '🔒 Admin Dashboard'
-                  : '🏢 Asset Inventory System'}
-              </h1>
+            <div className="flex items-center gap-4">
 
-              <p className="text-gray-600 text-sm mt-1">
-                GMADC - OJT Project
-              </p>
+  <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center shadow-sm">
 
-              
-            </div>
+    <img
+      src={
+        isAdmin
+          ? adminIcon
+          : employeeIcon
+      }
+      alt="Dashboard"
+      className="w-7 h-7 object-contain"
+    />
+
+  </div>
+
+  <div>
+
+    <div>
+
+  <h1 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
+
+    {isAdmin
+      ? 'Asset Inventory System'
+      : 'Asset Inventory System'}
+
+  </h1>
+
+  <p className="text-xs md:text-sm text-slate-500 mt-1">
+    Enterprise Asset Platform
+  </p>
+
+</div>
+
+  </div>
+
+</div>
 
 <div
   ref={profileMenuRef}
@@ -832,14 +858,14 @@ const getDropdownOptions = (header) => {
         }}
         className="w-full px-4 py-3 text-left hover:bg-gray-100 transition"
       >
-        🔄 Refresh
+        Refresh Dashboard
       </button>
 
       <button
         onClick={handleLogout}
         className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition"
       >
-        🚪 Logout
+        Sign Out
       </button>
 
     </div>
@@ -1105,14 +1131,14 @@ const getDropdownOptions = (header) => {
       )}
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white mt-12 py-6">
+      <footer className="hidden md:block">
 
         <div className="max-w-7xl mx-auto px-4 text-center text-sm">
 
           <p>Asset Inventory System</p>
 
           <p className="text-gray-400 mt-2">
-            © 2026 GMADC OJT Project
+            © 2026 Asset Inventory System
           </p>
 
         </div>

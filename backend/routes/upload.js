@@ -15,6 +15,7 @@ const {
 } = require('../utils/excelParser');
 const {
   getMonthlyStatusHeader,
+  getMonthlyRemarksHeader,
   normalizeHeader,
 } = require('../utils/monthColumns');
 
@@ -72,14 +73,33 @@ router.post('/', (req, res) => {
     const isInternalField = (header) =>
       normalizeHeader(header).replace(/\s+/g, '') === 'scanningmonth';
 
-    const monthlyStatusHeader = getMonthlyStatusHeader();
-    const headers = [...parsedHeaders];
+    const monthlyStatusHeader =
+  getMonthlyStatusHeader();
+
+const monthlyRemarksHeader =
+  getMonthlyRemarksHeader();
+
+const headers = [...parsedHeaders];
 
     if (!headers.some(header => normalizeHeader(header) === normalizeHeader(monthlyStatusHeader))) {
       const remarksIndex = headers.findIndex(header => normalizeHeader(header) === 'remarks');
       const insertIndex = remarksIndex >= 0 ? remarksIndex : headers.length;
       headers.splice(insertIndex, 0, monthlyStatusHeader);
     }
+
+    if (
+  !headers.some(
+    header =>
+      normalizeHeader(header) ===
+      normalizeHeader(
+        monthlyRemarksHeader
+      )
+  )
+) {
+
+  headers.push(monthlyRemarksHeader);
+
+}
 
     // Filter out internal fields like scanningMonth
     const filteredHeaders = headers.filter(header => !isInternalField(header));
@@ -101,9 +121,14 @@ router.post('/', (req, res) => {
     parsedAssets.forEach(asset => {
       const isNew = !existingAssetNumbers.includes(asset.asset);
       upsertAsset({
-        ...asset,
-        [monthlyStatusHeader]: asset[monthlyStatusHeader] || '',
-      });
+  ...asset,
+
+  [monthlyStatusHeader]:
+    asset[monthlyStatusHeader] || '',
+
+  [monthlyRemarksHeader]:
+    asset[monthlyRemarksHeader] || '',
+});
       
       if (isNew) {
         assetsAdded++;
