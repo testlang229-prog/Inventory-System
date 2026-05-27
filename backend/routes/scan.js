@@ -16,6 +16,7 @@ const {
 
 const {
   addActivityHistory,
+getCurrentBatch,
 } = require('../db/database');
 const { updateLastUpdated } = require('../utils/updateTracker');
 
@@ -78,6 +79,8 @@ const updatedAsset = getAssetById(asset.id);
 /**
  * CURRENT USER
  */
+const currentBatch =
+  getCurrentBatch();
 const currentUser = {
   employeeId:
     req.user.employeeId,
@@ -120,7 +123,15 @@ addActivityHistory({
     updatedAsset['Serial number'] ||
     '',
 
-  scanMethod,
+  batchId:
+  currentBatch?.batchId || null,
+
+batchFileName:
+  currentBatch?.uploadedFileName ||
+  null,
+
+scanMethod,
+
 scannedAt: new Date(),
 });
 

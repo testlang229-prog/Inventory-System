@@ -2,8 +2,16 @@
 // Handles downloading updated Excel file
 
 const express = require('express');
-const { getAllAssets, getHeaders } = require('../db/database');
-const { generateExcelFile } = require('../utils/excelGenerator');
+const {
+  getAllAssets,
+  getHeaders,
+  getActivityHistory,
+  getCurrentBatch,
+} = require('../db/database');
+const {
+  generateExcelFile,
+  generateActivityExcel,
+} = require('../utils/excelGenerator');
 const { getReportFilename } = require('../utils/monthColumns');
 
 const router = express.Router();
@@ -34,6 +42,10 @@ router.get('/', async (req, res) => {
       'Content-Disposition',
       `attachment; filename="${filename}"`
     );
+    res.setHeader(
+  'Access-Control-Expose-Headers',
+  'Content-Disposition'
+);
     res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
 
     // Send the Excel file
@@ -46,5 +58,81 @@ router.get('/', async (req, res) => {
     });
   }
 });
+
+/**
+ * DOWNLOAD ACTIVITY REPORT
+ */
+router.get(
+  '/activity-report',
+  async (req, res) => {
+
+    try {
+
+      const currentBatch =
+        getCurrentBatch();
+
+      const history =
+        getActivityHistory().filter(
+          item =>
+            item.batchId ===
+            currentBatch.batchId
+        );
+
+      const excelBuffer =
+        await generateActivityExcel(
+          history
+        );
+
+      const uploadDate =
+  new Date(
+    currentBatch.uploadedAt
+  );
+
+const formattedDate =
+  uploadDate.toLocaleDateString(
+    'en-US',
+    {
+      month: 'long',
+      day: '2-digit',
+      year: 'numeric',
+    }
+  )
+  .replace(',', '')
+  .replace(/\s+/g, '-');
+
+const filename =
+  `Activity-Report-${formattedDate}.xlsx`;
+
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      );
+
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${filename}"`
+      );
+
+      res.setHeader(
+  'Access-Control-Expose-Headers',
+  'Content-Disposition'
+);
+
+      res.send(excelBuffer);
+
+    } catch (error) {
+
+      console.error(error);
+
+      res.status(500).json({
+        success: false,
+        message:
+          'Failed to download activity report',
+      });
+
+    }
+
+  }
+);
 
 module.exports = router;

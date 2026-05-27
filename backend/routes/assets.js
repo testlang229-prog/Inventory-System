@@ -12,6 +12,7 @@ const {
   updateHeaders,
   upsertAsset,
   deleteAllAssets,
+clearCurrentBatch,
 } = require('../db/database');
 const {
   getMonthlyStatusHeader,
@@ -228,6 +229,8 @@ if (duplicateAsset) {
 router.delete('/', authenticateToken, requireAdmin, (req, res) => {
   try {
     deleteAllAssets();
+
+clearCurrentBatch();
 
       updateLastUpdated();
     res.json({

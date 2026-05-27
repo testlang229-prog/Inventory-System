@@ -4,10 +4,10 @@
 import axios from 'axios';
 
 // Base URL for backend API
-// const API_BASE_URL = 'https://inventory-system-backend-yvkv.onrender.com/api';
+const API_BASE_URL = 'https://inventory-system-backend-yvkv.onrender.com/api';
 
 // For local development, use:
-const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:2026/api`;
+//const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:2026/api`;
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -188,6 +188,74 @@ export async function getLastUpdated() {
   } catch (error) {
     return null;
   }
+}
+
+export async function
+downloadActivityReport() {
+
+  try {
+
+    const response =
+  await apiClient.get(
+        '/download/activity-report',
+        {
+          responseType: 'blob',
+        }
+      );
+
+    const blob = new Blob(
+      [response.data],
+      {
+        type:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      }
+    );
+
+    const disposition =
+      response.headers[
+        'content-disposition'
+      ];
+
+    const filenameMatch =
+      disposition?.match(
+        /filename="?([^"]+)"?/i
+      );
+
+    const link =
+      document.createElement('a');
+
+    link.href =
+      window.URL.createObjectURL(
+        blob
+      );
+
+    link.download =
+      filenameMatch?.[1] ||
+      'ActivityReport.xlsx';
+
+    document.body.appendChild(
+      link
+    );
+
+    link.click();
+
+    document.body.removeChild(
+      link
+    );
+
+    window.URL.revokeObjectURL(
+      link.href
+    );
+
+  } catch (error) {
+
+    throw {
+      message:
+        'Failed to download activity report',
+    };
+
+  }
+
 }
 
 export default apiClient;

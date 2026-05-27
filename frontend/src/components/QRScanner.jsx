@@ -212,7 +212,7 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
   }, []);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
+    <div className="bg-[#FCFBF7] backdrop-blur-2xl rounded-[28px] md:rounded-[32px] border border-white/50 shadow-[0_12px_40px_rgba(212,160,23,0.08)] p-4 md:p-5">
       <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 flex items-center gap-3">
 
   <img
@@ -230,7 +230,7 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
           <div id="qr-scanner" className="hidden"></div>
           <button
             onClick={startScanner}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
+            className="w-full px-6 py-4 parchment-button text-slate-800 rounded-2xl hover:scale-[1.01] transition-all duration-300 font-semibold shadow-[0_8px_24px_rgba(15,23,42,0.12)]"
           >
             <div className="flex items-center justify-center gap-2">
 
@@ -257,7 +257,7 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
           <div className="flex gap-3 mb-4">
             <button
               onClick={stopScanner}
-              className="flex-1 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              className="flex-1 px-6 py-3 bg-gradient-to-br from-red-400 to-rose-500 text-white rounded-2xl hover:scale-[1.01] transition-all duration-300 shadow-[0_8px_24px_rgba(239,68,68,0.15)]"
             >
               <div className="flex items-center justify-center gap-2">
 
@@ -309,7 +309,7 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
         >
           Manual Scan
         </label>
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch">
           <input
             id="manual-scan-value"
             type="text"
@@ -317,12 +317,12 @@ export default function QRScanner({ onScanSuccess, onScanError }) {
             onChange={(event) => setManualScanValue(event.target.value)}
             placeholder="Enter asset #, serial #, or barcode"
             disabled={isLoading}
-            className="flex-1 px-1 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="w-full lg:flex-1 px-4 py-3 border border-white/60 bg-white/60 backdrop-blur-xl rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-300 disabled:bg-slate-100 shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
           />
           <button
             type="submit"
             disabled={isLoading || manualScanValue.trim().length === 0}
-            className="px-5 py-2 w-50 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-semibold"
+            className="w-full lg:w-auto lg:min-w-[140px] px-5 py-3 parchment-button text-slate-800 rounded-2xl hover:scale-[1.01] disabled:bg-slate-300 disabled:cursor-not-allowed transition-all duration-300 font-semibold shadow-[0_8px_24px_rgba(15,23,42,0.12)]"
           >
             {isLoading ? 'Processing' : 'Submit'}
           </button>

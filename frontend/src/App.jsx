@@ -15,6 +15,7 @@ import Login from './components/Login';
 import AdminLogin from './components/AdminLogin';
 import UserManagement from './components/UserManagement';
 import AdminDashboard from './pages/adminDashboard';
+import CustomModal from './components/CustomModal';
 import adminIcon from './assets/icons/admin-icon.png';
 import employeeIcon from './assets/icons/employee-icon.png';
 
@@ -159,6 +160,13 @@ export default function App() {
   const [scannedAssets, setScannedAssets] = useState([]);
 
   const [notification, setNotification] = useState(null);
+  const [modal, setModal] = useState({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+});
 
 const [lastKnownUpdate, setLastKnownUpdate] = useState(null);
 
@@ -166,26 +174,14 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [loginView, setLoginView] = useState('user');
 
-  const [isSwitchingLogin, setIsSwitchingLogin] =
-  useState(false);
 
   const [showProfileMenu, setShowProfileMenu] =
   useState(false);
 
 const profileMenuRef = useRef(null);
 
-const switchLoginView = view => {
-  setIsSwitchingLogin(true);
-
-  setTimeout(() => {
-
-    setLoginView(view);
-
-    setTimeout(() => {
-      setIsSwitchingLogin(false);
-    }, 50);
-
-  }, 250);
+const switchLoginView = (view) => {
+  setLoginView(view);
 };
 
   const [currentUser, setCurrentUser] = useState({
@@ -434,10 +430,27 @@ const switchLoginView = view => {
     } catch (error) {
   if (error.message?.includes('already exists')) {
 
-  alert(
-  error.message ||
-  '⚠️ Same asset already exists in the inventory.'
-);
+  setModal({
+  isOpen: true,
+
+  title: 'Duplicate Asset',
+
+  message:
+    error.message ||
+    'Asset details already exist in the inventory.',
+
+  onConfirm: () =>
+    setModal(prev => ({
+      ...prev,
+      isOpen: false,
+    })),
+
+  onCancel: () =>
+    setModal(prev => ({
+      ...prev,
+      isOpen: false,
+    })),
+});
 
   showNotification(
     '⚠️ Same asset already exists in the inventory.',
@@ -492,15 +505,22 @@ const switchLoginView = view => {
   const handleClearAssets = async () => {
     if (assets.length === 0) return;
 
-    const confirmed = window.confirm(
-      'Remove all assets from the current list? This cannot be undone.'
-    );
+    setModal({
+  isOpen: true,
+  title: 'Clear Asset List',
+  message:
+    'Are you sure you want to clear the entire asset list?',
+  onConfirm: async () => {
 
-    if (!confirmed) return;
+    setModal(prev => ({
+      ...prev,
+      isOpen: false,
+    }));
 
     setIsClearing(true);
 
     try {
+
       await clearAssets();
 
       setAssets([]);
@@ -508,17 +528,33 @@ const switchLoginView = view => {
       setScannedAssets([]);
 
       showNotification(
-        '✅ Inventory list cleared. Upload a new Excel file to start fresh.',
+        'Asset list cleared successfully',
         'success'
       );
+
     } catch (error) {
+
       showNotification(
-        error.message || 'Failed to clear inventory list',
+        error.message ||
+        'Failed to clear asset list',
         'error'
       );
+
     } finally {
+
       setIsClearing(false);
+
     }
+  },
+
+  onCancel: () =>
+    setModal(prev => ({
+      ...prev,
+      isOpen: false,
+    })),
+});
+
+    
   };
 
   const showNotification = (
@@ -706,29 +742,41 @@ const getDropdownOptions = (header) => {
 
   if (!isLoggedIn) {
   return (
-    <div
-      className={`transition-opacity duration-300 ${
-  isSwitchingLogin
-    ? 'opacity-0'
-    : 'opacity-100'
-}`}
-    >
+    <div className="relative min-h-screen">
 
-      {loginView === 'admin' ? (
-        <AdminLogin
-          onLogin={handleAdminLogin}
-          onBack={() =>
-            switchLoginView('user')
-          }
-        />
-      ) : (
+      {/* USER LOGIN */}
+      <div
+        className={`absolute inset-0 transition-opacity duration-300 ${
+          loginView === 'user'
+            ? 'opacity-100 z-20 pointer-events-auto'
+            : 'opacity-0 z-10 pointer-events-none'
+        }`}
+      >
         <Login
-          onLogin={handleLogin}
-          onShowAdmin={() =>
-            switchLoginView('admin')
-          }
-        />
-      )}
+  onLogin={handleLogin}
+  activeTab={loginView}
+  onShowAdmin={() =>
+    switchLoginView('admin')
+  }
+/>
+      </div>
+
+      {/* ADMIN LOGIN */}
+      <div
+        className={`absolute inset-0 transition-opacity duration-300 ${
+          loginView === 'admin'
+            ? 'opacity-100 z-20 pointer-events-auto'
+            : 'opacity-0 z-10 pointer-events-none'
+        }`}
+      >
+        <AdminLogin
+  onLogin={handleAdminLogin}
+  activeTab={loginView}
+  onBack={() =>
+    switchLoginView('user')
+  }
+/>
+      </div>
 
     </div>
   );
@@ -737,16 +785,16 @@ const getDropdownOptions = (header) => {
   const isAdmin = currentUser.role === 'admin';
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen flex flex-col bg-[#F6F3EA]">
 
       {/* Header */}
-      <header className="bg-white shadow-md sticky top-0 z-50">
+      <header className="bg-[#F6F3EA]/85 backdrop-blur-xl border-b border-[#EFE7D6] sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
           
           <div className="flex items-start justify-between gap-4 lg:items-center">
             <div className="flex items-center gap-4">
 
-  <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center shadow-sm">
+  <div className="w-14 h-14 rounded-2xl bg-[#FCFBF7] flex items-center justify-center border border-white/60 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
 
     <img
       src={
@@ -793,10 +841,10 @@ const getDropdownOptions = (header) => {
       !showProfileMenu
     )
   }
-  className="inline-flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-2 py-2 shadow-sm hover:bg-gray-100 transition"
+  className="inline-flex items-center gap-3 rounded-2xl border border-white/50 bg-[#FCFBF7]/80 backdrop-blur-xl px-2 py-2 shadow-[0_6px_20px_rgba(15,23,42,0.04)] hover:bg-[#FCFBF7] transition"
 >
 
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white text-base font-bold">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full gold-gradient text-slate-900 text-base font-bold gold-soft-glow">
       {isAdmin
         ? 'A'
         : currentUser.name
@@ -829,7 +877,7 @@ const getDropdownOptions = (header) => {
   </button>
 
   {showProfileMenu && (
-  <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden z-50">
+  <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-[#E9DFC9] bg-[#FCFBF7] shadow-[0_12px_32px_rgba(15,23,42,0.08)] overflow-hidden z-50">
 
 <div className="block md:hidden px-4 py-3 border-b border-gray-100">
 
@@ -856,14 +904,14 @@ const getDropdownOptions = (header) => {
           loadAssets();
           setShowProfileMenu(false);
         }}
-        className="w-full px-4 py-3 text-left hover:bg-gray-100 transition"
+        className="w-full px-4 py-3 text-left hover:bg-[#F7F1E3] transition"
       >
         Refresh Dashboard
       </button>
 
       <button
         onClick={handleLogout}
-        className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition"
+        className="w-full px-4 py-3 text-left text-red-600 hover:bg-[#FDECEC] transition"
       >
         Sign Out
       </button>
@@ -879,7 +927,7 @@ const getDropdownOptions = (header) => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <main className="flex-1 w-full max-w-[1800px] mx-auto px-3 sm:px-4 py-4 sm:py-8">
 
         {/* Notifications */}
         {notification && (
@@ -1144,7 +1192,20 @@ const getDropdownOptions = (header) => {
         </div>
 
       </footer>
-
+<CustomModal
+  isOpen={modal.isOpen}
+  title={modal.title}
+  message={modal.message}
+  onConfirm={modal.onConfirm}
+  onCancel={
+    modal.onCancel ||
+    (() =>
+      setModal(prev => ({
+        ...prev,
+        isOpen: false,
+      })))
+  }
+/>
     </div>
   );
 }

@@ -420,30 +420,30 @@ const paginatedAssets =
   ).length;
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-lg border border-gray-50 shadow-md p-3 sm:p-6 h-full">
+    <div className="bg-[#FCFBF7] backdrop-blur-2xl rounded-[32px] overflow-hidden border border-white/50 shadow-[0_10px_40px_rgba(15,23,42,0.05)] p-4 sm:p-6 h-full">
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="text-3xl font-bold text-blue-600">{assets.length}</div>
+        <div className="bg-gradient-to-br from-white/85 to-[#fff8dc]/55 border border-white/60 backdrop-blur-xl rounded-[28px] p-5 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
+          <div className="text-2xl md:text-3xl font-bold text-[#D4A017]">{assets.length}</div>
           <div className="text-sm text-gray-600">Total Assets</div>
         </div>
 
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="text-3xl font-bold text-green-600">
+        <div className="bg-gradient-to-br from-white/85 to-emerald-50/60 border border-white/60 backdrop-blur-xl rounded-[28px] p-5 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
+          <div className="text-2xl md:text-3xl font-bold text-green-600">
             {accountedCount}
           </div>
           <div className="text-sm text-gray-600">Accounted</div>
         </div>
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="text-3xl font-bold text-yellow-600">
+        <div className="bg-gradient-to-br from-white/85 to-amber-50/60 border border-white/60 backdrop-blur-xl rounded-[28px] p-5 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
+          <div className="text-2xl md:text-3xl font-bold text-yellow-600">
             {reconcilingCount}
           </div>
           <div className="text-sm text-gray-600">Reconciling</div>
         </div>
 
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="text-3xl font-bold text-red-600">
+        <div className="bg-gradient-to-br from-white/85 to-rose-50/60 border border-white/60 backdrop-blur-xl rounded-[28px] p-5 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
+          <div className="text-2xl md:text-3xl font-bold text-red-600">
             {unaccountedCount}
           </div>
           <div className="text-sm text-gray-600">Unaccounted</div>
@@ -470,7 +470,7 @@ const paginatedAssets =
     }
     value={searchTerm}
     onChange={e => setSearchTerm(e.target.value)}
-    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition"
+    className="w-full pl-12 pr-4 h-14 border border-white/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-300 bg-white/60 backdrop-blur-xl transition-all duration-300 shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
   />
 
 </div>
@@ -479,7 +479,7 @@ const paginatedAssets =
         <select
           value={filterStatus}
           onChange={e => setFilterStatus(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="px-4 h-14 border border-white/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-300 bg-white/60 backdrop-blur-xl shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
         >
           <option value="ALL">All Status / Remarks</option>
           <option value="ACCOUNTED">Accounted</option>
@@ -493,7 +493,7 @@ const paginatedAssets =
         <button
           onClick={onDownload}
           disabled={isDownloading || assets.length === 0}
-          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+          className="px-6 py-3 parchment-button text-slate-800 rounded-2xl hover:scale-[1.01] disabled:bg-slate-300 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_10px_28px_rgba(212,160,23,0.22)]"
         >
           <div className="flex items-center justify-center gap-2">
 
@@ -517,7 +517,7 @@ const paginatedAssets =
           <button
             onClick={onClearAssets}
             disabled={isClearing || assets.length === 0}
-            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+            className="px-6 py-3 bg-gradient-to-br from-rose-400 to-red-500 text-white rounded-2xl hover:scale-[1.01] disabled:bg-slate-300 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_8px_24px_rgba(239,68,68,0.18)]"
           >
             <div className="flex items-center justify-center gap-2">
 
@@ -541,7 +541,7 @@ const paginatedAssets =
       {/* Assets Table */}
 {isLoading ? (
 
-  <div className="overflow-auto w-full max-h-[70vh] rounded-lg border border-gray-200 animate-pulse">
+  <div className="overflow-auto w-full max-h-[58vh] xl:max-h-[65vh] rounded-lg border border-gray-200 animate-pulse">
 
     <table className="min-w-[1000px] w-full text-sm">
 
@@ -587,8 +587,8 @@ const paginatedAssets =
   </div>
 
 ) : filteredAssets.length > 0 ? (
-        <div className="overflow-auto w-full max-h-[70vh] rounded-lg border border-gray-200 asset-table-scroll">
-          <table className="min-w-[1000px] w-full text-sm">
+        <div className="overflow-auto w-full max-h-[70vh] rounded-3xl border border-gray-200 asset-table-scroll">
+          <table className="min-w-[1600px] w-full text-sm">
             <thead className="sticky top-0 z-40 bg-gray-100 border-b-2 border-gray-300">
               <tr>
                 <th className="px-4 py-3 text-left font-semibold text-gray-700 w-12 bg-gray-100 sticky top-0 z-40">
@@ -667,7 +667,7 @@ const paginatedAssets =
     onClick={() =>
       setSelectedQRAsset(asset)
     }
-    className="min-w-[130px] px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition text-sm font-semibold flex items-center justify-center"
+    className="min-w-[110px] px-3 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition text-sm font-semibold flex items-center justify-center"
   >
     <div className="flex items-center justify-center gap-2 whitespace-nowrap">
 
@@ -806,7 +806,7 @@ const paginatedAssets =
 </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="flex flex-col items-center justify-center py-20 text-center rounded-[32px] border border-white/50 bg-gradient-to-br from-white/80 to-[#fff8dc]/35 backdrop-blur-xl shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
 
   <img
     src={emptyIcon}

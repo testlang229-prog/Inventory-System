@@ -6,11 +6,11 @@ export default function StatusBadge({ status }) {
   const getStatusColor = (status) => {
     switch (status) {
       case 'ACCOUNTED':
-        return 'bg-green-100 text-green-800 border-green-300';
+        return 'bg-emerald-50/80 text-emerald-700 border-white/60 backdrop-blur-xl';
       case 'RECONCILING':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        return 'bg-amber-50/80 text-amber-700 border-white/60 backdrop-blur-xl';
       case 'UNACCOUNTED':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-rose-50/80 text-rose-700 border-white/60 backdrop-blur-xl';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-300';
     }

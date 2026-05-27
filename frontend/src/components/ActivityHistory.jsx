@@ -6,6 +6,7 @@ import {
 import {
   fetchActivityHistory,
 getLastUpdated,
+downloadActivityReport,
 } from '../services/api';
 
 
@@ -108,19 +109,28 @@ const paginatedHistory =
   );
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-4">
+    <div className="bg-gradient-to-br from-white/80 via-white/65 to-slate-100/40 backdrop-blur-2xl rounded-[32px] border border-white/50 shadow-[0_10px_40px_rgba(15,23,42,0.05)] p-5">
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
 
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">
-            📋 Activity History
-          </h2>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-800">
+  Activity History
+</h2>
 
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-slate-400 mt-1">
             User scan records
           </p>
         </div>
+
+<button
+  onClick={
+    downloadActivityReport
+  }
+  className="h-14 px-5 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-500 text-white font-semibold shadow-[0_8px_24px_rgba(99,102,241,0.18)] hover:scale-[1.01] transition-all duration-300"
+>
+  Download Report
+</button>
 
         <input
           type="text"
@@ -129,7 +139,7 @@ const paginatedHistory =
           onChange={e =>
             setSearch(e.target.value)
           }
-          className="border border-gray-300 rounded-lg px-4 py-2 w-full md:w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full md:w-80 h-14 border border-white/60 rounded-2xl px-5 bg-white/60 backdrop-blur-xl focus:outline-none focus:ring-2 focus:ring-slate-300 shadow-[0_4px_12px_rgba(15,23,42,0.04)] transition-all duration-300"
         />
 
       </div>
@@ -139,7 +149,7 @@ const paginatedHistory =
           Loading activity history...
         </div>
       ) : filteredHistory.length === 0 ? (
-        <div className="text-center py-10 text-gray-500">
+        <div className="text-center py-16 text-slate-400 rounded-[28px] border border-white/50 bg-white/45 backdrop-blur-xl shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
           No activity history yet.
         </div>
       ) : (
@@ -156,18 +166,18 @@ const paginatedHistory =
 
       <div
         key={`${item.Asset || item.asset}-${item.scannedAt}`}
-        className="border border-gray-200 rounded-xl p-4 shadow-sm bg-white"
+        className="relative overflow-hidden border border-white/50 rounded-[28px] p-5 bg-gradient-to-br from-white/80 via-white/65 to-slate-100/40 backdrop-blur-2xl shadow-[0_8px_30px_rgba(15,23,42,0.05)]"
       >
 
         <div className="flex items-start justify-between mb-3">
 
           <div>
 
-            <h3 className="font-bold text-gray-800 text-lg">
+            <h3 className="font-bold text-slate-800 text-xl tracking-tight">
               {item.userName || '-'}
             </h3>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-slate-400 mt-1">
               {item.employeeId || '-'}
             </p>
 
@@ -176,8 +186,8 @@ const paginatedHistory =
           <span
             className={
               item.scanMethod === 'MANUAL'
-                ? 'bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold'
-                : 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold'
+                ? 'bg-amber-50/80 text-amber-700 border border-white/60 backdrop-blur-xl px-3 py-1 rounded-full text-xs font-semibold shadow-[0_4px_12px_rgba(15,23,42,0.04)]'
+                : 'bg-emerald-50/80 text-emerald-700 border border-white/60 backdrop-blur-xl px-3 py-1 rounded-full text-xs font-semibold shadow-[0_4px_12px_rgba(15,23,42,0.04)]'
             }
           >
             {item.scanMethod || 'QR'}
@@ -187,19 +197,19 @@ const paginatedHistory =
 
         <div className="space-y-2 text-sm">
 
-          <div>
-            <span className="font-semibold text-gray-700">
-              Department:
-            </span>{' '}
-            {item.department || '-'}
-          </div>
+          <div className="text-slate-500">
+  {item.department || '-'} Department
+</div>
 
-          <div>
-            <span className="font-semibold text-gray-700">
-              Asset:
-            </span>{' '}
-            {item.asset || item.Asset || '-'}
-          </div>
+          <div className="pt-2">
+  <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
+    Asset Number
+  </p>
+
+  <p className="font-semibold text-slate-700">
+    {item.asset || item.Asset || '-'}
+  </p>
+</div>
 
           <div>
             <span className="font-semibold text-gray-700">
@@ -212,18 +222,21 @@ const paginatedHistory =
             }
           </div>
 
-          <div>
-            <span className="font-semibold text-gray-700">
-              Description:
-            </span>{' '}
-            {
-              item.assetDescription ||
-              item['Asset Description'] ||
-              '-'
-            }
-          </div>
+          <div className="pt-1">
+  <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
+    Asset Description
+  </p>
 
-          <div className="pt-2 border-t text-xs text-gray-500">
+  <p className="text-slate-700 leading-relaxed">
+    {
+      item.assetDescription ||
+      item['Asset Description'] ||
+      '-'
+    }
+  </p>
+</div>
+
+          <div className="pt-4 mt-4 border-t border-white/50 text-xs text-slate-400">
 
             {scanDate.toLocaleDateString()}
             {' • '}
@@ -240,11 +253,11 @@ const paginatedHistory =
   })}
 
 </div>
-        <div className="hidden md:block overflow-auto max-h-[600px] rounded-lg border border-gray-200">
+        <div className="hidden md:block overflow-auto max-h-[600px] rounded-[28px] border border-white/50 bg-white/50 backdrop-blur-2xl shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
 
           <table className="min-w-full border border-gray-200">
 
-            <thead className="sticky top-0 z-20 bg-gray-100">
+            <thead className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl">
 
               <tr>
 

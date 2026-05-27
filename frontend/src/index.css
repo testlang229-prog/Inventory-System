@@ -108,5 +108,132 @@ textarea {
 
 .dashboard-card-glow {
   box-shadow:
-    0 15px 35px rgba(0,0,0,0.12);
+    0 4px 18px rgba(15,23,42,0.035);
+}
+
+/* ========================================
+   GOLDEN EAGLES THEME
+======================================== */
+
+.gold-glow {
+  box-shadow:
+    0 10px 30px rgba(212,160,23,0.18);
+}
+
+.gold-soft-glow {
+  box-shadow:
+    0 8px 24px rgba(245,158,11,0.12);
+}
+
+.navy-glow {
+  box-shadow:
+    0 12px 40px rgba(15,23,42,0.16);
+}
+
+.gold-gradient {
+  background:
+    linear-gradient(
+      135deg,
+      #D4A017 0%,
+      #E8C547 55%,
+      #F59E0B 100%
+    );
+}
+
+.navy-gradient {
+  background:
+    linear-gradient(
+      135deg,
+      #1E293B 0%,
+      #334155 100%
+    );
+}
+
+.glass-gold {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.82),
+      rgba(255,248,220,0.55)
+    );
+
+  backdrop-filter:
+    blur(24px);
+}
+
+.gold-border {
+  border:
+    1px solid rgba(212,160,23,0.18);
+}
+
+/* ========================================
+   PARCHMENT THEME
+======================================== */
+
+.parchment-button {
+  background: #FAEFD9;
+
+  border:
+    1px solid #eadfc7;
+
+  color: #1E293B;
+
+  box-shadow:
+    0 10px 30px rgba(250,239,217,0.45);
+
+  transition:
+    all 0.3s ease;
+}
+
+.parchment-button:hover {
+  background: #f5e5c3;
+
+  transform:
+    translateY(-1px);
+}
+
+.parchment-soft {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(250,239,217,0.75),
+      rgba(255,255,255,0.65)
+    );
+}
+
+.parchment-border {
+  border:
+    1px solid rgba(234,223,199,0.8);
+}
+
+.pearl-surface {
+  background: #FCFBF7;
+
+  border:
+    1px solid rgba(255,255,255,0.75);
+
+  box-shadow:
+    0 4px 20px rgba(15,23,42,0.035);
+}
+
+.enterprise-glow {
+  box-shadow:
+    0 25px 60px rgba(15,23,42,0.18),
+    0 10px 30px rgba(212,160,23,0.08);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease;
 }

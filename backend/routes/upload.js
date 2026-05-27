@@ -8,6 +8,7 @@ const {
   upsertAsset,
   getAllAssets,
   updateHeaders,
+createNewBatch,
 } = require('../db/database');
 const {
   parseExcelFile,
@@ -63,6 +64,9 @@ router.post('/', (req, res) => {
     }
 
     const filePath = req.file.path;
+    createNewBatch(
+  req.file.originalname
+);
 
     // Parse the Excel file and preserve all headers
     const { assets: parsedAssets, headers: parsedHeaders } = parseExcelFile(filePath);
