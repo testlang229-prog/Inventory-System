@@ -2,8 +2,9 @@ export default function CustomModal({
   isOpen,
   title,
   message,
-  confirmText = 'Confirm',
+  confirmText = 'OK',
   cancelText = 'Cancel',
+  showCancel = false,
   onConfirm,
   onCancel,
 }) {
@@ -12,35 +13,79 @@ export default function CustomModal({
 
   return (
 
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-md px-4">
 
-      <div className="w-full max-w-xl rounded-[2rem] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.18)] px-8 py-9 animate-fadeIn">
+      <div
+        className="
+  w-full
+  max-w-lg
+  rounded-[2rem]
+  border
+  border-white/20
+  bg-white/75
+  backdrop-blur-xl
+  shadow-[0_25px_80px_rgba(15,23,42,0.28)]
+  px-10
+  py-10
+  animate-fadeIn
+"
+      >
 
-        <h2 className="text-[2rem] font-bold text-slate-800">
+        <h2 className="text-[2rem] font-black text-slate-800">
           {title}
         </h2>
 
-        <p className="mt-6 text-[1.1rem] leading-relaxed text-slate-500">
+        <p className="mt-6 text-[1.15rem] leading-relaxed text-slate-700">
           {message}
         </p>
 
-        <div className="flex justify-end gap-4 mt-10">
+        <div className="flex justify-center gap-4 mt-10">
 
-          <button
-            onClick={onCancel}
-            className="px-8 h-14 rounded-2xl border border-slate-200 bg-white text-slate-700 text-lg font-medium hover:bg-slate-50 transition-all duration-300"
-          >
-            {cancelText}
-          </button>
+  {showCancel && (
+    <button
+      onClick={onCancel}
+      className="
+        w-full
+        max-w-[180px]
+        h-14
+        rounded-2xl
+        border
+        border-slate-300
+        bg-white/70
+        text-slate-700
+        text-lg
+        font-semibold
+        hover:bg-white
+        transition-all
+        duration-300
+      "
+    >
+      {cancelText}
+    </button>
+  )}
 
-          <button
-            onClick={onConfirm}
-            className="px-8 h-14 rounded-2xl bg-red-500 text-white text-lg font-semibold hover:bg-red-600 transition-all duration-300 shadow-lg"
-          >
-            {confirmText}
-          </button>
+  <button
+    onClick={onConfirm}
+    className="
+      w-full
+      max-w-[220px]
+      h-14
+      rounded-2xl
+      bg-[#0F172A]
+      text-white
+      text-lg
+      font-semibold
+      hover:bg-[#1E293B]
+      hover:scale-[1.02]
+      transition-all
+      duration-300
+      shadow-lg
+    "
+  >
+    {confirmText}
+  </button>
 
-        </div>
+</div>
 
       </div>
 

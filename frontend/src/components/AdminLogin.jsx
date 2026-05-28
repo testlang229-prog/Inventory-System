@@ -10,6 +10,7 @@ export default function AdminLogin({
   onLogin,
   onBack,
   activeTab,
+  isAuthenticating,
 }) {
   const [employeeId, setEmployeeId] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +43,7 @@ export default function AdminLogin({
 
   return (
     <div
-  className={`min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-8 transition-all duration-500 ${
+  className={`min-h-screen relative overflow-hidden flex items-center justify-center px-4 py-4 transition-all duration-500 ${
     activeTab === 'admin'
       ? 'bg-[#020617]'
       : 'bg-[#F6F3EA]'
@@ -73,7 +74,7 @@ export default function AdminLogin({
   <img
     src={adminIcon}
     alt="Admin"
-    className="w-20 h-20 object-contain drop-shadow-2xl"
+    className="w-20 h-20 object-contain drop-shadow-2xl brightness-0 invert"
   />
 </div>
 
@@ -96,7 +97,7 @@ export default function AdminLogin({
     <img
       src={usersIcon}
       alt="Users"
-      className="w-8 h-8 object-contain mb-3 opacity-90"
+      className="w-8 h-8 object-contain mb-3 opacity-90 brightness-0 invert"
     />
 
     <h3 className="font-semibold text-white text-lg leading-tight">
@@ -114,7 +115,7 @@ export default function AdminLogin({
     <img
       src={activityIcon}
       alt="Reports"
-      className="w-8 h-8 object-contain mb-3 opacity-90"
+      className="w-8 h-8 object-contain mb-3 opacity-90 brightness-0 invert"
     />
 
     <h3 className="font-semibold text-white text-lg leading-tight">
@@ -132,7 +133,7 @@ export default function AdminLogin({
     <img
       src={securityIcon}
       alt="Security"
-      className="w-8 h-8 object-contain mb-3 opacity-90"
+      className="w-8 h-8 object-contain mb-3 opacity-90 brightness-0 invert"
     />
 
     <h3 className="font-semibold text-white text-lg leading-tight">
@@ -151,18 +152,18 @@ export default function AdminLogin({
 
 </div>
       <div
-  className={`login-glow max-w-md w-full mx-auto backdrop-blur-sm rounded-3xl shadow-2xl px-7 py-6 md:p-10 transition-all duration-500 ${
+  className={`login-glow max-w-sm w-full mx-auto backdrop-blur-2xl rounded-[2.7rem] shadow-[0_25px_70px_rgba(15,23,42,0.20)] px-6 py-6 md:p-10 transition-all duration-500 backdrop-blur-sm rounded-3xl shadow-2xl px-7 py-6 md:p-10 transition-all duration-500 ${
     activeTab === 'admin'
       ? 'bg-white/95 border border-white/20'
       : 'bg-white/95 border border-slate-200'
   }`}
 >
 
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
 
   <div className="flex justify-center mb-5">
 
-    <div className="w-20 h-20 rounded-3xl bg-amber-50 flex items-center justify-center shadow-sm">
+    <div className="w-20 h-20 rounded-[2rem] bg-amber-50 flex items-center justify-center shadow-sm">
 
       <img
         src={adminIcon}
@@ -175,7 +176,7 @@ export default function AdminLogin({
   </div>
 
   <h1
-  className={`text-4xl md:text-5xl font-extrabold leading-tight tracking-tight transition-all duration-500 ${
+  className={`text-[3rem] md:text-5xl font-black leading-tight tracking-tight transition-all duration-500 ${
     activeTab === 'admin'
       ? 'text-slate-800'
       : 'text-slate-800'
@@ -192,7 +193,7 @@ export default function AdminLogin({
     Secure administrator control panel
   </p>
   <div
-  className={`relative mt-7 flex rounded-2xl p-1 overflow-hidden transition-all duration-500 ${
+  className={`relative mt-7 flex rounded-2xl p-1.5 overflow-hidden transition-all duration-500 ${
     activeTab === 'admin'
       ? 'bg-[#F8F8FA] border border-[#E5E7EB]'
       : 'bg-white/5 border border-white/10'
@@ -212,7 +213,7 @@ export default function AdminLogin({
 <button
   type="button"
   onClick={onBack}
-  className={`relative z-10 flex-1 py-3 text-sm font-semibold transition-all duration-300 ${
+  className={`relative z-10 flex-1 h-12 text-sm font-semibold transition-all duration-300 ${
     activeTab === 'user'
       ? 'text-[#B8860B]'
       : 'text-slate-500'
@@ -225,7 +226,7 @@ export default function AdminLogin({
 <button
   type="button"
   onClick={() => {}}
-  className={`relative z-10 flex-1 py-3 text-sm font-semibold transition-all duration-300 ${
+  className={`relative z-10 flex-1 h-12 text-sm font-semibold transition-all duration-300 ${
     activeTab === 'admin'
       ? 'text-white'
       : 'text-slate-500'
@@ -257,6 +258,7 @@ export default function AdminLogin({
 />
 
   <input
+  disabled={isAuthenticating}
     type="text"
     id="employeeId"
     value={employeeId}
@@ -286,6 +288,7 @@ export default function AdminLogin({
 />
 
   <input
+  disabled={isAuthenticating}
     type="password"
     id="password"
     value={password}
@@ -306,13 +309,28 @@ export default function AdminLogin({
 
           <button
   type="submit"
-  className={`w-full py-3 px-4 rounded-xl active:scale-[0.98] transition-all duration-500 font-semibold shadow-lg ${
+  disabled={isAuthenticating}
+  className={`w-full py-3 px-4 rounded-xl transition-all duration-500 font-semibold shadow-lg flex items-center justify-center gap-3 ${
+    isAuthenticating
+      ? 'opacity-70 cursor-not-allowed'
+      : 'active:scale-[0.98]'
+  } ${
     activeTab === 'admin'
       ? 'bg-[#0F172A] hover:bg-[#1E293B] text-white'
       : 'bg-[#D4A017] hover:brightness-110 text-white'
   }`}
 >
-  {activeTab === 'admin' ? 'Continue' : 'Login'}
+
+  {isAuthenticating && (
+    <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+  )}
+
+  {isAuthenticating
+    ? 'Verifying...'
+    : activeTab === 'admin'
+    ? 'Continue'
+    : 'Login'}
+
 </button>
         </form>
 

@@ -16,6 +16,7 @@ export default function Login({
   onLogin,
   onShowAdmin,
   activeTab,
+  isAuthenticating,
 }) {
   const [employeeId, setEmployeeId] = useState('');
   const [password, setPassword] = useState('');
@@ -135,7 +136,7 @@ export default function Login({
 }`}>
 {/* GLASS SHINE */}
 <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent pointer-events-none" />
-    <div className="w-12 h-12 rounded-xl bg-[#D4A017]/20 flex items-center justify-center mb-4">
+    <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4">
       <img
         src={scanIcon}
         alt="Scan"
@@ -168,7 +169,7 @@ export default function Login({
 }`}>
 {/* GLASS SHINE */}
 <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent pointer-events-none" />
-  <div className="w-12 h-12 rounded-xl bg-[#D4A017]/20 flex items-center justify-center mb-4">
+  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4">
     <img
       src={trackIcon}
       alt="Track"
@@ -205,7 +206,7 @@ export default function Login({
 }`}>
 {/* GLASS SHINE */}
 <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent pointer-events-none" />
-    <div className="w-12 h-12 rounded-xl bg-[#D4A017]/20 flex items-center justify-center mb-4">
+    <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4">
       <img
         src={securityIcon}
         alt="Secure"
@@ -238,7 +239,7 @@ export default function Login({
 }`}>
 {/* GLASS SHINE */}
 <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent pointer-events-none" />
-    <div className="w-12 h-12 rounded-xl bg-[#D4A017]/20 flex items-center justify-center mb-4">
+    <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4">
       <img
         src={activityIcon}
         alt="Reports"
@@ -269,55 +270,15 @@ export default function Login({
   </div>
 
 </div>
-<div className="lg:hidden relative w-full max-w-md mx-auto mb-[-55px] z-10 px-2">
 
-  <div className="relative overflow-hidden rounded-[2.8rem] bg-[#0F172A] h-72 gold-soft-glow">
-
-    <div
-      className="absolute inset-0 opacity-20"
-      style={{
-        background:
-          'radial-gradient(circle at top left, rgba(212,160,23,0.45), transparent 45%)'
-      }}
-    />
-
-    <img
-  src={eagleLogo}
-  alt="Golden Eagles"
-  className="absolute right-[-120px] top-1/2 -translate-y-1/2 w-[760px] opacity-[0.08] rotate-[-10deg] object-contain"
-/>
-
-    <div className="relative z-10 p-8">
-
-      <img
-        src={companyLogo}
-        alt="Company Logo"
-        className="w-16 h-16 object-contain"
-      />
-
-      <h2 className="mt-6 text-3xl font-bold text-white leading-tight">
-        Asset Inventory
-        <br />
-        System
-      </h2>
-
-      <p className="mt-3 text-sm text-slate-300">
-        Enterprise inventory platform
-      </p>
-
-    </div>
-
-  </div>
-
-</div>
       <div
-  className={`enterprise-glow relative z-20 max-w-md w-full mx-auto backdrop-blur-2xl rounded-[2.5rem] px-7 py-6 md:p-8 lg:mt-0 -mt-8 transition-all duration-500 ${
+  className={`enterprise-glow relative z-20 max-w-sm w-full mx-auto backdrop-blur-2xl rounded-[2.7rem] px-6 py-7 md:p-8 transition-all duration-500 -mt-10 shadow-[0_25px_70px_rgba(15,23,42,0.18)] ${
     activeTab === 'admin'
       ? 'bg-[#0F172A]/95 border border-white/10'
       : 'pearl-surface border border-white/40'
   }`}
 >
-      <div className="text-center mb-8">
+      <div className="text-center mb-6">
 
   <div className="flex justify-center mb-6">
 
@@ -334,7 +295,7 @@ export default function Login({
   </div>
 
   <h1
-  className={`text-4xl md:text-5xl font-extrabold leading-tight tracking-tight transition-all duration-500 ${
+  className={`text-[3rem] md:text-5xl font-black leading-tight tracking-tight transition-all duration-500 ${
     activeTab === 'admin'
       ? 'text-white'
       : 'text-slate-800'
@@ -354,7 +315,7 @@ export default function Login({
   </p>
 
 <div
-  className={`relative mt-7 flex rounded-2xl p-1 overflow-hidden transition-all duration-500 ${
+  className={`relative mt-7 flex rounded-2xl p-1.5 overflow-hidden transition-all duration-500 ${
     activeTab === 'admin'
       ? 'bg-white/5 border border-white/10'
       : 'bg-[#F8F5EE] border border-[#E8E2D3]'
@@ -374,7 +335,7 @@ export default function Login({
   <button
     type="button"
     onClick={() => {}}
-    className={`relative z-10 flex-1 py-3 text-sm font-semibold transition-all duration-300 ${
+    className={`relative z-10 flex-1 h-12 text-sm font-semibold transition-all duration-300 ${
       activeTab === 'user'
         ? 'text-[#B8860B]'
         : 'text-slate-500'
@@ -387,7 +348,7 @@ export default function Login({
   <button
     type="button"
     onClick={onShowAdmin}
-    className={`relative z-10 flex-1 py-3 text-sm font-semibold transition-all duration-300 ${
+    className={`relative z-10 flex-1 h-12 text-sm font-semibold transition-all duration-300 ${
       activeTab === 'admin'
         ? 'text-white'
         : 'text-slate-500'
@@ -416,6 +377,7 @@ export default function Login({
   </span>
 
   <input
+  disabled={isAuthenticating}
     type="text"
     id="employeeId"
     value={employeeId}
@@ -451,6 +413,7 @@ export default function Login({
   </span>
 
   <input
+  disabled={isAuthenticating}
     type="password"
     id="password"
     value={password}
@@ -473,14 +436,27 @@ export default function Login({
 
           <button
   type="submit"
-            className={`w-full py-3.5 px-4 rounded-xl active:scale-[0.98] transition-all duration-500 font-semibold shadow-xl ${
-  activeTab === 'admin'
-    ? 'bg-[#D4A017] text-[#0F172A] hover:brightness-110'
-    : 'gold-gradient text-white hover:brightness-110'
-}`}
-          >
-            Login
-          </button>
+  disabled={isAuthenticating}
+  className={`w-full h-14 rounded-2xl transition-all duration-500 font-semibold shadow-xl flex items-center justify-center gap-3 ${
+    isAuthenticating
+      ? 'opacity-70 cursor-not-allowed'
+      : 'active:scale-[0.98]'
+  } ${
+    activeTab === 'admin'
+      ? 'bg-[#D4A017] text-[#0F172A] hover:brightness-110'
+      : 'gold-gradient text-white hover:brightness-110'
+  }`}
+>
+
+  {isAuthenticating && (
+    <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+  )}
+
+  {isAuthenticating
+    ? 'Signing In...'
+    : 'Login'}
+
+</button>
         </form>
       </div>
         </div>

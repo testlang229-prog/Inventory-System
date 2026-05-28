@@ -109,16 +109,16 @@ const paginatedHistory =
   );
 
   return (
-    <div className="bg-gradient-to-br from-white/80 via-white/65 to-slate-100/40 backdrop-blur-2xl rounded-[32px] border border-white/50 shadow-[0_10px_40px_rgba(15,23,42,0.05)] p-5">
+    <div className="bg-gradient-to-br from-white/80 via-white/65 to-slate-100/40 backdrop-blur-2xl rounded-[32px] border border-white/50 shadow-[0_10px_40px_rgba(15,23,42,0.05)] p-4">
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
 
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-800">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-800">
   Activity History
 </h2>
 
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-400 mt-0.5">
             User scan records
           </p>
         </div>
@@ -253,11 +253,11 @@ const paginatedHistory =
   })}
 
 </div>
-        <div className="hidden md:block overflow-auto max-h-[600px] rounded-[28px] border border-white/50 bg-white/50 backdrop-blur-2xl shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
+        <div className="hidden md:block rounded-[28px] border border-white/50 bg-white/50 backdrop-blur-2xl shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
 
-          <table className="min-w-full border border-gray-200">
+          <table className="w-full border border-gray-200">
 
-            <thead className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl">
+            <thead className="bg-white/80 backdrop-blur-xl">
 
               <tr>
 

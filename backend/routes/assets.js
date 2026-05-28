@@ -232,11 +232,14 @@ router.delete('/', authenticateToken, requireAdmin, (req, res) => {
 
 clearCurrentBatch();
 
-      updateLastUpdated();
-    res.json({
-      success: true,
-      message: 'Inventory list cleared successfully',
-    });
+updateLastUpdated();
+
+return setTimeout(() => {
+  res.json({
+    success: true,
+    message: 'Inventory list cleared successfully',
+  });
+}, 300);
   } catch (error) {
     console.error('Asset clear error:', error);
     res.status(500).json({

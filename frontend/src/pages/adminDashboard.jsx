@@ -15,6 +15,7 @@ import AssetTable from "../components/AssetTable";
 import QRScanner from "../components/QRScanner";
 import ActivityHistory from "../components/ActivityHistory";
 import MobileBottomNav from "../components/MobileBottomNav";
+import Sidebar from "../components/Sidebar";
 
 export default function AdminDashboard({
   assets,
@@ -117,10 +118,15 @@ useEffect(() => {
 }, []);
   return (
 
-  <div className="flex gap-4 w-full min-w-0">
+  <div className="dashboard-scroll flex flex-row gap-4 w-full min-w-0">
+    <Sidebar
+  activePage={activePage}
+  setActivePage={setActivePage}
+  navigationItems={navigationItems}
+  />
 
     {/* DESKTOP SIDEBAR */}
-    <aside className="hidden lg:flex sticky top-28 self-start max-h-[calc(100vh-140px)] overflow-y-auto w-[220px] flex-col shrink-0 rounded-[36px] border border-white/50 bg-[#FCFBF7] shadow-[0_20px_60px_rgba(15,23,42,0.06)] p-5 pt-8">
+    {/*<aside className="hidden lg:flex fixed top-4 h-[calc(100vh-48px)] w-[220px] flex-col shrink-0 rounded-[36px] border border-white/50 bg-[#FCFBF7]/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(15,23,42,0.06)] p-5 pt-8">
 
       
 
@@ -183,14 +189,14 @@ useEffect(() => {
 
       
 
-    </aside>
+    </aside>*/}
 
     {/* MAIN CONTENT */}
-    <div className="flex-1 min-w-0 pb-36 lg:pb-28">
+    <div className="flex-1 min-w-0 pb-36 lg:pb-28 lg:ml-[250px] lg:pt-5">
 
-<div className="hidden lg:block mb-6">
+<div className="hidden lg:block sticky top-4 z-30 mb-6">
 
-  <div className="flex items-start justify-between gap-4">
+  <div className="flex items-start justify-between gap-4 rounded-[30px] bg-[#F7F5EF]/85 backdrop-blur-xl border border-white/60 px-6 py-5 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
 
     <div>
 
