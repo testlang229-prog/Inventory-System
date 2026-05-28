@@ -600,37 +600,7 @@ setTimeout(async () => {
     try {
       const result = await loginUser(user);
 
-      if (!result.success) {
-
-  setModal({
-    isOpen: true,
-    title: 'Access Denied',
-    message:
-      'Your Employee ID or Department is incorrect.',
-
-    onConfirm: () =>
-      setModal({
-  isOpen: false,
-  title: '',
-  message: '',
-  onConfirm: null,
-  onCancel: null,
-}),
-
-    onCancel: () =>
-      setModal({
-  isOpen: false,
-  title: '',
-  message: '',
-  onConfirm: null,
-  onCancel: null,
-}),
-  });
-
-  setIsAuthenticating(false);
-
-  return;
-}
+      
 
       const userData = result.user;
 
@@ -662,7 +632,13 @@ setTimeout(async () => {
 setIsAuthenticating(false);
   return;
 }
-
+setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+});
       setIsLoggedIn(true);
       setCurrentUser(userData);
 
@@ -681,7 +657,12 @@ setIsAuthenticating(false);
       );
       setIsAuthenticating(false);
     } catch (error) {
-      setModal({
+
+  setTimeout(() => {
+    setIsAuthenticating(false);
+  }, 0);
+
+  setModal({
   isOpen: true,
   title: 'Access Denied',
   message:
@@ -705,7 +686,7 @@ setIsAuthenticating(false);
   onCancel: null,
 }),
 });
-      setIsAuthenticating(false);
+      
     }
   };
 
@@ -714,37 +695,7 @@ setIsAuthenticating(false);
     try {
     const result = await loginUser(adminUser);
 
-    if (!result.success) {
-
-  setModal({
-    isOpen: true,
-    title: 'Login Failed',
-    message:
-      'Invalid administrator credentials.',
-
-    onConfirm: () =>
-      setModal({
-  isOpen: false,
-  title: '',
-  message: '',
-  onConfirm: null,
-  onCancel: null,
-}),
-
-    onCancel: () =>
-      setModal({
-  isOpen: false,
-  title: '',
-  message: '',
-  onConfirm: null,
-  onCancel: null,
-}),
-  });
-
-  setIsAuthenticating(false);
-
-  return;
-}
+    
 
     const userData = result.user;
 
@@ -776,7 +727,13 @@ setIsAuthenticating(false);
 setIsAuthenticating(false);
       return;
     }
-
+setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+});
     setIsLoggedIn(true);
     setCurrentUser(userData);
 
@@ -796,7 +753,12 @@ setIsAuthenticating(false);
     );
     setIsAuthenticating(false);
   } catch (error) {
-    setModal({
+
+  setTimeout(() => {
+    setIsAuthenticating(false);
+  }, 0);
+
+  setModal({
   isOpen: true,
   title: 'Login Failed',
   message:
@@ -820,7 +782,7 @@ setIsAuthenticating(false);
   onCancel: null,
 }),
 });
-    setIsAuthenticating(false);
+    
   }
 };
 
@@ -987,6 +949,16 @@ const getDropdownOptions = (header) => {
   }
 />
       </div>
+      <CustomModal
+  isOpen={modal.isOpen}
+  title={modal.title}
+  message={modal.message}
+  confirmText={modal.confirmText}
+  cancelText={modal.cancelText}
+  showCancel={modal.showCancel}
+  onConfirm={modal.onConfirm}
+  onCancel={modal.onCancel}
+/>
     </div>
   );
 }

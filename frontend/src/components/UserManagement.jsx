@@ -103,8 +103,14 @@ const data = response.data;
         setError(data.message);
       }
     } catch (err) {
-      setError('Failed to save user');
-    }
+
+  setError(
+    err.response?.data?.message ||
+    err.message ||
+    'Failed to save user'
+  );
+
+}
   };
 
   const handleEdit = (user) => {

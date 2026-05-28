@@ -155,12 +155,13 @@ export async function loginUser(credentials) {
     const response = await apiClient.post('/users/login', credentials);
     return response.data;
   } catch (error) {
-    throw {
-  message:
+
+  throw new Error(
     error.response?.data?.message ||
-    '❌ Access denied. Your Employee ID and Department are not registered by the administrator.'
-};
-  }
+    'Access denied. Your Employee ID and Department are not registered by the administrator.'
+  );
+
+}
 }
 
 export async function fetchActivityHistory() {
