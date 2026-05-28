@@ -15,7 +15,7 @@ import AssetTable from "../components/AssetTable";
 import QRScanner from "../components/QRScanner";
 import ActivityHistory from "../components/ActivityHistory";
 import MobileBottomNav from "../components/MobileBottomNav";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/SidebarTemp";
 
 export default function AdminDashboard({
   assets,
