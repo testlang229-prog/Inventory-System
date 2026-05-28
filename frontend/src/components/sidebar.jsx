@@ -4,6 +4,7 @@ export default function Sidebar({
   navigationItems,
 }) {
   return (
+    //hello
     <>
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden lg:flex fixed top-28 left-6 h-fit w-[220px] flex-col shrink-0 rounded-[36px] border border-white/50 bg-[#FCFBF7]/95 backdrop-blur-xl shadow-[0_20px_60px_rgba(15,23,42,0.06)] p-5 py-6 z-40">
