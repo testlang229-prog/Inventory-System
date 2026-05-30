@@ -12,6 +12,7 @@ const {
   updateHeaders,
   upsertAsset,
   deleteAllAssets,
+clearCurrentBatch,
 } = require('../db/database');
 const {
   getMonthlyStatusHeader,
@@ -229,11 +230,16 @@ router.delete('/', authenticateToken, requireAdmin, (req, res) => {
   try {
     deleteAllAssets();
 
-      updateLastUpdated();
-    res.json({
-      success: true,
-      message: 'Inventory list cleared successfully',
-    });
+clearCurrentBatch();
+
+updateLastUpdated();
+
+return setTimeout(() => {
+  res.json({
+    success: true,
+    message: 'Inventory list cleared successfully',
+  });
+}, 300);
   } catch (error) {
     console.error('Asset clear error:', error);
     res.status(500).json({

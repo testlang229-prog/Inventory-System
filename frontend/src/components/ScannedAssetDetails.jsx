@@ -88,7 +88,7 @@ function getAssetValue(asset, candidates) {
 
 export default function ScannedAssetDetails({ scannedAssets }) {
   return (
-    <section className="mb-6 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md">
+    <section className="mb-6 overflow-hidden rounded-[32px] border border-white/50 bg-gradient-to-br from-white/85 to-[#fff8dc]/50 backdrop-blur-2xl shadow-[0_10px_40px_rgba(15,23,42,0.05)]">
       <div className="border-b border-gray-100 px-4 py-3">
         <h2 className="text-base font-bold leading-tight text-gray-900">
           Scanned Asset Details
@@ -106,8 +106,8 @@ export default function ScannedAssetDetails({ scannedAssets }) {
         <div
           className="space-y-3 overscroll-contain px-4 py-3"
           style={{
-  height: '420px',
-maxHeight: '420px',
+  height: '320px',
+maxHeight: '320px',
             overflowY: 'auto',
             scrollbarGutter: 'stable',
           }}
@@ -116,7 +116,7 @@ maxHeight: '420px',
           {scannedAssets.map(asset => (
             <div
               key={`${asset.id || asset.asset || asset.Asset}-${asset.scannedAt || ''}`}
-              className="rounded-lg border border-green-200 bg-green-50 p-3"
+              className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-xl p-3 shadow-[0_6px_20px_rgba(15,23,42,0.04)]"
             >
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {detailFields.map(field => {
@@ -125,13 +125,13 @@ maxHeight: '420px',
                   return (
                     <div
                       key={field.label}
-                      className="min-h-[52px] min-w-0 rounded-md border border-green-100 bg-white px-3 py-2"
+                      className="min-h-[44px] min-w-0 rounded-md border border-amber-100/60 bg-white/80 backdrop-blur-md px-3 py-2"
                     >
                       <div className="truncate text-[11px] font-bold uppercase tracking-wide text-gray-600">
                         {field.label}
                       </div>
                       <div
-                        className="mt-1 truncate text-sm font-semibold text-gray-900"
+                        className="mt-1 truncate text-[13px] font-semibold text-gray-900"
                         title={String(value || '')}
                       >
                         {String(value || '-')}

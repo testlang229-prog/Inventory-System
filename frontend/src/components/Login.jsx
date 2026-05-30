@@ -1,12 +1,27 @@
 // frontend/src/components/Login.jsx
 import { useState } from 'react';
+import employeeIcon from '../assets/icons/employee-icon.png';
+import adminIcon from '../assets/icons/admin-icon.png';
+import companyPlaceholder from '../assets/auth/company-placeholder.jpg';
+import companyLogo from '../assets/auth/company-logo.png';
+import eagleLogo from '../assets/logo.jpg';
+import scanIcon from '../assets/icons/scan-icon.png';
+import trackIcon from '../assets/icons/track-icon.png';
+import activityIcon from '../assets/icons/activity-icon.png';
+import securityIcon from '../assets/icons/security-icon.png';
 
 
 
-export default function Login({ onLogin, onShowAdmin }) {
+export default function Login({
+  onLogin,
+  onShowAdmin,
+  activeTab,
+  isAuthenticating,
+}) {
   const [employeeId, setEmployeeId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  
 
   const validateInput = () => {
     if (!employeeId.trim() || !password.trim()) {
@@ -33,107 +48,350 @@ export default function Login({ onLogin, onShowAdmin }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-indigo-100 flex items-center justify-center px-4 py-8">
+    <div
+  className={`relative min-h-screen overflow-hidden flex items-center justify-center px-4 py-4 transition-all duration-500 ${
+    
+    activeTab === 'admin'
+      ? 'bg-[#020617]'
+      : 'bg-[#F6F3EA]'
+  }`}
+>
+  {/* FULLSCREEN BACKGROUND EFFECT */}
+<div
+  className="absolute inset-0 pointer-events-none"
+  style={{
+    background:
+      activeTab === 'admin'
+        ? `
+          radial-gradient(circle at top left, rgba(212,160,23,0.15), transparent 35%),
+          radial-gradient(circle at bottom right, rgba(245,158,11,0.10), transparent 30%)
+        `
+        : `
+          radial-gradient(circle at top left, rgba(212,160,23,0.22), transparent 38%),
+          radial-gradient(circle at bottom right, rgba(245,158,11,0.10), transparent 32%)
+        `
+  }}
+/>
 
   <div className="w-full max-w-7xl grid lg:grid-cols-2 gap-10 items-center">
-    <div className="hidden lg:flex flex-col justify-center">
+    <div className="hidden lg:flex flex-col justify-center pl-8 relative h-[650px]">
+      
 
-  <div className="max-w-xl">
 
-    <div className="text-6xl mb-6">
-      🏢
-    </div>
 
-    <h1 className="text-5xl font-extrabold text-gray-800 leading-tight">
+<img
+  src={eagleLogo}
+  alt="Golden Eagles"
+  className="absolute right-[-120px] top-1/2 -translate-y-1/2 w-[760px] opacity-[0.08] rotate-[-10deg] object-contain"
+/>
+  <div className="relative z-10 max-w-xl">
+
+    <div className="mb-8">
+
+  <div
+    className={`w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-2xl transition-all duration-500 ${
+      activeTab === 'admin'
+        ? 'bg-white/10 border border-white/10'
+        : 'bg-[#FAEFD9] border border-[#D4A017]/10'
+    }`}
+  >
+    <img
+      src={activeTab === 'admin' ? adminIcon : employeeIcon}
+      alt="Mode Icon"
+      className="w-10 h-10 object-contain"
+    />
+  </div>
+
+</div>
+
+    <h1
+  className={`text-4xl font-bold leading-[1.05] tracking-tight drop-shadow-xl transition-all duration-500 ${
+    activeTab === 'admin'
+      ? 'text-white'
+      : 'text-slate-900'
+  }`}
+>
       Asset Inventory
       <br />
       System
     </h1>
 
-    <p className="mt-5 text-lg text-gray-600 leading-relaxed">
-      Scan. Track. Manage.
-      <br />
-      A smarter way to manage assets efficiently.
+    <p
+  className={`mt-5 text-lg leading-relaxed max-w-md transition-all duration-500 ${
+    activeTab === 'admin'
+      ? 'text-slate-200'
+      : 'text-slate-600'
+  }`}
+>
+  Secure inventory monitoring and asset tracking
+  for modern enterprise operations.
+</p>
+
+    <div className="grid grid-cols-2 gap-4 mt-8 max-w-lg">
+
+  <div className={`group rounded-[1.6rem] p-5 shadow-[0_8px_32px_rgba(15,23,42,0.12)] backdrop-blur-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(15,23,42,0.18)] relative overflow-hidden ${
+  activeTab === 'admin'
+    ? 'bg-white/[0.08] border border-white/10'
+: 'bg-white/35 border border-white/40'
+}`}>
+{/* GLASS SHINE */}
+<div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent pointer-events-none" />
+    <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+      <img
+        src={scanIcon}
+        alt="Scan"
+        className="w-7 h-7 object-contain"
+      />
+    </div>
+
+    <h3 className={`font-semibold text-base transition-all duration-500 ${
+  activeTab === 'admin'
+    ? 'text-white'
+    : 'text-slate-800'
+}`}>
+      Scan Assets
+    </h3>
+
+    <p className={`text-xs mt-2 leading-relaxed transition-all duration-500 ${
+  activeTab === 'admin'
+    ? 'text-slate-300'
+    : 'text-slate-600'
+}`}>
+      Fast QR and barcode scanning
     </p>
 
-    <div className="grid grid-cols-3 gap-4 mt-10">
+  </div>
 
-      <div className="bg-white/70 rounded-2xl p-5 shadow-lg border border-white/40 transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:scale-[1.03] cursor-pointer">
-        <div className="text-3xl mb-3">
-          📷
-        </div>
+  <div className={`group rounded-[1.6rem] p-5 shadow-[0_8px_32px_rgba(15,23,42,0.12)] backdrop-blur-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(15,23,42,0.18)] relative overflow-hidden ${
+  activeTab === 'admin'
+    ? 'bg-white/[0.08] border border-white/10'
+: 'bg-white/35 border border-white/40'
+}`}>
+{/* GLASS SHINE */}
+<div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent pointer-events-none" />
+  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+    <img
+      src={trackIcon}
+      alt="Track"
+      className="w-7 h-7 object-contain"
+    />
+  </div>
 
-        <h3 className="font-bold text-gray-800">
-          Scan
-        </h3>
+  <h3
+    className={`font-semibold text-base transition-all duration-500 ${
+      activeTab === 'admin'
+        ? 'text-white'
+        : 'text-slate-800'
+    }`}
+  >
+    Track Assets
+  </h3>
 
-        <p className="text-sm text-gray-500 mt-1">
-          Fast QR and barcode scanning
-        </p>
-      </div>
+  <p
+    className={`text-xs mt-2 leading-relaxed transition-all duration-500 ${
+      activeTab === 'admin'
+        ? 'text-slate-300'
+        : 'text-slate-600'
+    }`}
+  >
+    Real-time location and status
+  </p>
 
-      <div className="bg-white/70 rounded-2xl p-5 shadow-lg border border-white/40 transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:scale-[1.03] cursor-pointer">
-        <div className="text-3xl mb-3">
-          📦
-        </div>
+</div>
 
-        <h3 className="font-bold text-gray-800">
-          Track
-        </h3>
+  <div className={`group rounded-[1.6rem] p-5 shadow-[0_8px_32px_rgba(15,23,42,0.12)] backdrop-blur-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(15,23,42,0.18)] relative overflow-hidden ${
+  activeTab === 'admin'
+    ? 'bg-white/[0.08] border border-white/10'
+: 'bg-white/35 border border-white/40'
+}`}>
+{/* GLASS SHINE */}
+<div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent pointer-events-none" />
+    <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+      <img
+        src={securityIcon}
+        alt="Secure"
+        className="w-7 h-7 object-contain"
+      />
+    </div>
 
-        <p className="text-sm text-gray-500 mt-1">
-          Monitor assets in real-time
-        </p>
-      </div>
+    <h3 className={`font-semibold text-base transition-all duration-500 ${
+  activeTab === 'admin'
+    ? 'text-white'
+    : 'text-slate-800'
+}`}>
+      Secure Access
+    </h3>
 
-      <div className="bg-white/70 rounded-2xl p-5 shadow-lg border border-white/40 transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:scale-[1.03] cursor-pointer">
-        <div className="text-3xl mb-3">
-          🔒
-        </div>
+    <p className={`text-xs mt-2 leading-relaxed transition-all duration-500 ${
+  activeTab === 'admin'
+    ? 'text-slate-300'
+    : 'text-slate-600'
+}`}>
+      Role-based access and data security
+    </p>
 
-        <h3 className="font-bold text-gray-800">
-          Secure
-        </h3>
+  </div>
 
-        <p className="text-sm text-gray-500 mt-1">
-          Protected employee access
-        </p>
-      </div>
+  <div className={`group rounded-[1.6rem] p-5 shadow-[0_8px_32px_rgba(15,23,42,0.12)] backdrop-blur-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(15,23,42,0.18)] relative overflow-hidden ${
+  activeTab === 'admin'
+    ? 'bg-white/[0.08] border border-white/10'
+: 'bg-white/35 border border-white/40'
+}`}>
+{/* GLASS SHINE */}
+<div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent pointer-events-none" />
+    <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+      <img
+        src={activityIcon}
+        alt="Reports"
+        className="w-7 h-7 object-contain"
+      />
+    </div>
+
+    <h3 className={`font-semibold text-base transition-all duration-500 ${
+  activeTab === 'admin'
+    ? 'text-white'
+    : 'text-slate-800'
+}`}>
+      Reports & Insights
+    </h3>
+
+    <p className={`text-xs mt-2 leading-relaxed transition-all duration-500 ${
+  activeTab === 'admin'
+    ? 'text-slate-300'
+    : 'text-slate-600'
+}`}>
+      Powerful reports and analytics
+    </p>
+
+  </div>
+
+</div>
+
+  </div>
+
+</div>
+
+      <div
+  className={`enterprise-glow relative z-20 max-w-sm w-full mx-auto backdrop-blur-2xl rounded-[2.7rem] px-6 py-7 md:p-8 transition-all duration-500 -mt-10 shadow-[0_25px_70px_rgba(15,23,42,0.18)] ${
+    activeTab === 'admin'
+      ? 'bg-[#0F172A]/95 border border-white/10'
+      : 'pearl-surface border border-white/40'
+  }`}
+>
+      <div className="text-center mb-6">
+
+  <div className="flex justify-center mb-6">
+
+    <div className="w-20 h-20 rounded-[2rem] bg-slate-100 flex items-center justify-center shadow-sm border border-slate-100">
+
+      <img
+        src={employeeIcon}
+        alt="Employee"
+        className="w-10 h-10 object-contain"
+      />
 
     </div>
 
   </div>
 
+  <h1
+  className={`text-[3rem] md:text-5xl font-black leading-tight tracking-tight transition-all duration-500 ${
+    activeTab === 'admin'
+      ? 'text-white'
+      : 'text-slate-800'
+  }`}
+>
+    Welcome Back
+  </h1>
+
+  <p
+  className={`mt-3 transition-all duration-500 ${
+    activeTab === 'admin'
+      ? 'text-slate-400'
+      : 'text-slate-500'
+  }`}
+>
+    Sign in to your account
+  </p>
+
+<div
+  className={`relative mt-7 flex rounded-2xl p-1.5 overflow-hidden transition-all duration-500 ${
+    activeTab === 'admin'
+      ? 'bg-white/5 border border-white/10'
+      : 'bg-[#F8F5EE] border border-[#E8E2D3]'
+  }`}
+>
+
+  {/* SLIDING ACTIVE PILL */}
+  <div
+    className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-xl transition-all duration-300 ease-in-out shadow-md ${
+      activeTab === 'user'
+        ? 'left-1 bg-[#FAEFD9]'
+        : 'left-[calc(50%+2px)] bg-[#0F172A]'
+    }`}
+  />
+
+  {/* USER BUTTON */}
+  <button
+    type="button"
+    onClick={() => {}}
+    className={`relative z-10 flex-1 h-12 text-sm font-semibold transition-all duration-300 ${
+      activeTab === 'user'
+        ? 'text-[#B8860B]'
+        : 'text-slate-500'
+    }`}
+  >
+    User Login
+  </button>
+
+  {/* ADMIN BUTTON */}
+  <button
+    type="button"
+    onClick={onShowAdmin}
+    className={`relative z-10 flex-1 h-12 text-sm font-semibold transition-all duration-300 ${
+      activeTab === 'admin'
+        ? 'text-white'
+        : 'text-slate-500'
+    }`}
+  >
+    Administrator Access
+  </button>
+
 </div>
-      <div className="max-w-md w-full mx-auto bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/40 p-8 md:p-10">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-3 leading-tight">
-            🏢 Asset Inventory System
-          </h1>
-          <p className="text-gray-600 font-medium">
-  GMADC - OJT Project
-</p>
-          <p className="text-sm text-gray-500 mt-3 leading-relaxed">
-  Scan. Track. Manage.
-  <br />
-  Securely access the inventory system.
-</p>
-        </div>
+
+</div>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
             <label htmlFor="employeeId" className="block text-sm font-medium text-gray-700 mb-2">
               Employee ID
             </label>
-            <input
-              type="text"
-              id="employeeId"
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your Employee ID"
-              required
-            />
+            <div className="relative">
+
+  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+    <img
+  src={employeeIcon}
+  alt="User"
+  className="w-5 h-5 opacity-50"
+/>
+  </span>
+
+  <input
+  disabled={isAuthenticating}
+    type="text"
+    id="employeeId"
+    value={employeeId}
+    onChange={(e) => setEmployeeId(e.target.value)}
+    className={`w-full pl-12 pr-4 py-3 rounded-xl transition-all duration-500 focus:outline-none ${
+  activeTab === 'admin'
+    ? 'bg-white/5 border border-white/10 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-[#D4A017]'
+    : 'border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500'
+}`}
+    placeholder="Enter your Employee ID"
+    required
+  />
+
+</div>
           </div>
 
 <div className="mb-6">
@@ -144,15 +402,32 @@ export default function Login({ onLogin, onShowAdmin }) {
     Password
   </label>
 
+  <div className="relative">
+
+  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+    <img
+  src={adminIcon}
+  alt="Lock"
+  className="w-5 h-5 opacity-50"
+/>
+  </span>
+
   <input
+  disabled={isAuthenticating}
     type="password"
     id="password"
     value={password}
     onChange={(e) => setPassword(e.target.value)}
-    className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+    className={`w-full pl-12 pr-4 py-3 rounded-xl transition-all duration-500 focus:outline-none ${
+  activeTab === 'admin'
+    ? 'bg-white/5 border border-white/10 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-[#D4A017]'
+    : 'border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500'
+}`}
     placeholder="Enter your password"
     required
   />
+
+</div>
 </div>
 
 {error && (
@@ -160,20 +435,29 @@ export default function Login({ onLogin, onShowAdmin }) {
 )}
 
           <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl hover:bg-blue-700 active:scale-[0.98] transition duration-200 font-semibold shadow-lg shadow-blue-200"
-          >
-            🔓 Access System
-          </button>
-        </form>
+  type="submit"
+  disabled={isAuthenticating}
+  className={`w-full h-14 rounded-2xl transition-all duration-500 font-semibold shadow-xl flex items-center justify-center gap-3 ${
+    isAuthenticating
+      ? 'opacity-70 cursor-not-allowed'
+      : 'active:scale-[0.98]'
+  } ${
+    activeTab === 'admin'
+      ? 'bg-[#D4A017] text-[#0F172A] hover:brightness-110'
+      : 'gold-gradient text-white hover:brightness-110'
+  }`}
+>
 
-        <button
-          type="button"
-          onClick={onShowAdmin}
-          className="mt-5 w-full border border-gray-300 text-gray-700 py-3 rounded-xl hover:bg-gray-100 transition duration-200 font-medium"
-        >
-          Admin Login
-        </button>
+  {isAuthenticating && (
+    <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+  )}
+
+  {isAuthenticating
+    ? 'Signing In...'
+    : 'Login'}
+
+</button>
+        </form>
       </div>
         </div>
 

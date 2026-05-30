@@ -221,6 +221,130 @@ headers = headers.sort((a, b) => {
   }
 }
 
+async function generateActivityExcel(
+  history
+) {
+
+  const workbook =
+    new ExcelJS.Workbook();
+
+  const worksheet =
+    workbook.addWorksheet(
+      'Activity History'
+    );
+
+  worksheet.columns = [
+    {
+      header: 'Employee ID',
+      key: 'employeeId',
+      width: 20,
+    },
+
+    {
+      header: 'User Name',
+      key: 'userName',
+      width: 25,
+    },
+
+    {
+      header: 'Department',
+      key: 'department',
+      width: 25,
+    },
+
+    {
+      header: 'Asset',
+      key: 'asset',
+      width: 20,
+    },
+
+    {
+      header:
+        'Asset Description',
+      key: 'assetDescription',
+      width: 40,
+    },
+
+    {
+      header: 'Serial Number',
+      key: 'serialNumber',
+      width: 30,
+    },
+
+    {
+      header: 'Scan Method',
+      key: 'scanMethod',
+      width: 20,
+    },
+
+    {
+      header: 'Date',
+      key: 'date',
+      width: 20,
+    },
+
+    {
+      header: 'Time',
+      key: 'time',
+      width: 20,
+    },
+  ];
+
+  worksheet.getRow(1).font = {
+    bold: true,
+    color: { argb: 'FFFFFF' },
+  };
+
+  worksheet.getRow(1).fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: '4F46E5' },
+  };
+
+  history.forEach(item => {
+
+    const scanDate =
+      new Date(item.scannedAt);
+
+    worksheet.addRow({
+
+      employeeId:
+        item.employeeId || '',
+
+      userName:
+        item.userName || '',
+
+      department:
+        item.department || '',
+
+      asset:
+        item.asset || '',
+
+      assetDescription:
+        item.assetDescription ||
+        '',
+
+      serialNumber:
+        item.serialNumber || '',
+
+      scanMethod:
+        item.scanMethod || 'QR',
+
+      date:
+        scanDate.toLocaleDateString(),
+
+      time:
+        scanDate.toLocaleTimeString(),
+
+    });
+
+  });
+
+  return await workbook.xlsx.writeBuffer();
+
+}
+
 module.exports = {
   generateExcelFile,
+  generateActivityExcel,
 };

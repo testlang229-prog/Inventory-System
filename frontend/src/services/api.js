@@ -155,12 +155,13 @@ export async function loginUser(credentials) {
     const response = await apiClient.post('/users/login', credentials);
     return response.data;
   } catch (error) {
-    throw {
-  message:
+
+  throw new Error(
     error.response?.data?.message ||
-    '❌ Access denied. Your Employee ID and Department are not registered by the administrator.'
-};
-  }
+    'Access denied. Your Employee ID and Department are not registered by the administrator.'
+  );
+
+}
 }
 
 export async function fetchActivityHistory() {
@@ -188,6 +189,74 @@ export async function getLastUpdated() {
   } catch (error) {
     return null;
   }
+}
+
+export async function
+downloadActivityReport() {
+
+  try {
+
+    const response =
+  await apiClient.get(
+        '/download/activity-report',
+        {
+          responseType: 'blob',
+        }
+      );
+
+    const blob = new Blob(
+      [response.data],
+      {
+        type:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      }
+    );
+
+    const disposition =
+      response.headers[
+        'content-disposition'
+      ];
+
+    const filenameMatch =
+      disposition?.match(
+        /filename="?([^"]+)"?/i
+      );
+
+    const link =
+      document.createElement('a');
+
+    link.href =
+      window.URL.createObjectURL(
+        blob
+      );
+
+    link.download =
+      filenameMatch?.[1] ||
+      'ActivityReport.xlsx';
+
+    document.body.appendChild(
+      link
+    );
+
+    link.click();
+
+    document.body.removeChild(
+      link
+    );
+
+    window.URL.revokeObjectURL(
+      link.href
+    );
+
+  } catch (error) {
+
+    throw {
+      message:
+        'Failed to download activity report',
+    };
+
+  }
+
 }
 
 export default apiClient;

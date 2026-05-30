@@ -1,6 +1,9 @@
 // frontend/src/components/UserManagement.jsx
 import { useState, useEffect } from 'react';
 import apiClient from '../services/api';
+import adminIcon from '../assets/icons/admin.svg';
+import userIcon from '../assets/icons/user.svg';
+import lockIcon from '../assets/icons/lock.svg';
 
 
 export default function UserManagement() {
@@ -100,8 +103,14 @@ const data = response.data;
         setError(data.message);
       }
     } catch (err) {
-      setError('Failed to save user');
-    }
+
+  setError(
+    err.response?.data?.message ||
+    err.message ||
+    'Failed to save user'
+  );
+
+}
   };
 
   const handleEdit = (user) => {
@@ -184,16 +193,16 @@ const handleAddDepartment = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 overflow-hidden">
+    <div className="bg-gradient-to-br from-white/80 via-white/65 to-slate-100/40 backdrop-blur-2xl border border-white/50 rounded-[32px] shadow-[0_10px_40px_rgba(15,23,42,0.05)] p-5 sm:p-6 overflow-hidden">
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-          👥 User Management
-        </h2>
+        <h2 className="text-3xl font-bold tracking-tight text-slate-800">
+  User Management
+</h2>
         <button
           onClick={() => setShowForm(true)}
-          className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          className="w-full sm:w-auto px-5 py-3 bg-gradient-to-br from-indigo-500 to-blue-500 text-white rounded-2xl hover:scale-[1.01] transition-all duration-300 shadow-[0_8px_24px_rgba(99,102,241,0.18)] font-semibold"
         >
-          ➕ Add User
+          Add User
         </button>
       </div>
 
@@ -210,7 +219,7 @@ const handleAddDepartment = () => {
       )}
 
       {showForm && (
-        <div className="bg-gray-50 rounded-lg p-6 mb-6 border border-gray-200">
+        <div className="bg-white/45 backdrop-blur-2xl rounded-[28px] p-6 mb-6 border border-white/50 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
             {editingId ? 'Edit User' : 'Add New User'}
           </h3>
@@ -229,7 +238,7 @@ const handleAddDepartment = () => {
         employeeId: e.target.value
       })
     }
-    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    className="w-full px-3 py-2 border border-white/60 bg-white/60 backdrop-blur-xl rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-300"
     placeholder="e.g., EMP001"
     required
   />
@@ -398,13 +407,101 @@ const handleAddDepartment = () => {
   </div>
 
 ) : users.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
+        <div className="text-center py-16 bg-white/45 backdrop-blur-2xl rounded-[28px] border border-white/50 shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
           <p className="text-gray-600">No users found. Create your first user.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <>
+          <div className="md:hidden space-y-4">
+
+  {users.map((user, idx) => (
+
+    <div
+      key={idx}
+      className="rounded-[28px] border border-white/50 bg-gradient-to-br from-white/80 via-white/65 to-slate-100/40 backdrop-blur-2xl shadow-[0_8px_30px_rgba(15,23,42,0.05)] p-5"
+    >
+
+      <div className="flex items-start justify-between">
+
+        <div className="flex items-center gap-4">
+
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-100 to-slate-100 flex items-center justify-center shadow-inner">
+
+            <span className="text-lg font-bold text-slate-700">
+              {user.name?.charAt(0)?.toUpperCase() || 'U'}
+            </span>
+
+          </div>
+
+          <div>
+
+            <h3 className="text-lg font-bold text-slate-800 tracking-tight">
+              {user.name || user.employeeId}
+            </h3>
+
+            <p className="text-sm text-slate-400 mt-1">
+              {user.department}
+            </p>
+
+          </div>
+
+        </div>
+
+        {user.role === 'admin' ? (
+
+          <span className="inline-flex items-center rounded-full bg-rose-50/80 border border-white/60 px-3 py-1 text-xs font-semibold text-rose-700 backdrop-blur-xl">
+            ADMIN
+          </span>
+
+        ) : (
+
+          <span className="inline-flex items-center rounded-full bg-indigo-50/80 border border-white/60 px-3 py-1 text-xs font-semibold text-indigo-700 backdrop-blur-xl">
+            USER
+          </span>
+
+        )}
+
+      </div>
+
+      <div className="mt-5 flex gap-3">
+
+        <button
+          onClick={() => handleEdit(user)}
+          className="flex-1 py-3 rounded-2xl bg-white/60 border border-white/60 text-slate-700 font-medium shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
+        >
+          Edit
+        </button>
+
+        {user.role !== 'admin' ? (
+
+          <button
+            onClick={() =>
+              handleDelete(user.employeeId)
+            }
+            className="flex-1 py-3 rounded-2xl bg-rose-50/80 border border-white/60 text-rose-700 font-medium shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
+          >
+            Remove
+          </button>
+
+        ) : (
+
+          <div className="flex-1 py-3 rounded-2xl bg-slate-100/70 border border-white/60 text-slate-400 font-medium text-center">
+            Protected
+          </div>
+
+        )}
+
+      </div>
+
+    </div>
+
+  ))}
+
+</div>
+
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-[700px] w-full">
-            <thead className="bg-gray-100 border-b border-gray-300">
+            <thead className="bg-white/70 backdrop-blur-xl border-b border-white/50">
               <tr>
                 <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Employee ID</th>
                 <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Department</th>
@@ -417,18 +514,34 @@ const handleAddDepartment = () => {
             </thead>
             <tbody>
               {users.map((user, idx) => (
-                <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
+                <tr key={idx} className="border-b border-white/50 hover:bg-white/40 transition-all duration-300">
                   <td className="px-4 py-3 text-sm text-gray-900">{user.employeeId}</td>
                   <td className="px-4 py-3 text-sm text-gray-600">{user.department}</td>
                   <td className="px-4 py-3 text-sm">
 
   {user.role === 'admin' ? (
-    <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700 border border-red-200">
-      🛡️ ADMIN
+    <span className="inline-flex items-center gap-1 rounded-full bg-rose-50/80 border-white/60 backdrop-blur-xl px-3 py-1 text-xs font-semibold text-rose-700 border">
+      <>
+  <img
+    src={adminIcon}
+    alt="Admin"
+    className="w-4 h-4 object-contain"
+  />
+
+  ADMIN
+</>
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 border border-blue-200">
-      👤 USER
+    <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50/80 border-white/60 backdrop-blur-xl px-3 py-1 text-xs font-semibold text-indigo-700 border">
+      <>
+  <img
+    src={userIcon}
+    alt="User"
+    className="w-4 h-4 object-contain"
+  />
+
+  USER
+</>
     </span>
   )}
 
@@ -439,7 +552,7 @@ const handleAddDepartment = () => {
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => handleEdit(user)}
-                      className="px-2 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600 transition mr-2"
+                      className="px-3 py-2 text-sm bg-white/60 border border-white/60 rounded-xl text-slate-700 hover:bg-white/80 transition-all duration-300 mr-2 shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
                     >
                       Edit
                     </button>
@@ -447,15 +560,23 @@ const handleAddDepartment = () => {
 
   <button
     onClick={() => handleDelete(user.employeeId)}
-    className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition"
+    className="px-3 py-2 text-sm bg-rose-50/80 border border-white/60 rounded-xl text-rose-700 hover:bg-rose-100/80 transition-all duration-300 shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
   >
     Remove
   </button>
 
 ) : (
 
-  <span className="inline-flex items-center rounded-lg bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500 border border-gray-200">
-    🔒 Protected
+  <span className="inline-flex items-center rounded-xl bg-slate-100/70 border border-white/60 px-3 py-2 text-xs font-semibold text-slate-500 backdrop-blur-xl">
+    <>
+  <img
+    src={lockIcon}
+    alt="Protected"
+    className="w-4 h-4 object-contain"
+  />
+
+  Protected
+</>
   </span>
 
 )}
@@ -465,10 +586,11 @@ const handleAddDepartment = () => {
             </tbody>
           </table>
         </div>
+              </>
       )}
     {showRemoveModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-    <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+    <div className="bg-white/75 backdrop-blur-2xl rounded-[32px] shadow-[0_20px_60px_rgba(15,23,42,0.12)] border border-white/50 p-6 w-full max-w-md">
       <h3 className="text-xl font-bold text-gray-800 mb-4">
         Remove User
       </h3>
@@ -502,7 +624,7 @@ const handleAddDepartment = () => {
 {showDepartmentModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
 
-    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+    <div className="bg-white/75 backdrop-blur-2xl rounded-[32px] shadow-[0_20px_60px_rgba(15,23,42,0.12)] border border-white/50 w-full max-w-md p-6">
 
       <h3 className="text-xl font-bold text-gray-800 mb-4">
         Add New Department
@@ -519,7 +641,7 @@ const handleAddDepartment = () => {
           setNewDepartment(e.target.value)
         }
         placeholder="Enter department name"
-        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-4 py-3 border border-white/60 bg-white/60 backdrop-blur-xl rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-300 shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
       />
 
       <div className="flex justify-end gap-3 mt-6">
@@ -536,7 +658,7 @@ const handleAddDepartment = () => {
 
         <button
           onClick={handleAddDepartment}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-5 py-3 bg-gradient-to-br from-indigo-500 to-blue-500 text-white rounded-2xl hover:scale-[1.01] transition-all duration-300 shadow-[0_8px_24px_rgba(99,102,241,0.18)]"
         >
           Add Department
         </button>

@@ -17,6 +17,10 @@ const activityHistoryPath = path.join(
   __dirname,
   'activityHistory.json'
 );
+const currentBatchPath = path.join(
+  __dirname,
+  'currentBatch.json'
+);
 
 /**
  * Load data from JSON file
@@ -487,7 +491,96 @@ function addActivityHistory(historyItem) {
   saveActivityHistory(history);
 }
 
+function getCurrentBatch() {
+
+  try {
+
+    if (
+      fs.existsSync(currentBatchPath)
+    ) {
+
+      return JSON.parse(
+        fs.readFileSync(
+          currentBatchPath,
+          'utf8'
+        )
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      'Failed to load batch:',
+      error.message
+    );
+
+  }
+
+  return {
+    batchId: null,
+    uploadedAt: null,
+    uploadedFileName: null,
+  };
+
+}
+
+function saveCurrentBatch(batch) {
+
+  try {
+
+    fs.writeFileSync(
+      currentBatchPath,
+      JSON.stringify(batch, null, 2),
+      'utf8'
+    );
+
+  } catch (error) {
+
+    console.error(
+      'Failed to save batch:',
+      error.message
+    );
+
+  }
+
+}
+
+function createNewBatch(fileName) {
+
+  const batch = {
+
+    batchId:
+      `BATCH-${Date.now()}`,
+
+    uploadedAt:
+      new Date().toISOString(),
+
+    uploadedFileName:
+      fileName || 'Unknown File',
+
+  };
+
+  saveCurrentBatch(batch);
+
+  return batch;
+
+}
+
+function clearCurrentBatch() {
+
+  saveCurrentBatch({
+    batchId: null,
+    uploadedAt: null,
+    uploadedFileName: null,
+  });
+
+}
+
 module.exports = {
+  getCurrentBatch,
+createNewBatch,
+clearCurrentBatch,
   getActivityHistory,
   addActivityHistory,
   initializeDatabase,

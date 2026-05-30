@@ -4,12 +4,20 @@ const router = express.Router();
 
 const {
   getActivityHistory,
+getCurrentBatch,
 } = require('../db/database');
 
 router.get('/', (req, res) => {
   try {
-    const history =
-      getActivityHistory();
+    const currentBatch =
+  getCurrentBatch();
+
+const history =
+  getActivityHistory().filter(
+    item =>
+      item.batchId ===
+      currentBatch.batchId
+  );
 
     res.json({
       success: true,

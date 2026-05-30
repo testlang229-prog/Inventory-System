@@ -15,6 +15,9 @@ import Login from './components/Login';
 import AdminLogin from './components/AdminLogin';
 import UserManagement from './components/UserManagement';
 import AdminDashboard from './pages/adminDashboard';
+import CustomModal from './components/CustomModal';
+import adminIcon from './assets/icons/admin-icon.png';
+import employeeIcon from './assets/icons/employee-icon.png';
 
 import {
   fetchAssets,
@@ -157,33 +160,29 @@ export default function App() {
   const [scannedAssets, setScannedAssets] = useState([]);
 
   const [notification, setNotification] = useState(null);
+  const [modal, setModal] = useState({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+});
 
 const [lastKnownUpdate, setLastKnownUpdate] = useState(null);
 
 const [isLoggedIn, setIsLoggedIn] = useState(false);
+const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   const [loginView, setLoginView] = useState('user');
 
-  const [isSwitchingLogin, setIsSwitchingLogin] =
-  useState(false);
 
   const [showProfileMenu, setShowProfileMenu] =
   useState(false);
 
 const profileMenuRef = useRef(null);
 
-const switchLoginView = view => {
-  setIsSwitchingLogin(true);
-
-  setTimeout(() => {
-
-    setLoginView(view);
-
-    setTimeout(() => {
-      setIsSwitchingLogin(false);
-    }, 50);
-
-  }, 250);
+const switchLoginView = (view) => {
+  setLoginView(view);
 };
 
   const [currentUser, setCurrentUser] = useState({
@@ -200,19 +199,18 @@ const switchLoginView = view => {
     const latestUpdate = await getLastUpdated();
 
     if (
-      latestUpdate &&
-      lastKnownUpdate &&
-      latestUpdate !== lastKnownUpdate
-    ) {
-      await loadAssets(true);
-    }
+  latestUpdate &&
+  latestUpdate !== lastKnownUpdate
+) {
+  await loadAssets(true);
 
-    if (latestUpdate) {
-      setLastKnownUpdate(latestUpdate);
-    }
+  setLastKnownUpdate(latestUpdate);
+}
+
+    
   };
 
-  const interval = setInterval(checkUpdates, 2000);
+  const interval = setInterval(checkUpdates, 5000);
 
   return () => clearInterval(interval);
 }, [lastKnownUpdate]);
@@ -354,7 +352,7 @@ const switchLoginView = view => {
       '⚠️ Upload an asset list first before scanning.',
       'info'
     );
-
+setIsAuthenticating(false);
     return;
   }
 
@@ -367,7 +365,7 @@ const switchLoginView = view => {
   );
 
   setShowNewAssetConfirm(true);
-
+setIsAuthenticating(false);
   return;
 }
 
@@ -432,10 +430,33 @@ const switchLoginView = view => {
     } catch (error) {
   if (error.message?.includes('already exists')) {
 
-  alert(
-  error.message ||
-  '⚠️ Same asset already exists in the inventory.'
-);
+  setModal({
+  isOpen: true,
+
+  title: 'Duplicate Asset',
+
+  message:
+    error.message ||
+    'Asset details already exist in the inventory.',
+
+  onConfirm: () =>
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+}),
+
+  onCancel: () =>
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+}),
+});
 
   showNotification(
     '⚠️ Same asset already exists in the inventory.',
@@ -488,67 +509,136 @@ const switchLoginView = view => {
   };
 
   const handleClearAssets = async () => {
-    if (assets.length === 0) return;
+    if (isClearing || assets.length === 0) return;
 
-    const confirmed = window.confirm(
-      'Remove all assets from the current list? This cannot be undone.'
-    );
+    setModal({
+  isOpen: true,
+  title: 'Clear Asset List',
+  message:
+    'Are you sure you want to clear the entire asset list?',
+    confirmText: 'Clear List',
+cancelText: 'Cancel',
+showCancel: true,
+  onConfirm: async () => {
 
-    if (!confirmed) return;
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+});
 
     setIsClearing(true);
 
     try {
-      await clearAssets();
+    await clearAssets();
 
-      setAssets([]);
-      setHeaders([]);
-      setScannedAssets([]);
+setAssets([]);
+setHeaders([]);
+setScannedAssets([]);
+
+setLastKnownUpdate(null);
+
+setTimeout(async () => {
+  await loadAssets(true);
+}, 300);
 
       showNotification(
-        '✅ Inventory list cleared. Upload a new Excel file to start fresh.',
+        'Asset list cleared successfully',
         'success'
       );
+
     } catch (error) {
+
       showNotification(
-        error.message || 'Failed to clear inventory list',
+        error.message ||
+        'Failed to clear asset list',
         'error'
       );
+
     } finally {
+
       setIsClearing(false);
+
     }
+  },
+
+  onCancel: () =>
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+}),
+});
+
+    
   };
 
   const showNotification = (
-    message,
-    type = 'info'
-  ) => {
-    setNotification({ message, type });
-  };
+  message,
+  type = 'info'
+) => {
+
+  const cleanMessage = String(message)
+    .replace(/✅/g, '')
+    .replace(/❌/g, '')
+    .replace(/⚠️/g, '')
+    .replace(/ℹ️/g, '')
+    .trim();
+
+  setNotification({
+    message: cleanMessage,
+    type,
+  });
+};
 
   const handleLogin = async (user) => {
+    setIsAuthenticating(true);
     try {
       const result = await loginUser(user);
 
-      if (!result.success) {
-        showNotification(
-          '❌ Unauthorized user',
-          'error'
-        );
-
-        return;
-      }
+      
 
       const userData = result.user;
 
       if (userData.role === 'admin') {
-  alert(
-    '⚠️ Please use the Admin Login page for administrator accounts.'
-  );
+  setModal({
+  isOpen: true,
+  title: 'Administrator Account',
+  message:
+    'Please use the Administrator Access page for admin accounts.',
 
+  onConfirm: () =>
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+}),
+
+  onCancel: () =>
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+}),
+});
+setIsAuthenticating(false);
   return;
 }
-
+setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+});
       setIsLoggedIn(true);
       setCurrentUser(userData);
 
@@ -565,36 +655,85 @@ const switchLoginView = view => {
         '✅ Login successful',
         'success'
       );
+      setIsAuthenticating(false);
     } catch (error) {
-      alert(
-        '❌ Access denied.\n\nYour Employee ID and Department are not registered by the administrator.'
-      );
+
+  setTimeout(() => {
+    setIsAuthenticating(false);
+  }, 0);
+
+  setModal({
+  isOpen: true,
+  title: 'Access Denied',
+  message:
+    'Your Employee ID and Department are not registered by the administrator.',
+
+  onConfirm: () =>
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+}),
+
+  onCancel: () =>
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+}),
+});
+      
     }
   };
 
   const handleAdminLogin = async (adminUser) => {
-  try {
+  setIsAuthenticating(true);
+    try {
     const result = await loginUser(adminUser);
 
-    if (!result.success) {
-      showNotification(
-        '❌ Unauthorized admin',
-        'error'
-      );
-
-      return;
-    }
+    
 
     const userData = result.user;
 
     if (userData.role !== 'admin') {
-      alert(
-        '❌ Access denied.\n\nThis account is not an administrator.'
-      );
+      setModal({
+  isOpen: true,
+  title: 'Administrator Access Only',
+  message:
+    'This account does not have administrator privileges.',
 
+  onConfirm: () =>
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+}),
+
+  onCancel: () =>
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+}),
+});
+setIsAuthenticating(false);
       return;
     }
-
+setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+});
     setIsLoggedIn(true);
     setCurrentUser(userData);
 
@@ -612,34 +751,103 @@ const switchLoginView = view => {
       '✅ Admin login successful',
       'success'
     );
-
+    setIsAuthenticating(false);
   } catch (error) {
-    alert(
-      '❌ Admin login failed.'
-    );
+
+  setTimeout(() => {
+    setIsAuthenticating(false);
+  }, 0);
+
+  setModal({
+  isOpen: true,
+  title: 'Login Failed',
+  message:
+    'Invalid administrator credentials.',
+
+  onConfirm: () =>
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+}),
+
+  onCancel: () =>
+    setModal({
+  isOpen: false,
+  title: '',
+  message: '',
+  onConfirm: null,
+  onCancel: null,
+}),
+});
+    
   }
 };
 
   const handleLogout = () => {
-    setShowProfileMenu(false);
-    setIsLoggedIn(false);
 
-    setLoginView('user');
+  setShowProfileMenu(false);
 
-    setCurrentUser({
-      employeeId: '',
-      department: '',
-      role: 'user',
-    });
+  setModal({
+    isOpen: true,
 
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
+    title: 'Sign Out',
 
-    setAssets([]);
-    setHeaders([]);
-    setScannedAssets([]);
-  };
+    message:
+      'Are you sure you want to sign out of your account?',
+
+    confirmText: 'Sign Out',
+
+    cancelText: 'Cancel',
+
+    showCancel: true,
+
+    onConfirm: () => {
+
+      setModal({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: null,
+        onCancel: null,
+      });
+
+      setIsLoggedIn(false);
+
+      setLoginView('user');
+
+      setCurrentUser({
+        employeeId: '',
+        department: '',
+        role: 'user',
+      });
+
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('token');
+      localStorage.removeItem('currentUser');
+
+      setAssets([]);
+      setHeaders([]);
+      setScannedAssets([]);
+
+      showNotification(
+        'Signed out successfully',
+        'info'
+      );
+    },
+
+    onCancel: () =>
+      setModal({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: null,
+        onCancel: null,
+      }),
+  });
+};
 
   const hiddenFields = [
   'REMARKS',
@@ -704,30 +912,53 @@ const getDropdownOptions = (header) => {
 
   if (!isLoggedIn) {
   return (
-    <div
-      className={`transition-opacity duration-300 ${
-  isSwitchingLogin
-    ? 'opacity-0'
-    : 'opacity-100'
-}`}
-    >
+    <div className="relative min-h-screen">
 
-      {loginView === 'admin' ? (
-        <AdminLogin
-          onLogin={handleAdminLogin}
-          onBack={() =>
-            switchLoginView('user')
-          }
-        />
-      ) : (
+      {/* USER LOGIN */}
+      <div
+        className={`absolute inset-0 transition-opacity duration-300 ${
+          loginView === 'user'
+            ? 'opacity-100 z-20 pointer-events-auto'
+            : 'opacity-0 z-10 pointer-events-none'
+        }`}
+      >
         <Login
-          onLogin={handleLogin}
-          onShowAdmin={() =>
-            switchLoginView('admin')
-          }
-        />
-      )}
+  onLogin={handleLogin}
+  isAuthenticating={isAuthenticating}
+  activeTab={loginView}
+  onShowAdmin={() =>
+    switchLoginView('admin')
+  }
+/>
+      </div>
 
+      {/* ADMIN LOGIN */}
+      <div
+        className={`absolute inset-0 transition-opacity duration-300 ${
+          loginView === 'admin'
+            ? 'opacity-100 z-20 pointer-events-auto'
+            : 'opacity-0 z-10 pointer-events-none'
+        }`}
+      >
+        <AdminLogin
+  onLogin={handleAdminLogin}
+  isAuthenticating={isAuthenticating}
+  activeTab={loginView}
+  onBack={() =>
+    switchLoginView('user')
+  }
+/>
+      </div>
+      <CustomModal
+  isOpen={modal.isOpen}
+  title={modal.title}
+  message={modal.message}
+  confirmText={modal.confirmText}
+  cancelText={modal.cancelText}
+  showCancel={modal.showCancel}
+  onConfirm={modal.onConfirm}
+  onCancel={modal.onCancel}
+/>
     </div>
   );
 }
@@ -735,26 +966,50 @@ const getDropdownOptions = (header) => {
   const isAdmin = currentUser.role === 'admin';
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-[#F6F3EA]">
 
       {/* Header */}
-      <header className="bg-white shadow-md sticky top-0 z-50">
+      <header className="fixed top-0 left-0 right-0 z-[100] bg-[#F6F3EA]/92 backdrop-blur-2xl border-b border-[#EFE7D6]">
         <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
           
           <div className="flex items-start justify-between gap-4 lg:items-center">
-            <div className="flex flex-col gap-3">
-              <h1 className="text-xl md:text-3xl font-bold text-gray-800">
-                {isAdmin
-                  ? '🔒 Admin Dashboard'
-                  : '🏢 Asset Inventory System'}
-              </h1>
+            <div className="flex items-center gap-4">
 
-              <p className="text-gray-600 text-sm mt-1">
-                GMADC - OJT Project
-              </p>
+  <div className="w-14 h-14 rounded-2xl bg-[#FCFBF7] flex items-center justify-center border border-white/60 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
 
-              
-            </div>
+    <img
+      src={
+        isAdmin
+          ? adminIcon
+          : employeeIcon
+      }
+      alt="Dashboard"
+      className="w-7 h-7 object-contain"
+    />
+
+  </div>
+
+  <div>
+
+    <div>
+
+  <h1 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
+
+    {isAdmin
+      ? 'Asset Inventory System'
+      : 'Asset Inventory System'}
+
+  </h1>
+
+  <p className="text-xs md:text-sm text-slate-500 mt-1">
+    Enterprise Asset Platform
+  </p>
+
+</div>
+
+  </div>
+
+</div>
 
 <div
   ref={profileMenuRef}
@@ -767,10 +1022,10 @@ const getDropdownOptions = (header) => {
       !showProfileMenu
     )
   }
-  className="inline-flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-2 py-2 shadow-sm hover:bg-gray-100 transition"
+  className="inline-flex items-center gap-3 rounded-2xl border border-white/50 bg-[#FCFBF7]/80 backdrop-blur-xl px-2 py-2 shadow-[0_6px_20px_rgba(15,23,42,0.04)] hover:bg-[#FCFBF7] transition"
 >
 
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white text-base font-bold">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full gold-gradient text-slate-900 text-base font-bold gold-soft-glow">
       {isAdmin
         ? 'A'
         : currentUser.name
@@ -803,7 +1058,7 @@ const getDropdownOptions = (header) => {
   </button>
 
   {showProfileMenu && (
-  <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden z-50">
+  <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-[#E9DFC9] bg-[#FCFBF7] shadow-[0_12px_32px_rgba(15,23,42,0.08)] overflow-hidden z-50">
 
 <div className="block md:hidden px-4 py-3 border-b border-gray-100">
 
@@ -830,16 +1085,16 @@ const getDropdownOptions = (header) => {
           loadAssets();
           setShowProfileMenu(false);
         }}
-        className="w-full px-4 py-3 text-left hover:bg-gray-100 transition"
+        className="w-full px-4 py-3 text-left hover:bg-[#F7F1E3] transition"
       >
-        🔄 Refresh
+        Refresh Dashboard
       </button>
 
       <button
         onClick={handleLogout}
-        className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 transition"
+        className="w-full px-4 py-3 text-left text-red-600 hover:bg-[#FDECEC] transition"
       >
-        🚪 Logout
+        Sign Out
       </button>
 
     </div>
@@ -853,22 +1108,98 @@ const getDropdownOptions = (header) => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <main className="w-full max-w-[1800px] mx-auto px-3 sm:px-4 pt-[110px] pb-4 sm:pb-8">
 
-        {/* Notifications */}
-        {notification && (
-          <div
-            className={`rounded-lg p-4 mb-6 text-white font-semibold ${
-              notification.type === 'success'
-                ? 'bg-green-500'
-                : notification.type === 'error'
-                ? 'bg-red-500'
-                : 'bg-blue-500'
-            }`}
-          >
-            {notification.message}
-          </div>
-        )}
+        {/* Floating Toast Notification */}
+{notification && (
+  <div className="fixed top-24 right-5 z-[9999] animate-fadeIn">
+
+    <div
+      className={`
+        min-w-[320px]
+        max-w-[420px]
+        rounded-3xl
+        border
+        backdrop-blur-2xl
+        shadow-[0_20px_60px_rgba(15,23,42,0.18)]
+        px-5
+        py-4
+        flex
+        items-start
+        gap-4
+        transition-all
+        duration-300
+
+        ${
+          notification.type === 'success'
+            ? 'bg-emerald-500/12 border-emerald-200/40'
+            : notification.type === 'error'
+            ? 'bg-red-500/12 border-red-200/40'
+            : 'bg-blue-500/12 border-blue-200/40'
+        }
+      `}
+    >
+
+      {/* ICON */}
+      <div
+        className={`
+          w-11
+          h-11
+          rounded-2xl
+          flex
+          items-center
+          justify-center
+          text-lg
+          font-bold
+          shrink-0
+
+          ${
+            notification.type === 'success'
+              ? 'bg-emerald-500 text-white'
+              : notification.type === 'error'
+              ? 'bg-red-500 text-white'
+              : 'bg-blue-500 text-white'
+          }
+        `}
+      >
+        {notification.type === 'success'
+          ? '✓'
+          : notification.type === 'error'
+          ? '!'
+          : 'i'}
+      </div>
+
+      {/* CONTENT */}
+      <div className="flex-1">
+
+        <p className="text-sm font-semibold text-slate-800 leading-relaxed">
+          {notification.message
+            .replace('✅', '')
+            .replace('❌', '')
+            .replace('⚠️', '')
+            .replace('ℹ️', '')}
+        </p>
+
+      </div>
+
+      {/* CLOSE */}
+      <button
+        onClick={() => setNotification(null)}
+        className="
+          text-slate-400
+          hover:text-slate-700
+          transition
+          text-lg
+          leading-none
+        "
+      >
+        ×
+      </button>
+
+    </div>
+
+  </div>
+)}
 
         {/* ADMIN */}
         {isAdmin ? (
@@ -1103,22 +1434,31 @@ const getDropdownOptions = (header) => {
 
         </div>
       )}
-
+<CustomModal
+  isOpen={modal.isOpen}
+  title={modal.title}
+  message={modal.message}
+  confirmText={modal.confirmText}
+  cancelText={modal.cancelText}
+  showCancel={modal.showCancel}
+  onConfirm={modal.onConfirm}
+  onCancel={modal.onCancel}
+/>
       {/* Footer */}
-      <footer className="bg-gray-800 text-white mt-12 py-6">
+      <footer className="hidden md:block">
 
         <div className="max-w-7xl mx-auto px-4 text-center text-sm">
 
           <p>Asset Inventory System</p>
 
           <p className="text-gray-400 mt-2">
-            © 2026 GMADC OJT Project
+            © 2026 Asset Inventory System
           </p>
 
         </div>
 
       </footer>
-
+  
     </div>
   );
 }

@@ -7,6 +7,11 @@ import { uploadExcelFile } from '../services/api';
 export default function UploadForm({ onUploadSuccess, onUploadError }) {
   const [isLoading, setIsLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [recentUploads, setRecentUploads] = useState(() => {
+  return JSON.parse(
+    localStorage.getItem('recentUploads') || '[]'
+  );
+});
 
   /**
    * Handle file upload (from input or drag-drop)
@@ -24,6 +29,20 @@ export default function UploadForm({ onUploadSuccess, onUploadError }) {
       const result = await uploadExcelFile(file);
 
       // Call success callback with statistics
+      const updatedUploads = [
+  {
+    name: file.name,
+    time: new Date().toLocaleString(),
+  },
+  ...recentUploads,
+].slice(0, 3);
+
+setRecentUploads(updatedUploads);
+
+localStorage.setItem(
+  'recentUploads',
+  JSON.stringify(updatedUploads)
+);
       onUploadSuccess(result);
     } catch (error) {
       onUploadError(error.message || 'Upload failed');
@@ -68,10 +87,10 @@ export default function UploadForm({ onUploadSuccess, onUploadError }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
-      <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
-        📤 Upload Excel File
-      </h2>
+    <div className="bg-gradient-to-br from-white/80 via-white/65 to-slate-100/40 backdrop-blur-2xl border border-white/50 rounded-[32px] shadow-[0_10px_40px_rgba(15,23,42,0.05)] p-5 sm:p-6 mb-6">
+      <h2 className="text-2xl font-bold tracking-tight text-slate-800 mb-5">
+  Upload Excel File
+</h2>
 
       {/* Drag and Drop Area */}
       <div
@@ -79,15 +98,15 @@ export default function UploadForm({ onUploadSuccess, onUploadError }) {
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-lg p-4 sm:p-8 text-center cursor-pointer transition ${
+        className={`border-2 border-dashed rounded-[28px] p-6 sm:p-10 text-center cursor-pointer transition-all duration-300 backdrop-blur-xl ${
           dragActive
-            ? 'border-blue-500 bg-blue-50'
-            : 'border-gray-300 bg-gray-50 hover:border-gray-400'
+            ? 'border-slate-400 bg-white/70 scale-[1.01]'
+: 'border-slate-200 bg-white/40 hover:bg-white/55 hover:border-slate-300'
         }`}
       >
         <div className="mb-4">
           <svg
-            className="w-12 h-12 mx-auto text-gray-400"
+            className="w-16 h-16 mx-auto text-slate-400 opacity-70"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -102,10 +121,10 @@ export default function UploadForm({ onUploadSuccess, onUploadError }) {
         </div>
 
         <label className="block cursor-pointer">
-          <span className="text-base sm:text-lg font-semibold text-gray-700">
+          <span className="text-lg font-semibold text-slate-700">
             {isLoading ? 'Uploading...' : 'Drag and drop your Excel file here'}
           </span>
-          <span className="text-sm text-gray-500 mt-2 block">
+          <span className="text-sm text-slate-400 mt-2 block">
             or click to select a file
           </span>
           <input
@@ -118,9 +137,58 @@ export default function UploadForm({ onUploadSuccess, onUploadError }) {
         </label>
       </div>
 
+      <div className="grid grid-cols-1 gap-4 mt-5">
+
+  <div className="rounded-[28px] bg-white/45 border border-white/50 backdrop-blur-xl p-4 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
+
+    <h3 className="text-sm font-semibold text-slate-700 mb-3">
+      Recent Uploads
+    </h3>
+
+    {recentUploads.length === 0 ? (
+
+      <p className="text-sm text-slate-400">
+        No uploads yet
+      </p>
+
+    ) : (
+
+      <div className="space-y-3">
+
+        {recentUploads.map((upload, index) => (
+
+          <div
+            key={index}
+            className="flex items-center justify-between rounded-2xl bg-white/50 border border-white/50 px-4 py-3"
+          >
+
+            <div>
+
+              <p className="text-sm font-medium text-slate-700">
+                {upload.name}
+              </p>
+
+              <p className="text-xs text-slate-400 mt-1">
+                {upload.time}
+              </p>
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    )}
+
+  </div>
+
+</div>
+
       {/* File Format Hint */}
-      <p className="text-sm text-gray-600 mt-4">
-        💡 <strong>Supported Columns:</strong> The importer can detect common
+      <p className="text-sm leading-relaxed text-slate-500 mt-5">
+         <strong>Supported Columns:</strong> The importer can detect common
         names like Asset No, Asset Number, Description, Serial No, Room,
         Location, Status, and Remarks.
       </p>

@@ -6,6 +6,7 @@ import {
 import {
   fetchActivityHistory,
 getLastUpdated,
+downloadActivityReport,
 } from '../services/api';
 
 
@@ -25,6 +26,11 @@ const [lastKnownUpdate, setLastKnownUpdate] =
 
   const [search, setSearch] =
   useState('');
+
+  const [currentPage, setCurrentPage] =
+  useState(1);
+
+const itemsPerPage = 25;
 
   useEffect(() => {
   loadHistory();
@@ -70,11 +76,11 @@ async function loadHistory() {
         search.toLowerCase();
 
       return (
-        (currentUser?.employeeId || '')
+        (item.employeeId || '')
   .toLowerCase()
   .includes(searchValue) ||
 
-(currentUser?.name || '')
+(item.userName || '')
   .toLowerCase()
   .includes(searchValue) ||
 
@@ -88,20 +94,43 @@ async function loadHistory() {
       );
     });
 
-  return (
-    <div className="bg-white rounded-xl shadow-md p-4">
+    const totalPages = Math.ceil(
+  filteredHistory.length /
+  itemsPerPage
+);
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+const paginatedHistory =
+  filteredHistory.slice(
+    (currentPage - 1) *
+      itemsPerPage,
+
+    currentPage *
+      itemsPerPage
+  );
+
+  return (
+    <div className="bg-gradient-to-br from-white/80 via-white/65 to-slate-100/40 backdrop-blur-2xl rounded-[32px] border border-white/50 shadow-[0_10px_40px_rgba(15,23,42,0.05)] p-4">
+
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-3">
 
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">
-            📋 Activity History
-          </h2>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-800">
+  Activity History
+</h2>
 
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-slate-400 mt-0.5">
             User scan records
           </p>
         </div>
+
+<button
+  onClick={
+    downloadActivityReport
+  }
+  className="h-14 px-5 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-500 text-white font-semibold shadow-[0_8px_24px_rgba(99,102,241,0.18)] hover:scale-[1.01] transition-all duration-300"
+>
+  Download Report
+</button>
 
         <input
           type="text"
@@ -110,7 +139,7 @@ async function loadHistory() {
           onChange={e =>
             setSearch(e.target.value)
           }
-          className="border border-gray-300 rounded-lg px-4 py-2 w-full md:w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full md:w-80 h-14 border border-white/60 rounded-2xl px-5 bg-white/60 backdrop-blur-xl focus:outline-none focus:ring-2 focus:ring-slate-300 shadow-[0_4px_12px_rgba(15,23,42,0.04)] transition-all duration-300"
         />
 
       </div>
@@ -120,15 +149,115 @@ async function loadHistory() {
           Loading activity history...
         </div>
       ) : filteredHistory.length === 0 ? (
-        <div className="text-center py-10 text-gray-500">
+        <div className="text-center py-16 text-slate-400 rounded-[28px] border border-white/50 bg-white/45 backdrop-blur-xl shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
           No activity history yet.
         </div>
       ) : (
-        <div className="overflow-auto max-h-[600px] rounded-lg border border-gray-200">
 
-          <table className="min-w-full border border-gray-200">
+<>
+<div className="md:hidden space-y-4">
 
-            <thead className="sticky top-0 z-20 bg-gray-100">
+  {paginatedHistory.map(item => {
+
+    const scanDate =
+      new Date(item.scannedAt);
+
+    return (
+
+      <div
+        key={`${item.Asset || item.asset}-${item.scannedAt}`}
+        className="relative overflow-hidden border border-white/50 rounded-[28px] p-5 bg-gradient-to-br from-white/80 via-white/65 to-slate-100/40 backdrop-blur-2xl shadow-[0_8px_30px_rgba(15,23,42,0.05)]"
+      >
+
+        <div className="flex items-start justify-between mb-3">
+
+          <div>
+
+            <h3 className="font-bold text-slate-800 text-xl tracking-tight">
+              {item.userName || '-'}
+            </h3>
+
+            <p className="text-sm text-slate-400 mt-1">
+              {item.employeeId || '-'}
+            </p>
+
+          </div>
+
+          <span
+            className={
+              item.scanMethod === 'MANUAL'
+                ? 'bg-amber-50/80 text-amber-700 border border-white/60 backdrop-blur-xl px-3 py-1 rounded-full text-xs font-semibold shadow-[0_4px_12px_rgba(15,23,42,0.04)]'
+                : 'bg-emerald-50/80 text-emerald-700 border border-white/60 backdrop-blur-xl px-3 py-1 rounded-full text-xs font-semibold shadow-[0_4px_12px_rgba(15,23,42,0.04)]'
+            }
+          >
+            {item.scanMethod || 'QR'}
+          </span>
+
+        </div>
+
+        <div className="space-y-2 text-sm">
+
+          <div className="text-slate-500">
+  {item.department || '-'} Department
+</div>
+
+          <div className="pt-2">
+  <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
+    Asset Number
+  </p>
+
+  <p className="font-semibold text-slate-700">
+    {item.asset || item.Asset || '-'}
+  </p>
+</div>
+
+          <div>
+            <span className="font-semibold text-gray-700">
+              Serial:
+            </span>{' '}
+            {
+              item.serialNumber ||
+              item['Serial number'] ||
+              '-'
+            }
+          </div>
+
+          <div className="pt-1">
+  <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">
+    Asset Description
+  </p>
+
+  <p className="text-slate-700 leading-relaxed">
+    {
+      item.assetDescription ||
+      item['Asset Description'] ||
+      '-'
+    }
+  </p>
+</div>
+
+          <div className="pt-4 mt-4 border-t border-white/50 text-xs text-slate-400">
+
+            {scanDate.toLocaleDateString()}
+            {' • '}
+            {scanDate.toLocaleTimeString()}
+
+          </div>
+
+        </div>
+
+      </div>
+
+    );
+
+  })}
+
+</div>
+        <div className="hidden md:block rounded-[28px] border border-white/50 bg-white/50 backdrop-blur-2xl shadow-[0_8px_30px_rgba(15,23,42,0.05)]">
+
+          <table className="w-full border border-gray-200">
+
+            <thead className="bg-white/80 backdrop-blur-xl">
 
               <tr>
 
@@ -139,6 +268,10 @@ async function loadHistory() {
                 <th className="border px-4 py-4 text-left bg-gray-100">
                   User Name
                 </th>
+
+                <th className="border px-4 py-4 text-left bg-gray-100">
+  Department
+</th>
 
                 <th className="border px-4 py-4 text-left bg-gray-100">
                   Asset
@@ -170,7 +303,7 @@ async function loadHistory() {
 
             <tbody>
 
-              {filteredHistory.map(item => {
+              {paginatedHistory.map(item => {
                 const scanDate =
                   new Date(item.scannedAt);
 
@@ -187,6 +320,10 @@ async function loadHistory() {
                     <td className="border px-4 py-2">
                       {item.userName || '-'}
                     </td>
+
+                    <td className="border px-4 py-2">
+  {item.department || '-'}
+</td>
 
                     <td className="border px-4 py-2">
                       {item.asset || item.Asset || '-'}
@@ -236,7 +373,51 @@ async function loadHistory() {
 
           </table>
 
-        </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-white">
+
+  <p className="text-sm text-gray-500">
+    Showing page {currentPage} of {totalPages || 1}
+  </p>
+
+  <div className="flex gap-2">
+
+    <button
+      onClick={() =>
+        setCurrentPage(prev =>
+          Math.max(prev - 1, 1)
+        )
+      }
+      disabled={currentPage === 1}
+      className="px-4 py-2 border rounded-lg disabled:opacity-50"
+    >
+      Previous
+    </button>
+
+    <button
+      onClick={() =>
+        setCurrentPage(prev =>
+          Math.min(
+            prev + 1,
+            totalPages
+          )
+        )
+      }
+      disabled={
+        currentPage === totalPages
+      }
+      className="px-4 py-2 border rounded-lg disabled:opacity-50"
+    >
+      Next
+    </button>
+
+  </div>
+
+</div>
+
+                </div>
+
+      </>
+
       )}
 
     </div>
