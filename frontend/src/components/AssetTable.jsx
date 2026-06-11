@@ -292,6 +292,9 @@ export default function AssetTable({
           <table className="w-full text-sm">
             <thead className="bg-gray-100 border-b-2 border-gray-300">
               <tr>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700 w-12">
+                  
+                </th>
                 {tableColumns.map(col => (
                   <th
                     key={col.key}
@@ -310,7 +313,7 @@ export default function AssetTable({
             </thead>
 
             <tbody>
-              {filteredAssets.map((asset) => {
+              {filteredAssets.map((asset, index) => {
                 const statusValue = asset.status || asset['STATUS'] || asset['Status'] || '';
                 return (
                   <tr
@@ -323,6 +326,9 @@ export default function AssetTable({
                         : 'bg-red-50'
                     }`}
                   >
+                    <td className="px-4 py-3 text-gray-600 font-semibold w-12">
+                      {index + 1}
+                    </td>
                     {tableColumns.map(column => {
                       const cellValue = getAssetValue(asset, column.key);
                       const isStatusColumn = normalizeHeader(column.key) === 'status';
