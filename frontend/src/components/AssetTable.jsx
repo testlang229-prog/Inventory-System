@@ -17,14 +17,11 @@ export default function AssetTable({
   const [sortBy, setSortBy] = useState('asset');
   const [sortOrder, setSortOrder] = useState('asc');
 
-<<<<<<< Updated upstream
-=======
   const monthNames = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
   const currentMonth = monthNames[new Date().getMonth()];
   const currentYear = new Date().getFullYear();
   const currentRemarksLabel = `${currentMonth} ${currentYear} REMARKS`;
 
->>>>>>> Stashed changes
   const defaultColumns = [
     { key: 'asset', label: 'Asset #' },
     { key: 'assetDescription', label: 'Description' },
@@ -32,26 +29,7 @@ export default function AssetTable({
     { key: 'costCenter', label: 'Cost Center' },
     { key: 'correctRoom', label: 'Room' },
     { key: 'status', label: 'Status' },
-<<<<<<< Updated upstream
-    { key: 'remarks', label: 'Remarks' },
-  ];
-
-  const tableColumns = headers && headers.length > 0
-    ? headers
-        .filter(header => !isInternalField(header))
-        .filter(header => {
-          if (!hasCurrentMonthRemarks) return true;
-          const normalized = normalizeLabel(header);
-          return (
-            normalized !== 'remarks' &&
-            !isCurrentMonthDisplayRemarksHeader(header)
-          );
-        })
-        .map(header => ({ key: header, label: getDisplayLabel(header) }))
-    : defaultColumns;
-=======
     { key: `${currentMonth} STATUS`, label: `${currentMonth} STATUS` },
-    { key: 'remarks', label: `${displayMonth} Remarks` },
     { key: 'remarks', label: currentRemarksLabel },
   ];
 
@@ -61,6 +39,9 @@ export default function AssetTable({
       .replace(/\([^)]*\)/g, '')
       .replace(/[^a-z0-9 ]+/g, ' ')
       .trim();
+
+  const isInternalField = (label) =>
+    normalizeLabel(label).replace(/\s+/g, '') === 'scanningmonth';
 
   const isMonthlyRemarksHeader = (label) => {
     const normalized = normalizeLabel(label);
@@ -125,7 +106,6 @@ export default function AssetTable({
         label: header
       }))
   : defaultColumns;
->>>>>>> Stashed changes
 
   const normalizeHeader = (header) =>
     String(header || '')
@@ -141,26 +121,7 @@ export default function AssetTable({
     return 2;
   };
 
-  const getAssetValue = (asset, fieldName) => {
-    if (!asset || typeof asset !== 'object') return '';
-    
-    // Try direct key match first
-    if (asset.hasOwnProperty(fieldName)) {
-      return asset[fieldName];
-    }
-
-    // Try normalized match
-    const normalizedField = normalizeHeader(fieldName);
-    const matchingKey = Object.keys(asset).find(
-      key => normalizeHeader(key) === normalizedField
-    );
-
-    if (matchingKey) {
-      return asset[matchingKey];
-    }
-
-    return '';
-  };
+  
 
   /**
    * Filter and sort assets based on search, status filter, and sort options
